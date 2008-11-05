@@ -1,0 +1,117 @@
+////////////////////////////////////////////////////////////////////
+// How do we specify which libraries to use ?
+version="0.01";
+category="Commutative Algebra";
+// summary description of the library
+info="
+LIBRARY:   binprimdec.lib  Primary Decomposition for Binomial Ideals
+AUTHOR:    Thomas Kahle, email: kahle@mis.mpg.de
+
+SEE ALSO:  primdec
+
+KEYWORDS: library, primdec.lib; 
+
+PROCEDURES:
+  SubringBinRadical(ideal I, r, var_to_remove) return Groebner Basis of radical
+  BinRadical(ideal I)    return Groebner Basis of Radical of I
+";
+
+LIB "primdec.lib";
+
+////////////////////////////////////////////////////////////////////
+
+proc SubringBinRadical (ideal I, r, var_to_remove) 
+"USAGE:   SubringBinRadical(I,r,x); I ideal, r ring, x a variable of r.
+RETURN:   ideal: Groebner Basis of the radical
+NOTE:     You should never call this one. It is used internally only.
+SEE ALSO: BinRadical
+KEYWORDS: procedure,
+EXAMPLE:  example SubringBinRadical; shows an example"
+{
+  // Todo: check if I is binomial ?
+
+  // Construct the subring variable list
+  list new_vars = list();
+  for (int j = 1; j <= nvars(basering); j++) {
+    if (var(j) != var_to_remove) {
+      new_vars = new_vars + list(var(j));
+    }
+  }
+
+  // If we are to remove the last variable from the ring, 
+  // return the field.
+
+  if (size(new_vars) == 0) {
+    setring r; 
+    return(0);
+  }
+  
+  // Map the ideal to the subring setting non-existent variables to zero
+  list rl = ringlist(basering);
+  rl[2] = new_vars;
+  def S = ring(rl);
+  setring S;
+  ideal I = imap (r, I);
+  
+  if (I==0)
+  {
+    setring r;
+    kill S;
+    return(0);
+  }
+  if (I==1)
+  {
+    setring r;
+    kill S;
+    return(1); 
+  }
+  ideal varproduct = product(maxideal(1));
+  ideal J = sat(I,varproduct)[1];
+  for (int i = 1; i<= nvars(basering); i++ ){
+    // Compute the intersection of radical of 
+    // the reduced ideal with what we already have
+    J = intersect(J, SubringBinRadical(I , basering, var(i) ) + var(i));
+  } 
+  setring r;
+  ideal J = imap(S,J);
+  kill S;
+  return(std(J));
+}
+
+proc BinRadical(ideal I)
+"USAGE:   BinRadical(I); I ideal
+RETURN:   ideal: Groebner Basis of the radical
+NOTE:     
+SEE ALSO: 
+KEYWORDS: procedure,
+EXAMPLE:  example BinRadical; shows an example"
+{
+  return (SubringBinRadical(I,basering,0));
+}
+
+// To learn liste:
+// What does the existence of monomials 
+// Term order ?
+
+
+/// A testcase 
+// Observations
+// If we add some monomials, the built in function is much faster !
+// Coefficients also seem to speed up the built in function
+// In this example BinRadical is faster and uses less memory :)
+
+ring R = 0,(a,b,c,w,x,y,z),lp;
+ideal I = x5-abc3, x7-w5a5b5, bc3-a7, b2a3c5x-yzw2;
+timer = 1;
+int t = timer;
+std(radical(I));
+t=timer-t;
+int tps=system("--ticks-per-sec");
+t/tps;
+
+int t = timer;
+BinRadical(I);
+t=timer-t;
+int tps=system("--ticks-per-sec");
+t/tps;
+
