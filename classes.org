@@ -1,0 +1,21 @@
+* Classes
+** Class :Integer Lattice
+   Representation of an Integer Lattice as a matrix of vectors
+   generating it. 
+*** Methods:
+**** Saturate() 
+     Gives the generators of the saturated lattice, ie. the lattice of
+     all integer points in the linear space spanned by the generators.
+
+     Naive algorithm: Compute the orthogonal complement of the
+     generators and take the cycles of this matrix. (Does this work
+     over characteristic p>0 ?)
+
+** Class: Partial Character
+   Represents a partial character over a field K. Contains an integer
+   lattice 
+   
+   Can we just inheret Integer Lattice ?
+*** Data:
+**** A Lattice
+**** A list of non-zero field elements for each generator
