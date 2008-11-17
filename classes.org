@@ -19,3 +19,13 @@
 *** Data:
 **** A Lattice
 **** A list of non-zero field elements for each generator
+* Notes on the Documentation at [[http://www.sagemath.org/doc/prog/node3.html][sagemath-manual]]
+** Find out what Cython and Pyrex are about
+** Namings
+   Directory Names may be plural, filenames singular. Non-captial
+   letters and underscores are standard. No CamelCase
+** Every function must have docstring and pass automatic testing: 
+   with INPUT, OUTPUT, EXAMPLES, ALGORITHM, AUTHOR,.. 
+   see [[http://www.sagemath.org/doc/prog/node9.html][here]] for details
+* Observations from other derived classes like [[http://sage.math.washington.edu/home/mhansen/sage-epydoc/sage.rings.polynomial.pbori.BooleanPolynomialIdeal-class.html][BooleanPolynomialIdeal]]
+  
