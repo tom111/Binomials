@@ -29,3 +29,15 @@
    see [[http://www.sagemath.org/doc/prog/node9.html][here]] for details
 * Observations from other derived classes like [[http://sage.math.washington.edu/home/mhansen/sage-epydoc/sage.rings.polynomial.pbori.BooleanPolynomialIdeal-class.html][BooleanPolynomialIdeal]]
   
+* Mathematical Structure
+** Lattice Ideals 
+   are completely specified by their partial characters. All
+   operations can be run by using only integer lattice operations
+** Cellular Ideals
+   are generations of lattice ideals. Idea: Looks like a lattice ideal
+   in some subset of the variable. 
+   Are characterized via variables being either zerodivisors or
+   nilpotent. 
+** General Binomial Ideals
+   Any Binomial Ideal is the intersection of Cellular Binomial Ideals.
+   
