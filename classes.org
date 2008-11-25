@@ -28,7 +28,9 @@
    with INPUT, OUTPUT, EXAMPLES, ALGORITHM, AUTHOR,.. 
    see [[http://www.sagemath.org/doc/prog/node9.html][here]] for details
 * Observations from other derived classes like [[http://sage.math.washington.edu/home/mhansen/sage-epydoc/sage.rings.polynomial.pbori.BooleanPolynomialIdeal-class.html][BooleanPolynomialIdeal]]
-  
+** Why the "coerce" argument ?
+** Should we always use the decorator "cached_method"
+** Which methods need to be definitely specialized ?
 * Mathematical Structure
 ** Lattice Ideals 
    are completely specified by their partial characters. All
@@ -40,4 +42,5 @@
    nilpotent. 
 ** General Binomial Ideals
    Any Binomial Ideal is the intersection of Cellular Binomial Ideals.
+   (Algorithm 2 in Ojeda/Sanchez)
    
