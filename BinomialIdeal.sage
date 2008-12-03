@@ -85,29 +85,31 @@ class BinomialIdeal(MPolynomialIdeal):
         for x in bad_variables:
             self.__cell_variables.remove(x)
 
-        print ("Here are the cell variables:")
-        print (self.__cell_variables)
+        # print ("Here are the cell variables:")
+        # print (self.__cell_variables)
 
         varprod = 1
         for x in self.__cell_variables:
             varprod = varprod * x
-        print(varprod)
+        # print(varprod)
         J = self.varsat(self, varprod)[0]
 
-        print ("This is the full saturation with respect to the good variables")
-        print (str(J))
+        # print ("This is the full saturation with respect to the good variables")
+        # print (str(J))
 
         if self == J:
-           print ("The ideal is cellular with respect to the cell variables:")
-           print (self.__cell_variables)
+           # print ("The ideal is cellular with respect to the cell variables:")
+           # print (self.__cell_variables)
            return true
         else:
             for x in self.__cell_variables:
+                # print (self)
+                # print (self.quotient(x*R))
                 if self != self.quotient(x*R):
                     print ('The variable',x,' is a zerodvisior but not nilpotent.' )
                     self.__not_nilpotent_zerodivisors += [x]
 
-            print (self.__not_nilpotent_zerodivisors)
+            # print (self.__not_nilpotent_zerodivisors)
             return false           
 
 
@@ -119,6 +121,7 @@ class BinomialIdeal(MPolynomialIdeal):
         EXAMPLES:
         sage: R = QQ['x1,x2,x3,x4,x5']
         sage: (x1,x2,x3,x4,x5) = R.gens()
+        sage: I = (x1*x4^2 - x2*x5^2,  x1^3*x3^3 - x4^2*x2^4,  x2*x4^8 - x3^3*x5^6)* R
         
 
         ALGORITHM: ???
@@ -136,33 +139,38 @@ class BinomialIdeal(MPolynomialIdeal):
         V = []
         # The computation starts here 
         if self.is_cellular():
-            V = [I]
+            V += [self]
+            # print ("achtung :")
+            # print (V)
         else:
             badvar = self.__not_nilpotent_zerodivisors[0]
+            # print("Choice of added variable:")
             # print(badvar)
 
             (J,l) = self.varsat(I,badvar)
             # print(J,l)
             # Start a recursion
 
-            ## HERE IS A BUG IN THE CHOICE OF THE EXPONENT !!!
+            # print ("The variable and exponent are :")
+            # print (badvar, l)
 
-
-            print ("The variable and exponent are :")
-            print (badvar, l)
-            K = BinomialIdeal(self.ring(), list(self.gens()) + [badvar^l])
-            M = BinomialIdeal(self.ring(), J.gens())
-            if K != 1*K.ring():
-                print (K)
-                print ("is not the full ring -> recurse")
-                V + K.cellular_decomposition()
-            if M != 1* R:
-                print (M)
-                print ("is not the full ring -> recurse")
-                V + M.cellular_decomposition()
+            # If l is zero, K is the whole ring and M is already there
+            if l != 0: 
+                K = BinomialIdeal(R, list(self.gens()) + [badvar^l])
+                M = BinomialIdeal(R, J.gens())
+                if K != 1*R:
+                    # print ("The sum Ideal:")
+                    # print (K)
+                    # print ("is not the full ring -> recurse")
+                    V += K.cellular_decomposition()
+                if M != 1*R:
+                    # print (M)
+                    # print ("is not the full ring -> recurse")
+                    V += M.cellular_decomposition()
 
         # Finished the true computation 
 
+        # Shall we invest computing time to return standard bases???
         self.__complete_cellular_decomposition = V
         return self.__complete_cellular_decomposition
     
@@ -173,5 +181,3 @@ Starting from a binomial ideal
 1) Compute a Cellular Decomposition
 2) Compute primary decompositions of the cellular ideals
 """
-
-
