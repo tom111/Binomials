@@ -56,12 +56,12 @@ class BinomialIdeal(MPolynomialIdeal):
         such that I is cellular.  In the negative case a variable
         which is a zerodivisor but not nilpotent is found.
 
-        EXAMPLE 
+        EXAMPLE :
+
+        
         
         ALGORITHM: A1 in CS[00]
 
-        TODOLIST:
-        - Optimize 
         """
 
         # Check if we did the computation already instead of setting it to zero!
@@ -106,7 +106,7 @@ class BinomialIdeal(MPolynomialIdeal):
                 # print (self)
                 # print (self.quotient(x*R))
                 if self != self.quotient(x*R):
-                    print ('The variable',x,' is a zerodvisior but not nilpotent.' )
+                    # print ('The variable',x,' is a zerodvisior but not nilpotent.' )
                     self.__not_nilpotent_zerodivisors += [x]
 
             # print (self.__not_nilpotent_zerodivisors)
@@ -121,12 +121,17 @@ class BinomialIdeal(MPolynomialIdeal):
         EXAMPLES:
         sage: R = QQ['x1,x2,x3,x4,x5']
         sage: (x1,x2,x3,x4,x5) = R.gens()
-        sage: I = (x1*x4^2 - x2*x5^2,  x1^3*x3^3 - x4^2*x2^4,  x2*x4^8 - x3^3*x5^6)* R
-        
+        sage: I = BinomialIdeal(R,(x1*x4^2 - x2*x5^2,  x1^3*x3^3 - x4^2*x2^4,  x2*x4^8 - x3^3*x5^6))
+        sage: I.cellular_decomposition()
 
-        ALGORITHM: ???
+        [Ideal (x1*x4^2 - x2*x5^2, x1^3*x3^3 - x2^4*x4^2, x2^3*x4^4 - x1^2*x3^3*x5^2, x2^2*x4^6 - x1*x3^3*x5^4, x2*x4^8 - x3^3*x5^6) of Multivariate Polynomial Ring inx1, x2, x3, x4, x5 over Rational Field,
+        Ideal (x1*x4^2 - x2*x5^2, x1^3*x3^3 - x2^4*x4^2, x2^3*x4^4 - x1^2*x3^3*x5^2, x2^2*x4^6 - x1*x3^3*x5^4, x2*x4^8 - x3^3*x5^6) of Multivariate Polynomial Ring inx1, x2, x3, x4, x5 over Rational Field]
+
+        ALGORITHM: A2 in CS[00]
         
-        REFERENCES: ??? 
+        REFERENCES: 
+        CS[00] Castilla/Sanchez 'Cellular Binomial Ideals. 
+                  Primary Decomposition of Binomial Ideals"
         """
         
         try:
