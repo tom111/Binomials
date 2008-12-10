@@ -1,11 +1,12 @@
- R = QQ[x1,x2,x3,x4,x5]
+R = QQ[x1,x2,x3,x4,x5]
 I = ideal( x1*x4^2 - x2*x5^2,  x1^3*x3^3 - x4^2*x2^4, x2*x4^8 - x3^3*x5^6)
--- By Ignacio Ojeda and Mike Stillman
-
--- For computing saturations w.r.t. a single variable:
---
+-- Here is a cellular decomp  of I:
+J1 = ideal({x1^2 , x1*x4^2 - x2*x5^2, x2^5, x5^6, x2^4 * x4^2,x4^8})
+J2 = ideal({x1*x4^2 - x2*x5^2, x1^3*x3^3 - x4^2*x2^4, x2^3*x4^4 - x1^2*x3^3*x5^2, x2^2*x4^6 - x1*x3^3*x5^4, x2*x4^8 - x3^3 *x5^6 })
 
 axisSaturate = (I,i) -> (
+-- By Ignacio Ojeda and Mike Stillman
+-- For computing saturations w.r.t. a single variable:
     R := ring I;
     I1 := ideal(1_R);
     s = 0;
@@ -22,6 +23,7 @@ axisSaturate = (I,i) -> (
 --
 
 binomialCD = (I) -> (
+-- By Ignacio Ojeda and Mike Stillman     
      R := ring I;
      n := numgens R;
      Answer = {};
@@ -65,20 +67,26 @@ binomialCD = (I) -> (
 -- This function saturates an integer lattice. It expects 
 -- the matrix A, whose image is the lattice. 
 Lsat = (A) -> gens ker transpose gens ker transpose A;
-pp = (I) -> ( 
-     print I;
-     print ring I;
-     )
+
 
 partialCharacter = (I) -> (
-     ts := entries gens I;
      vs := {};
      cl := {};
+     -- The partial Character of the zero ideal is the 
+     -- zero lattice.       
+     if ( I == 0 ) then (
+	  for i in gens ring I do vs = vs | { 0 };
+	  cl = {1};
+	  return (transpose matrix {vs}, cl);
+	  );
+     ts := entries gens I;
      for t in ts#0 do (
-	  vs = vs | {((exponents (t))#0 - (exponents (t))#1)};
-     	  coeffs := entries ((coefficients(t))#1);
--- I hope that coefficients returns the leading coeff as 0th
-	  cl = cl | {coeffs#1#0 / coeffs#0#0}
+	  if t != 0 then (
+	       vs = vs | {((exponents (t))#0 - (exponents (t))#1)};
+     	       coeffs := entries ((coefficients(t))#1);
+	       -- I hope that coefficients returns the leading coeff as 0th
+	       cl = cl | {coeffs#1#0 / coeffs#0#0}
+	       );
 	  );
 --    print coeffs;
 --    print cl;
@@ -91,3 +99,30 @@ cellVars = (I) -> (
      return cv;
      )
 
+nonCellstdm = (I) -> (
+     R := ring I;
+     cv := set(cellVars(I)); 
+     -- Here go the non-cell variables
+     ncv := toList(set (gens R) - cv);
+     -- We project I to the non-cell variables
+     Q := QQ[ncv];
+     projnE := map (Q,R);
+     J := projnE I;
+     S = Q/J;
+     slist = entries flatten basis (S);
+     use R;
+     return slist;
+     )
+  
+BinassPrim = (I) -> (
+     R := ring I;
+     ml := nonCellstdm(I);
+     cv := cellVars(I);
+     ncv := toList(set (gens R) - cv);
+     Q := QQ[cv];
+     use R;
+     for m in ml do (
+	  ;
+	  )
+     )   
+     
