@@ -68,7 +68,6 @@ binomialCD = (I) -> (
 -- the matrix A, whose image is the lattice. 
 Lsat = (A) -> gens ker transpose gens ker transpose A;
 
-
 partialCharacter = (I) -> (
      vs := {};
      cl := {};
@@ -85,7 +84,7 @@ partialCharacter = (I) -> (
 	       vs = vs | {((exponents (t))#0 - (exponents (t))#1)};
      	       coeffs := entries ((coefficients(t))#1);
 	       -- I hope that coefficients returns the leading coeff as 0th
-	       cl = cl | {coeffs#1#0 / coeffs#0#0}
+	       cl = cl | { -coeffs#1#0 / coeffs#0#0}
 	       );
 	  );
 --    print coeffs;
@@ -122,7 +121,26 @@ BinassPrim = (I) -> (
      Q := QQ[cv];
      use R;
      for m in ml do (
-	  ;
+	  print " "
 	  )
      )   
      
+
+-- Saturierungsalgorithmus fuer partielle Charactere 
+-- 1. Matrix Saturieren
+-- 2. zufaellig probieren bis man eine quadratische 
+--    Submatrix von vollem Rang gefunden hat
+
+
+--saturatepChar = (ch) -> (
+--     mat := Lsat(ch#0);
+--     rg := rank mat;
+--     rows := toList ( 0..((numrows mat) -1) );
+--     
+--     currows = for i in 0..rg-1 list rows#i;
+--     while determinant submatrix (mat, currows ) == 0 (
+--	  rows = random(rows);
+--	  currows = for i in 0..rg-1 list rows#i;
+--	  )
+--     submat;
+--     )
