@@ -113,28 +113,16 @@ nonCellstdm = (I) -> (
      return slist;
      )
   
-BinassPrim = (I) -> (
-     R := ring I;
-     ml := nonCellstdm(I);
-     cv := cellVars(I);
-     ncv := toList(set (gens R) - cv);
-     Q := QQ[cv];
-     use R;
-     for m in ml do (
-	  print " "
-	  )
-     )   
-     
-
 satpchar = ( A , c) -> (
-     print A;
-     print c;
+     -- print A;
+     -- print c;
      
      sageprogfile = temporaryFileName() | ".sage";
      sageoutfile = temporaryFileName();
      -- We paste the whole program in:
      F = openOut(sageprogfile);
--- I tell you, this is impossible to debug :(
+     
+-- Oh my god, this is impossible to debug :(
 F << "def rectsolve (A,S): " << endl;
 F << "    cl = A.columns()" << endl;
 F << "    krows = len(S.columns())" << endl;
@@ -224,18 +212,52 @@ for i in (0..((#c)-1)) do (
 F << "]" << endl;
 
 -- Here we do output
-F << "print 'S = ' ";
-
+F << "res = charsat(A,c)" << endl;
+F << "M2mat = 'S = matrix {';" << endl;
+F << "nr = len (res[0].rows())" << endl;
+F << "nc = len (res[0].columns())" << endl;
+F << "for r in range(nr):" << endl;
+F << "    M2mat = M2mat + '{'" << endl;
+F << "    for c in range (nc):" << endl;
+F << "        M2mat = M2mat+ str((res[0])[r][c]);" << endl;
+F << "        if (c < (nc-1)): " << endl;
+F << "            M2mat = M2mat + ',';" << endl;
+F << "    M2mat = M2mat + '}';" << endl;
+F << "    if (r < nr-1) :" << endl;
+F << "        M2mat = M2mat + ',';" << endl;
+F << "M2mat = M2mat + '}';" << endl;
+F << "print M2mat;" << endl;
+F << "charstr = str(res[1]).replace('I','ii');" << endl;
+F << "charstr = charstr.replace('[','{');" << endl;
+F << "charstr = charstr.replace(']','}');" << endl;
+F << "print 'c = ' + charstr" << endl;
 
      close (F);
      
      execstr = "sage "|sageprogfile | " > " | sageoutfile ;
-     print execstr;
-     ret = run (execstr);
-     print ret;
-     
+     -- print execstr;
+     ret := run (execstr);
+     if (ret != 0) then (
+	  print "sage did not run correctly, sorry :(";
+	  return False;
+	  );
      
      outlines = lines get sageoutfile;
-     print outlines;
      
-     )	   
+     S := value outlines#0;
+     cl := value outlines#1;
+     return (S,cl)
+     )
+
+BinassPrim = (I) -> (
+     R := ring I;
+     ml := nonCellstdm(I);
+     cv := cellVars(I);
+     ncv := toList(set (gens R) - cv);
+     Q := QQ[cv];
+     use R;
+     for m in ml do (
+	  print " "
+	  )
+     )   
+     

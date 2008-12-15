@@ -118,14 +118,13 @@ def charsat (A,l) :
 
     return (S,m)
 
-
 A = transpose (matrix (ZZ,[[2,3,2],[4,4,4]]))
 p = [1,1]
+
 res = charsat(A,p)
 M2mat = 'S = matrix {';
 nr = len (res[0].rows())
 nc = len (res[0].columns())
-print res[0]
 for r in range(nr):
     M2mat = M2mat + "{"
     for c in range (nc):
@@ -138,18 +137,8 @@ for r in range(nr):
 M2mat = M2mat + "}";
 print M2mat;
 
-charstr = "cl = {";
-for s in range (len(res[1])):
-    charstr = charstr + "{";
-    for v in range (len(sol)) :
-        charstr = charstr + str((res[1])[s][v]);
-        if v < (len(sol)) -1 :
-            charstr = charstr + ",";
-    charstr = charstr + "}";
-    if (s < len (res[1]) -1) :
-        charstr = charstr + ",";
+charstr = str(res[1]).replace('I','ii');
+charstr = charstr.replace('[','{');
+charstr = charstr.replace(']','}');
 
-print charstr;
-
-print "--"
-print res[1]
+print "c = " + charstr
