@@ -126,21 +126,116 @@ BinassPrim = (I) -> (
      )   
      
 
--- Saturierungsalgorithmus fuer partielle Charactere 
--- 1. Matrix Saturieren
--- 2. zufaellig probieren bis man eine quadratische 
---    Submatrix von vollem Rang gefunden hat
+satpchar = ( A , c) -> (
+     print A;
+     print c;
+     
+     sageprogfile = temporaryFileName() | ".sage";
+     sageoutfile = temporaryFileName();
+     -- We paste the whole program in:
+     F = openOut(sageprogfile);
+-- I tell you, this is impossible to debug :(
+F << "def rectsolve (A,S): " << endl;
+F << "    cl = A.columns()" << endl;
+F << "    krows = len(S.columns())" << endl;
+F << "    kcols = len(A.columns())" << endl;
+F << "    varnames = []" << endl;
+F << "    for i in range(krows) :" << endl;
+F << "        for j in range(kcols) :" << endl;
+F << "            # print [i,j]" << endl;
+F << "            varnames = varnames + ['k'+str(i)+str(j)]" << endl;
+F << "    for v in varnames:" << endl;
+F << "        var(v)" << endl;
+F << "    i = 0" << endl;
+F << "    vs = []" << endl;
+F << "    K = matrix(krows,kcols)" << endl;
+F << "    for a in cl:" << endl;
+F << "        vs = []" << endl;
+F << "        for j in range(krows):" << endl;
+F << "            vs = vs + ['k'+str(j)+str(i)]" << endl;
+F << "        vs2 = [eval(v) for v in vs]" << endl;
+F << "        # print vs" << endl;
+F << "        eqns = S * vector(vs2) - a" << endl;
+F << "        s = solve ( list(eqns) , tuple(vs2), solution_dict=True)" << endl;
+F << "        for j in range (krows):" << endl;
+F << "            K[j,i] = (s[0])['k'+str(j)+str(i)]" << endl;
+F << "        i = i +1" << endl;
+F << "    return K;" << endl;
+F << "def Lsat(A):" << endl;
+F << "    ker = kernel(A)" << endl;
+F << "    kerb = matrix(ZZ,transpose(ker.basis_matrix()))" << endl;
+F << "    return transpose(kernel(kerb).basis_matrix())" << endl;
+F << "def charsat (A,l) :" << endl;
+F << "    S = Lsat(A)" << endl;
+F << "    K = rectsolve(A,S)" << endl;
+F << "    varnames = []" << endl;
+F << "    rg = len(S.columns())" << endl;
+F << "    for i in range(rg) :" << endl;
+F << "        varnames = varnames + ['m'+str(i)]" << endl;
+F << "    for v in varnames:" << endl;
+F << "        # print v" << endl;
+F << "        var (v)" << endl;
+F << "    eqns = []" << endl;
+F << "    kr = len(K.rows())" << endl;
+F << "    kc = len(K.columns());" << endl;
+F << "    for col in range(kc):" << endl;
+F << "        monom = 1" << endl;
+F << "        for row in range(kr):" << endl;
+F << "            monom *= eval('m'+str(row))^K[row,col]" << endl;
+F << "            # print eval('m'+str(row))^K[row,col]" << endl;
+F << "        eqns = eqns + [ monom - l[col] ]" << endl;
+F << "    satlist = [] # The list of saturations" << endl;
+F << "    vs = [eval(v) for v in varnames]" << endl;
+F << "    if (len (eqns) > 1) :" << endl;
+F << "        s = solve (eqns , tuple(vs), solution_dict=True)" << endl;
+F << "    else :" << endl;
+F << "        spre = solve (eqns , tuple(vs))" << endl;
+F << "        # print spre" << endl;
+F << "        s= [dict([(eq.left(),eq.right())]) for eq in spre ]" << endl;
+F << "    m = [] " << endl;
+F << "    for sol in s :" << endl;
+F << "        n = [] " << endl;
+F << "        for v in varnames:" << endl;
+F << "            n = n + [sol[v]]" << endl;
+F << "        m = m + [n]" << endl;
+F << "    return (S,m)" << endl;
+
+F << "A = matrix(ZZ,[";
+
+-- Here goes the lattice defining matrix
+ent = entries A;
+for r in (0..(#ent -1)) do (
+     F << "[";
+     for c in (0..(#(ent#r)-1)) do (
+	  F << ent#r#c;
+	  if (c < (numcols A) -1 ) then F << ",";
+	  );
+     F << "]";
+     if (r < (numrows A) -1) then F << ",";
+     );
+F << "])" << endl;
+
+-- Here goes the character
+F << "c = [";
+for i in (0..((#c)-1)) do (
+     F << c#i ;
+     if (i< (#c -1)) then F << ",";
+     );
+F << "]" << endl;
+
+-- Here we do output
+F << "print 'S = ' ";
 
 
---saturatepChar = (ch) -> (
---     mat := Lsat(ch#0);
---     rg := rank mat;
---     rows := toList ( 0..((numrows mat) -1) );
---     
---     currows = for i in 0..rg-1 list rows#i;
---     while determinant submatrix (mat, currows ) == 0 (
---	  rows = random(rows);
---	  currows = for i in 0..rg-1 list rows#i;
---	  )
---     submat;
---     )
+     close (F);
+     
+     execstr = "sage "|sageprogfile | " > " | sageoutfile ;
+     print execstr;
+     ret = run (execstr);
+     print ret;
+     
+     
+     outlines = lines get sageoutfile;
+     print outlines;
+     
+     )	   

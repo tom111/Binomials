@@ -84,7 +84,7 @@ def charsat (A,l) :
         varnames = varnames + ['m'+str(i)]
     
     for v in varnames:
-        print v
+        # print v
         var (v)
 
     eqns = []
@@ -94,22 +94,62 @@ def charsat (A,l) :
         monom = 1
         for row in range(kr):
             monom *= eval('m'+str(row))^K[row,col]
-            print eval('m'+str(row))^K[row,col]
+            # print eval('m'+str(row))^K[row,col]
         eqns = eqns + [ monom - l[col] ]
 
     satlist = [] # The list of saturations
-    print eqns
+    # print eqns
     vs = [eval(v) for v in varnames]
     # This is a hack since solution dict is broken for univariate 
     # equations.
-    if (len (vs) > 1) :
+    if (len (eqns) > 1) :
         s = solve (eqns , tuple(vs), solution_dict=True)
     else :
         spre = solve (eqns , tuple(vs))
-        print spre
-        s= [dict([[eq.left(),eq.right()] for eq in spre ])
+        # print spre
+        s= [dict([(eq.left(),eq.right())]) for eq in spre ]
         
     m = []
-    print s
-    for v in varnames :
-        m = m + s[v]
+    for sol in s :
+        n = []
+        for v in varnames:
+            n = n + [sol[v]]
+        m = m + [n]
+
+    return (S,m)
+
+
+A = transpose (matrix (ZZ,[[2,3,2],[4,4,4]]))
+p = [1,1]
+res = charsat(A,p)
+M2mat = 'S = matrix {';
+nr = len (res[0].rows())
+nc = len (res[0].columns())
+print res[0]
+for r in range(nr):
+    M2mat = M2mat + "{"
+    for c in range (nc):
+        M2mat = M2mat+ str((res[0])[r][c]);
+        if (c < (nc-1)): 
+            M2mat = M2mat + ",";
+    M2mat = M2mat + "}";
+    if (r < nr-1) :
+        M2mat = M2mat + ",";
+M2mat = M2mat + "}";
+print M2mat;
+
+charstr = "cl = {";
+for s in range (len(res[1])):
+    charstr = charstr + "{";
+    for v in range (len(sol)) :
+        charstr = charstr + str((res[1])[s][v]);
+        if v < (len(sol)) -1 :
+            charstr = charstr + ",";
+    charstr = charstr + "}";
+    if (s < len (res[1]) -1) :
+        charstr = charstr + ",";
+
+print charstr;
+
+print "--"
+print res[1]
