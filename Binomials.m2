@@ -1,8 +1,18 @@
 R = QQ[x1,x2,x3,x4,x5]
 I = ideal( x1*x4^2 - x2*x5^2,  x1^3*x3^3 - x4^2*x2^4, x2*x4^8 - x3^3*x5^6)
 -- Here is a cellular decomp  of I:
+-- This is also a prime decomposition
 J1 = ideal({x1^2 , x1*x4^2 - x2*x5^2, x2^5, x5^6, x2^4 * x4^2,x4^8})
 J2 = ideal({x1*x4^2 - x2*x5^2, x1^3*x3^3 - x4^2*x2^4, x2^3*x4^4 - x1^2*x3^3*x5^2, x2^2*x4^6 - x1*x3^3*x5^4, x2*x4^8 - x3^3 *x5^6 })
+
+
+Q = QQ[x,y,z]
+J = ideal(x^4*y^2-z^6,x^3*y^2-z^5,x^2-y*z)
+-- The cellular decomposition is also a primary decomposition.
+-- No lattice needs to be saturated, only roots of monomials
+
+Q = QQ[x,y,z,w]
+J = ideal(x^4*w^2-z^6,x^3*y^2-z^5,x^7-y^3*w^2,x^2*x^3-z^7)
 
 axisSaturate = (I,i) -> (
 -- By Ignacio Ojeda and Mike Stillman
@@ -69,27 +79,45 @@ binomialCD = (I) -> (
 Lsat = (A) -> gens ker transpose gens ker transpose A;
 
 partialCharacter = (I) -> (
-     vs := {};
-     cl := {};
+     vs := {}; -- This will hold the lattice generators
+     cl := {}; -- This will hold the coefficients
+     R := ring I;
+          
+     -- The input should be a cellular ideal 
+     cellvars := cellVars(I);
+     
+     -- We intersect I with the ring k[E]
+     -- In many cases this will be zero
+     CoeffR := coefficientRing R;
+     S := CoeffR[cellvars];
+     II := kernel map (R/I,S);
+
      -- The partial Character of the zero ideal is the 
      -- zero lattice.       
-     if ( I == 0 ) then (
-	  for i in gens ring I do vs = vs | { 0 };
+     if ( II == 0 ) then (
+	  for i in gens ring II do vs = vs | { 0 };
 	  cl = {1};
-	  return (transpose matrix {vs}, cl);
+	  return (cellvars, transpose matrix {vs}, cl);
 	  );
-     ts := entries gens I;
+     
+     -- So, II is not zero:
+     -- Let ts be the list of generators
+     ts := entries gens II;
+     -- for each term, find the exponent vector
      for t in ts#0 do (
-	  if t != 0 then (
-	       vs = vs | {((exponents (t))#0 - (exponents (t))#1)};
-     	       coeffs := entries ((coefficients(t))#1);
-	       -- I hope that coefficients returns the leading coeff as 0th
-	       cl = cl | { -coeffs#1#0 / coeffs#0#0}
-	       );
+-- 	  if t != 0 then ( -- Term is nonzero already
+          vs = vs | {((exponents (t))#0 - (exponents (t))#1)};
+          coeffs := entries ((coefficients(t))#1);
+          -- I hope that coefficients returns the leading coeff as 0th
+          cl = cl | { -coeffs#1#0 / coeffs#0#0}
+--          );
 	  );
 --    print coeffs;
 --    print cl;
-     return (transpose matrix vs , cl);
+     
+     -- back to the old ring
+     use R;
+     return (cellvars, transpose matrix vs , cl);
      )
 
 cellVars = (I) -> (
@@ -114,6 +142,7 @@ nonCellstdm = (I) -> (
      )
   
 satpchar = ( A , c) -> (
+     
      -- print A;
      -- print c;
      
