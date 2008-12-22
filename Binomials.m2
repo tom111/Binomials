@@ -80,6 +80,8 @@ Lsat = (A) -> gens ker transpose gens ker transpose A;
 
 partialCharacter = (I) -> (
      vs := {}; -- This will hold the lattice generators
+     vs2 := {};
+     vsmat := matrix "0"; -- Holds the matrix whose image is L 
      cl := {}; -- This will hold the coefficients
      R := ring I;
           
@@ -104,13 +106,30 @@ partialCharacter = (I) -> (
      -- Let ts be the list of generators
      ts := entries gens II;
      -- for each term, find the exponent vector
+     oldmat := matrix "0";
+     oldvs := {};
      for t in ts#0 do (
--- 	  if t != 0 then ( -- Term is nonzero already
-          vs = vs | {((exponents (t))#0 - (exponents (t))#1)};
-          coeffs := entries ((coefficients(t))#1);
-          -- I hope that coefficients returns the leading coeff as 0th
-          cl = cl | { -coeffs#1#0 / coeffs#0#0}
---          );
+	  -- Want to check if we already have this generator included
+	  
+	  -- Save the old values
+	  oldmat = vsmat;
+	  oldvs = vs;
+	  	  
+	  -- compute new ones
+	  vs = vs | {((exponents (t))#0 - (exponents (t))#1)};
+	  vsmat = transpose matrix vs;
+	  
+	  -- Do we need the new generator ?
+	  if (image oldmat == image vsmat) then (
+	       -- Undo changes:
+	       vsmat = oldmat;
+	       vs = oldvs;
+	       )
+	  else (
+	       -- So we have a new generator : update coefficient list
+	       coeffs := entries ((coefficients(t))#1);
+               cl = cl | { -coeffs#1#0 / coeffs#0#0}
+	       );
 	  );
 --    print coeffs;
 --    print cl;
@@ -140,85 +159,75 @@ nonCellstdm = (I) -> (
      use R;
      return slist;
      )
+
+IdealfromCharacter = (R,A,c) -> (
+     -- Constructs the Ideal I_+(c) in R
+     -- R is a ring in which the ideal is returned
+     -- The columns of A should contain exponent vectors of generators
+     -- The vector c contains the corresponding coefficients which must lie
+     --      in the coefficient ring of R !!!
+     
+     use R;
+     
+     -- We coerce the coefficients to R:
+     c = apply (c, (a) -> (sub (a,R)));
+      
+     var := gens R;
+     cols := entries transpose A;
+     posmon := 1;
+     negmon := 1;
+     binomials := {};
+     for i in (0..(numcols A)-1) do (
+	  for j in (0..(numrows A)-1) do (
+	       if cols#i#j > 0 then (
+		    posmon = posmon * var#j^(cols#i#j)
+		    )
+	       else (
+		    negmon = negmon * (var#j)^(-cols#i#j)
+		    );
+	       );
+     	  binomials = binomials | {posmon - c#i * negmon};
+	  posmon = 1;
+	  negmon = 1;
+	  );
+     
+     return saturate(ideal(binomials));
+     )
+	  
+          
   
 satpchar = ( A , c) -> (
-     
      -- print A;
      -- print c;
+
+     -- If the lattice is saturated, the character is saturated     
+     if (image Lsat A == image A) then (
+	  return (A,c);
+	  );
      
-     sageprogfile = temporaryFileName() | ".sage";
-     sageoutfile = temporaryFileName();
+     S := Lsat(A);
+     K = A // S;
+     
+     sageprogfile := temporaryFileName() | ".sage";
+     sageoutfile := temporaryFileName();
      -- We paste the whole program in:
-     F = openOut(sageprogfile);
+     F := openOut(sageprogfile);
      
--- Oh my god, this is impossible to debug :(
-F << "def rectsolve (A,S): " << endl;
-F << "    cl = A.columns()" << endl;
-F << "    krows = len(S.columns())" << endl;
-F << "    kcols = len(A.columns())" << endl;
-F << "    varnames = []" << endl;
-F << "    for i in range(krows) :" << endl;
-F << "        for j in range(kcols) :" << endl;
-F << "            # print [i,j]" << endl;
-F << "            varnames = varnames + ['k'+str(i)+str(j)]" << endl;
-F << "    for v in varnames:" << endl;
-F << "        var(v)" << endl;
-F << "    i = 0" << endl;
-F << "    vs = []" << endl;
-F << "    K = matrix(krows,kcols)" << endl;
-F << "    for a in cl:" << endl;
-F << "        vs = []" << endl;
-F << "        for j in range(krows):" << endl;
-F << "            vs = vs + ['k'+str(j)+str(i)]" << endl;
-F << "        vs2 = [eval(v) for v in vs]" << endl;
-F << "        # print vs" << endl;
-F << "        eqns = S * vector(vs2) - a" << endl;
-F << "        s = solve ( list(eqns) , tuple(vs2), solution_dict=True)" << endl;
-F << "        for j in range (krows):" << endl;
-F << "            K[j,i] = (s[0])['k'+str(j)+str(i)]" << endl;
-F << "        i = i +1" << endl;
-F << "    return K;" << endl;
-F << "def Lsat(A):" << endl;
-F << "    ker = kernel(A)" << endl;
-F << "    kerb = matrix(ZZ,transpose(ker.basis_matrix()))" << endl;
-F << "    return transpose(kernel(kerb).basis_matrix())" << endl;
-F << "def charsat (A,l) :" << endl;
-F << "    S = Lsat(A)" << endl;
-F << "    K = rectsolve(A,S)" << endl;
-F << "    varnames = []" << endl;
-F << "    rg = len(S.columns())" << endl;
-F << "    for i in range(rg) :" << endl;
-F << "        varnames = varnames + ['m'+str(i)]" << endl;
-F << "    for v in varnames:" << endl;
-F << "        # print v" << endl;
-F << "        var (v)" << endl;
-F << "    eqns = []" << endl;
-F << "    kr = len(K.rows())" << endl;
-F << "    kc = len(K.columns());" << endl;
-F << "    for col in range(kc):" << endl;
-F << "        monom = 1" << endl;
-F << "        for row in range(kr):" << endl;
-F << "            monom *= eval('m'+str(row))^K[row,col]" << endl;
-F << "            # print eval('m'+str(row))^K[row,col]" << endl;
-F << "        eqns = eqns + [ monom - l[col] ]" << endl;
-F << "    satlist = [] # The list of saturations" << endl;
-F << "    vs = [eval(v) for v in varnames]" << endl;
-F << "    if (len (eqns) > 1) :" << endl;
-F << "        s = solve (eqns , tuple(vs), solution_dict=True)" << endl;
-F << "    else :" << endl;
-F << "        spre = solve (eqns , tuple(vs))" << endl;
-F << "        # print spre" << endl;
-F << "        s= [dict([(eq.left(),eq.right())]) for eq in spre ]" << endl;
-F << "    m = [] " << endl;
-F << "    for sol in s :" << endl;
-F << "        n = [] " << endl;
-F << "        for v in varnames:" << endl;
-F << "            n = n + [sol[v]]" << endl;
-F << "        m = m + [n]" << endl;
-F << "    return (S,m)" << endl;
-
+F << "S = matrix(ZZ,[";
+-- Here goes the saturated lattice defining matrix
+ent := entries S;
+for r in (0..(#ent -1)) do (
+     F << "[";
+     for c in (0..(#(ent#r)-1)) do (
+	  F << ent#r#c;
+	  if (c < (numcols S) -1 ) then F << ",";
+	  );
+     F << "]";
+     if (r < (numrows S) -1) then F << ",";
+     );
+F << "])" << endl;
+     
 F << "A = matrix(ZZ,[";
-
 -- Here goes the lattice defining matrix
 ent = entries A;
 for r in (0..(#ent -1)) do (
@@ -232,34 +241,65 @@ for r in (0..(#ent -1)) do (
      );
 F << "])" << endl;
 
+F << "K = matrix(ZZ,[";
+-- Here goes the coefficient matrix
+ent = entries K;
+for r in (0..(#ent -1)) do (
+     F << "[";
+     for c in (0..(#(ent#r)-1)) do (
+	  F << ent#r#c;
+	  if (c < (numcols K) -1 ) then F << ",";
+	  );
+     F << "]";
+     if (r < (numrows K) -1) then F << ",";
+     );
+F << "])" << endl;
+
 -- Here goes the character
-F << "c = [";
+F << "l = [";
 for i in (0..((#c)-1)) do (
      F << c#i ;
      if (i< (#c -1)) then F << ",";
      );
 F << "]" << endl;
 
+-- The main program
+F << "varnames = []" << endl;
+F << "rg = len(S.columns())" << endl;
+F << "for i in range(rg) :" << endl;
+F << "    varnames = varnames + ['m'+str(i)]" << endl;
+F << "for v in varnames:" << endl;
+F << "    # print v" << endl;
+F << "    var (v)" << endl;
+F << "eqns = []" << endl;
+F << "kr = len(K.rows())" << endl;
+F << "kc = len(K.columns());" << endl;
+F << "for col in range(kc):" << endl;
+F << "    monom = 1" << endl;
+F << "    for row in range(kr):" << endl;
+F << "        monom *= eval('m'+str(row))^K[row,col]" << endl;
+F << "        # print eval('m'+str(row))^K[row,col]" << endl;
+F << "    eqns = eqns + [ monom - l[col] ]" << endl;
+F << "satlist = [] # The list of saturations" << endl;
+F << "vs = [eval(v) for v in varnames]" << endl;
+F << "if (len (eqns) > 1) :" << endl;
+F << "    s = solve (eqns , tuple(vs), solution_dict=True)" << endl;
+F << "else :" << endl;
+F << "    spre = solve (eqns , tuple(vs))" << endl;
+F << "    # print spre" << endl;
+F << "    s= [dict([(eq.left(),eq.right())]) for eq in spre ]" << endl;
+F << "m = [] " << endl;
+F << "for sol in s :" << endl;
+F << "    n = [] " << endl;
+F << "    for v in varnames:" << endl;
+F << "        n = n + [sol[v]]" << endl;
+F << "    m = m + [n]" << endl;
+
 -- Here we do output
-F << "res = charsat(A,c)" << endl;
-F << "M2mat = 'S = matrix {';" << endl;
-F << "nr = len (res[0].rows())" << endl;
-F << "nc = len (res[0].columns())" << endl;
-F << "for r in range(nr):" << endl;
-F << "    M2mat = M2mat + '{'" << endl;
-F << "    for c in range (nc):" << endl;
-F << "        M2mat = M2mat+ str((res[0])[r][c]);" << endl;
-F << "        if (c < (nc-1)): " << endl;
-F << "            M2mat = M2mat + ',';" << endl;
-F << "    M2mat = M2mat + '}';" << endl;
-F << "    if (r < nr-1) :" << endl;
-F << "        M2mat = M2mat + ',';" << endl;
-F << "M2mat = M2mat + '}';" << endl;
-F << "print M2mat;" << endl;
-F << "charstr = str(res[1]).replace('I','ii');" << endl;
+F << "charstr = str(m).replace('I','ii');" << endl;
 F << "charstr = charstr.replace('[','{');" << endl;
 F << "charstr = charstr.replace(']','}');" << endl;
-F << "print 'c = ' + charstr" << endl;
+F << "print 'c := ' + charstr" << endl;
 
      close (F);
      
@@ -273,8 +313,7 @@ F << "print 'c = ' + charstr" << endl;
      
      outlines = lines get sageoutfile;
      
-     S := value outlines#0;
-     cl := value outlines#1;
+     cl := value outlines#0;
      return (S,cl)
      )
 
@@ -290,3 +329,7 @@ BinassPrim = (I) -> (
 	  )
      )   
      
+     
+cd = binomialCD(J)
+II = cd#0;
+(A,c) = ((partialCharacter(II))#1 , (partialCharacter(II))#2)
