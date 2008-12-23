@@ -1,19 +1,22 @@
-R = QQ[x1,x2,x3,x4,x5]
-I = ideal( x1*x4^2 - x2*x5^2,  x1^3*x3^3 - x4^2*x2^4, x2*x4^8 - x3^3*x5^6)
--- Here is a cellular decomp  of I:
--- This is also a prime decomposition
-J1 = ideal({x1^2 , x1*x4^2 - x2*x5^2, x2^5, x5^6, x2^4 * x4^2,x4^8})
-J2 = ideal({x1*x4^2 - x2*x5^2, x1^3*x3^3 - x4^2*x2^4, x2^3*x4^4 - x1^2*x3^3*x5^2, x2^2*x4^6 - x1*x3^3*x5^4, x2*x4^8 - x3^3 *x5^6 })
-
-
-Q = QQ[x,y,z]
-J = ideal(x^4*y^2-z^6,x^3*y^2-z^5,x^2-y*z)
+-- R = QQ[x1,x2,x3,x4,x5]
+-- I = ideal( x1*x4^2 - x2*x5^2,  x1^3*x3^3 - x4^2*x2^4, x2*x4^8 - x3^3*x5^6)
+-- -- Here is a cellular decomp  of I:
+-- -- This is also a prime decomposition
+-- J1 = ideal({x1^2 , x1*x4^2 - x2*x5^2, x2^5, x5^6, x2^4 * x4^2,x4^8})
+-- J2 = ideal({x1*x4^2 - x2*x5^2, x1^3*x3^3 - x4^2*x2^4, x2^3*x4^4 - x1^2*x3^3*x5^2, x2^2*x4^6 - x1*x3^3*x5^4, x2*x4^8 - x3^3 *x5^6 })
+-- 
+-- 
+-- Q = QQ[x,y,z]
+-- J = ideal(x^4*y^2-z^6,x^3*y^2-z^5,x^2-y*z)
 -- The cellular decomposition is also a primary decomposition.
 -- No lattice needs to be saturated, only roots of monomials
 
-Q = QQ[x,y,z,w]
-J = ideal(x^4*w^2-z^6,x^3*y^2-z^5,x^7-y^3*w^2,x^2*x^3-z^7)
-
+-- R = QQ[a,b,c]
+-- I = ideal(a-b^5,a^2-c,b^2-c^3,c^2-a*b)
+ 
+-- Q = QQ[x,y,z,w]
+-- J = ideal(x^4*w^2-z^6,x^3*y^2-z^5,x^7-y^3*w^2,x^2*x^3-z^7)
+-- 
 axisSaturate = (I,i) -> (
 -- By Ignacio Ojeda and Mike Stillman
 -- For computing saturations w.r.t. a single variable:
@@ -105,6 +108,7 @@ partialCharacter = (I) -> (
      -- So, II is not zero:
      -- Let ts be the list of generators
      ts := entries gens II;
+     -- print ts;
      -- for each term, find the exponent vector
      oldmat := matrix "0";
      oldvs := {};
@@ -116,7 +120,10 @@ partialCharacter = (I) -> (
 	  oldvs = vs;
 	  	  
 	  -- compute new ones
+	  -- print t;
+	  -- print  {((exponents (t))#0 - (exponents (t))#1)};
 	  vs = vs | {((exponents (t))#0 - (exponents (t))#1)};
+	  -- print vs;
 	  vsmat = transpose matrix vs;
 	  
 	  -- Do we need the new generator ?
@@ -190,11 +197,18 @@ IdealfromCharacter = (R,A,c) -> (
 	  posmon = 1;
 	  negmon = 1;
 	  );
-     
-     return saturate(ideal(binomials));
+     print ideal (binomials);
+     -- If the coefficients are all "1". Can we use 4ti2 here?
+     return saturate(ideal(binomials), product(var));
      )
-	  
-          
+
+-- How to do overloading ?	  
+-- IdealfromCharacter = (R,A) -> (
+--     c := {};
+--     for i in (1..numcols A) do c = c | {1};
+--     return IdealfromCharacter(R,A,c);
+--     )
+         
   
 satpchar = ( A , c) -> (
      -- print A;
@@ -330,6 +344,6 @@ BinassPrim = (I) -> (
      )   
      
      
-cd = binomialCD(J)
-II = cd#0;
-(A,c) = ((partialCharacter(II))#1 , (partialCharacter(II))#2)
+-- cd = binomialCD(J)
+-- II = cd#0;
+-- (A,c) = ((partialCharacter(II))#1 , (partialCharacter(II))#2)
