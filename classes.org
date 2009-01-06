@@ -1,3 +1,16 @@
+* Do the saturation in a good way
+We should adjoin the necessary roots of unity
+* Test the functions properly
+
+* Ideas for Bernd
+** Using Cellular decompositions
+The problem in the Mail can be solved by seing that his ideal goes to
+zero in the subring with only the cell variables. We should also Mail
+this to Ezra.
+** Conjecture 5.3
+Can we determine the cellular decomposition by hand ?
+
+--- Old Sage Stuff ---
 * Classes
 ** Class :Integer Lattice
    Representation of an Integer Lattice as a matrix of vectors
