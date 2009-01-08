@@ -81,7 +81,6 @@ binomialCD = (I) -> (
 -- the matrix A, whose image is the lattice. 
 Lsat = (A) -> syz transpose syz transpose A;
 
-
 -- Ideal containment done "by hand".
 contained = (I,J) -> (
      -- Returns true if I is contained in J
@@ -169,21 +168,16 @@ cellVars = (I) -> (
 
 nonCellstdm = (I) -> (
      R := ring I;
-     cv := set(cellVars(I)); 
+     cv := set cellVars I; 
      -- Here go the non-cell variables
-     ncv := toList(set (gens R) - cv);
+     ncv := toList (set gens R - cv);
      -- We map I to the subring: k[ncv]
      CoeffR := coefficientRing R;
      S := CoeffR[ncv];
      J := kernel map (R/I,S);
           
--- old code:     
---     Q := QQ[ncv];
---     projnE := map (Q,R);
---     J := projnE I;
-
      Q = S/J;
-     slist = flatten entries flatten basis (Q);
+     slist = flatten entries flatten basis Q;
      use R;
      return slist;
      )
@@ -193,21 +187,21 @@ IdealfromCharacter = (R,A,c) -> (
      -- R is a ring in which the ideal is returned
      -- The columns of A should contain exponent vectors of generators
      -- The vector c contains the corresponding coefficients which must lie
-     --      in the coefficient ring of R !!!
+     -- in the coefficient ring of R !!!
      
      use R;
-     if A == 0 then return ideal(0_R);
+     if A == 0 then return ideal 0_R;
      
      -- We coerce the coefficients to R:
-     c = apply (c, (a) -> (sub (a,R)));
+     c = apply (c, a -> (sub (a,R)));
       
      var := gens R;
      cols := entries transpose A;
      posmon := 1;
      negmon := 1;
      binomials := {};
-     for i in (0..(numcols A)-1) do (
-	  for j in (0..(numrows A)-1) do (
+     for i in 0..numcols A-1 do (
+	  for j in 0..numrows A-1 do (
 	       if cols#i#j > 0 then (
 		    posmon = posmon * var#j^(cols#i#j)
 		    )
@@ -224,7 +218,7 @@ IdealfromCharacter = (R,A,c) -> (
      -- TODO: This saturation will typically fail if 
      -- we have complex coefficients :(
      
-     return saturate(ideal(binomials), product(var));
+     return saturate (ideal binomials, product var);
      )
 
 -- How to do overloading ?	  

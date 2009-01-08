@@ -22,12 +22,12 @@
 
 newPackage(
 	"SingSolve",
-    	Version => "0.1", 
-    	Date => "January 7 , 2009",
+    	Version => "0.1.1", 
+    	Date => "January 8 , 2009",
     	Authors => {
 	     {Name => "Thomas Kahle", Email => "kahle@mis.mpg.de", HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
     	Headline => "Interface to Singulars solve facility",
-	Configuration => { "path" => "singular"	},
+	Configuration => { "path" => "Singular"	},
     	DebuggingMode => true
     	)
 
@@ -48,20 +48,14 @@ singsolve Ideal := List => I -> (
      -- This function numerically solves a 0-dim'l ideal using singular
      if dim I != 0 then error "Expected 0-dim'l ideal !";
      
+     print Configuration;
      -- We coerce the ideal to singular
-     singprogfile := temporaryFileName() | ".sing";
-     singoutfile := temporaryFileName();
-     -- We paste the whole program in:
-     F := openOut(singprogfile);
+     F := openInOut ("!" | path'singular);
      
-     varlist = gens ring I;
+     varlist := gens ring I;
      -- We create the ring:
      F << "ring R = 0,(";
-     scan (varlist, v -> (
-	       F << v;
-	       if (v != last varlist) then F <<",";
-	       )
-	  );
+     F << concatenate (between_"," varlist/toString);
      F << "),dp;" << endl;
      F << "ideal I = ";
 
@@ -77,23 +71,11 @@ singsolve Ideal := List => I -> (
      F << endl;
      F << "quit;";
      -- Done with programming
-     close(F);
+     F << closeOut; 
      
-     -- Calling Singular:
-     execstr = "Singular "|singprogfile | " > " | singoutfile ;
-     print ("Running " |execstr);
-     ret := run (execstr);
-     if (ret != 0) then (
-	  error "Singular did not run correctly, sorry :(";
-	  );
-     
-     outlines := lines get singoutfile;
-     
-     -- Clean up:
-     removeFile singoutfile;
-     removeFile singprogfile;
-          
-     -- print outlines;
+
+     print "Running Singular";
+     outlines := lines get F;
      
      -- Second to last line contains the result
      -- Singular uses "i" as the complex unit.
@@ -110,4 +92,4 @@ singsolve Ideal := List => I -> (
      
      )
 
-endPackage "SingSolve";
+endPackage "SingSolve"
