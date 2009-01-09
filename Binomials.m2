@@ -17,6 +17,8 @@
 -- Q = QQ[x,y,z,w]
 -- J = ideal(x^4*w^2-z^6,x^3*y^2-z^5,x^7-y^3*w^2,x^2*x^3-z^7)
 -- 
+
+
 axisSaturate = (I,i) -> (
 -- By Ignacio Ojeda and Mike Stillman
 -- For computing saturations w.r.t. a single variable:
@@ -141,7 +143,7 @@ partialCharacter = (I) -> (
 	  vsmat = transpose matrix vs;
 	  
 	  -- Do we need the new generator ?
-	  if (image oldmat == image vsmat) then (
+	  if image oldmat == image vsmat then (
 	       -- Undo changes:
 	       vsmat = oldmat;
 	       vs = oldvs;
@@ -156,6 +158,7 @@ partialCharacter = (I) -> (
 --    print cl;
      
      -- back to the old ring
+     -- is this needed ?
      use R;
      return (cellvars, transpose matrix vs , cl);
      )
@@ -237,7 +240,7 @@ satpchar = (va, A, c) -> (
      -- saturation as the saturation has a list as third entry.
      
      -- If the lattice is saturated, the character is saturated     
-     if (image Lsat A == image A) then (
+     if image Lsat A == image A then (
 	  return (va, A, {c});
 	  );
      
@@ -249,7 +252,7 @@ satpchar = (va, A, c) -> (
      -- print K;
      -- Now we find the (binomal) equations for the saturated character:
      numvars := numrows K;
-     varlist := for i in (0..numvars-1) list value ("m"|i);
+     varlist := for i in 0..numvars-1 list value ("m"|i);
      Q := QQ[varlist / value];
      eqs := IdealfromCharacter(Q,K,c);
      
@@ -260,7 +263,7 @@ satpchar = (va, A, c) -> (
      eqs = saturate(eqs, product gens ring eqs);
      
      -- And solve using singsolve:
-     result = singsolve (eqs);
+     result = singsolve eqs;
      return (va, S, result);
      )
 
