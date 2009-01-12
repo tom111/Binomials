@@ -40,6 +40,7 @@ export {binomialCD,
      BinomialAssociatedPrimes,
      BinomialPrimaryDecomposition,
      testPrime,
+     BinomialRadical,
      doExample,
      nonCellstdm,
      maxNonCellstdm
@@ -348,7 +349,6 @@ saturatePChar = (va, A, c) -> (
      eqs = saturate(eqs, product gens ring eqs);
      if eqso == eqs then print "Saturation was not needed !";
      
-     
      -- And solve using singsolve:
      result = singsolve eqs;
      return (va, S, result);
@@ -363,6 +363,23 @@ satIdeals = (va, A, d) -> (
 	       -- print {Q, satpc#1, c};
 	       idealFromCharacter(Q,satpc#1,c)));
      return satideals;
+     )
+
+BinomialRadical = I -> (
+     R := ring I;
+     -- Get the partial character of I
+     pc := partialCharacter(I);
+     noncellvars := toList(set (gens R) - pc#0);
+     
+     M := sub (ideal (noncellvars),R);
+     
+     -- We intersect I with the ring k[E]
+     -- In many cases this will be zero
+     CoeffR := coefficientRing R;
+     S := CoeffR[pc#0];
+     -- The the radical missing the monomials:
+     prerad := kernel map (R/I,S);
+     return sub (prerad ,R) + M;
      )
 
 testPrimary = I ->(
@@ -411,12 +428,13 @@ testPrimary = I ->(
 	  q2 := kernel map (R/q,S);
      	  -- I_+(sigma) was called prerad above:
 	  if not isSubset(q2, prerad) then (
-	       print "not primary!";
+	       print ( "not primary! A monomial is: " | toString m);
 	       -- We should output two associated primes here ...
+	       return false;
 	       );
 	  );
      print "I is primary";
-     return I;	  
+     return true;	  
      )
 
 testPrime = I -> (
@@ -437,8 +455,6 @@ testPrime = I -> (
      return true;
      )
      
-    
-
 BinomialAssociatedPrimes = (I) -> (
      -- Computes the associated primes of cellular binomial ideal
      -- Warning: This function is untested !
