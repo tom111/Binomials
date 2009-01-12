@@ -1,3 +1,53 @@
+--  Binomials.m2
+--
+--  Copyright (C) 2009 Thomas Kahle <kahle@mis.mpg.de>
+--
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--
+--  This program is free software; you can redistribute it and/or modify
+--  it under the terms of the GNU General Public License as published by
+--  the Free Software Foundation; either version 2 of the License, or (at
+--  your option) any later version.
+--
+--  This program is distributed in the hope that it will be useful, but
+--  WITHOUT ANY WARRANTY; without even the implied warranty of
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+--  General Public License for more details.
+--
+--  You should have received a copy of the GNU General Public License along
+--  with this program; if not, write to the Free Software Foundation, Inc.,
+--  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+--
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+newPackage(
+	"Binomials",
+    	Version => "0.1", 
+    	Date => "January 2009",
+    	Authors => {
+	     {Name => "Thomas Kahle", Email => "kahle@mis.mpg.de", HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
+    	Headline => "Spezialised routines for binomial Ideals",
+	Configuration => { "doNumerics" => true	},
+    	DebuggingMode => true
+    	)
+   
+export {binomialCD,
+     partialCharacter,
+     cellVars,
+     idealFromCharacter,
+     saturatePChar,
+     testPrimary,
+     BinomialAssociatedPrimes,
+     BinomialPrimaryDecomposition,
+     doExample,
+     nonCellstdm,
+     maxNonCellstdm
+     }
+
+needsPackage "SingSolve";
+
+-- Here are some example
+
 -- R = QQ[x1,x2,x3,x4,x5]
 -- I = ideal( x1*x4^2 - x2*x5^2,  x1^3*x3^3 - x4^2*x2^4, x2*x4^8 - x3^3*x5^6)
 -- -- Here is a cellular decomp  of I:
@@ -16,8 +66,21 @@
 
 -- Q = QQ[x,y,z,w]
 -- J = ideal(x^4*w^2-z^6,x^3*y^2-z^5,x^7-y^3*w^2,x^2*x^3-z^7)
--- 
+-- cd = binomialCD(J); I = cd#0;
+-- pc = partialCharacter(I)
+-- satpchar(Q,pc#1,pc#2)
 
+-- load "/home/tom/BPDcode/SingSolve.m2"
+
+doExample = () -> (
+  Q = QQ[x,y,z,w];
+  J = ideal(x^4*w^2-z^6,x^3*y^2-z^5,x^7-y^3*w^2,x^2*x^3-z^7);
+  cd = binomialCD(J); 
+  I = cd#0;
+  pc = partialCharacter(I);
+  saturatePChar(Q,pc#1,pc#2);
+  return pc;
+  )
 
 axisSaturate = (I,i) -> (
 -- By Ignacio Ojeda and Mike Stillman
@@ -83,20 +146,6 @@ binomialCD = (I) -> (
 -- the matrix A, whose image is the lattice. 
 Lsat = (A) -> syz transpose syz transpose A;
 
--- Ideal containment done "by hand".
-contained = (I,J) -> (
-     -- Returns true if I is contained in J
-     jbase := gb J;
-     ibase := flatten entries gens gb I;
-     for g in ibase do (
-	  if g % jbase != 0 then (
-	       return false;
-	       );
-	  );
-     return true;
-     )
-     
-
 partialCharacter = (I) -> (
      vs := {}; -- This will hold the lattice generators
      vs2 := {};
@@ -106,6 +155,12 @@ partialCharacter = (I) -> (
           
      -- The input should be a cellular ideal 
      cellvars := cellVars(I);
+     
+     -- If there are no cellular variables, 
+     -- the ideal is monomial and the partial character is zero:
+     if cellvars == {} then (
+	  return ({}, matrix "0", {1});
+	  );
      
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
@@ -163,13 +218,13 @@ partialCharacter = (I) -> (
      return (cellvars, transpose matrix vs , cl);
      )
 
-cellVars = (I) -> (
+cellVars = I -> (
      cv = {};
      for i in gens ring I do if saturate (I,i) != substitute(ideal(1), ring I) then cv=cv|{i};
      return cv;
      )
 
-nonCellstdm = (I) -> (
+nonCellstdm = I -> (
      R := ring I;
      cv := set cellVars I; 
      -- Here go the non-cell variables
@@ -185,7 +240,27 @@ nonCellstdm = (I) -> (
      return slist;
      )
 
-IdealfromCharacter = (R,A,c) -> (
+maxNonCellstdm = I -> (
+     nm := nonCellstdm I;
+     -- Extract the maximal ones
+     -- Take the maximal element
+     print nm;
+     result := {};
+     maxel := 0;
+     while nm != {} do (
+     	  maxel = max nm;
+     
+          -- Add maxel to the result
+      	  result = result | {maxel};
+
+          -- Delete everyone who is dividing maxel     
+     	  nm = for m in nm list (if maxel // m != 0 then continue; m);
+     );
+
+     return result;
+     )
+
+idealFromCharacter = (R,A,c) -> (
      -- Constructs the Ideal I_+(c) in R
      -- R is a ring in which the ideal is returned
      -- The columns of A should contain exponent vectors of generators
@@ -221,6 +296,13 @@ IdealfromCharacter = (R,A,c) -> (
      -- TODO: This saturation will typically fail if 
      -- we have complex coefficients :(
      
+     -- At least if A is the unit matrix we are done.
+     -- Why is it so complicated to test for identity matrix ?
+     idmat := matrix mutableIdentity(ZZ,#var);
+     if A == idmat then return ideal binomials;
+     
+     -- Otherwise a saturation may be needed.  
+     print "Warning ! This step possibly does not terminate !";
      return saturate (ideal binomials, product var);
      )
 
@@ -231,7 +313,7 @@ IdealfromCharacter = (R,A,c) -> (
 --     return IdealfromCharacter(R,A,c);
 --     )
 
-satpchar = (va, A, c) -> (
+saturatePChar = (va, A, c) -> (
      -- This function saturates a partial character, 
      -- numerically if needed.
      
@@ -254,13 +336,17 @@ satpchar = (va, A, c) -> (
      numvars := numrows K;
      varlist := for i in 0..numvars-1 list value ("m"|i);
      Q := QQ[varlist / value];
-     eqs := IdealfromCharacter(Q,K,c);
+     eqs := idealFromCharacter(Q,K,c);
      
      -- print eqs;
      -- print ring eqs;
      
      -- We carefully(tm) clear denominators:
+     -- Is this saturation needed ??
+     eqso := eqs;
      eqs = saturate(eqs, product gens ring eqs);
+     if eqso == eqs then print "Saturation was not needed !";
+     
      
      -- And solve using singsolve:
      result = singsolve eqs;
@@ -270,15 +356,15 @@ satpchar = (va, A, c) -> (
 satIdeals = (va, A, d) -> (
      -- computes all the ideals belonging to saturations of 
      -- a given partial character.
-     satpc = satpchar(va, A, d);
+     satpc = saturatePChar(va, A, d);
      Q := CC[satpc#0];
      satideals = apply (satpc#2 , (c) -> (
 	       -- print {Q, satpc#1, c};
-	       IdealfromCharacter(Q,satpc#1,c)));
+	       idealFromCharacter(Q,satpc#1,c)));
      return satideals;
      )
 
-testPrimary = (I) ->(
+testPrimary = I ->(
      -- Implements Alg. 9.4 in [ES96]
      -- I must be a cellular ideal
      -- Returns the radical of I and whether I is primary
@@ -289,8 +375,9 @@ testPrimary = (I) ->(
      -- Get the partial character of I
      pc := partialCharacter(I);
      noncellvars := toList(set (gens R) - pc#0);
+     
      M := sub (ideal (noncellvars),R);
-     -- print M;
+     print ("The monomial ideal M: " | toString M);
      
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
@@ -313,28 +400,7 @@ testPrimary = (I) ->(
 	  );
      
      -- The list of maximally standard monomials:
-     mono1 := monomialIdeal (I); -- Initial ideal of I
-     mono1 = quotient (mono1, M); -- Quotient with respect to non-cell-variables
-     mono2 := monomialIdeal (I); -- This will hold in(I) + (x_i : i \in cellvars)
-     print mono2;
-     for var in pc#0 do (
-	  print var;
-	  print monomialIdeal(var);
-	  mono2 = mono2 + monomialIdeal(var);
-	  );
-     
-     -- We want the list of monomials that are in mono1, but not mono2.
-     -- We take bases of the quotient rings and subtract there:
-     l2 := flatten entries basis (ring mono2 / mono2);
---     print l2;
-     l1 := flatten entries basis (ring mono1 / mono1);
---     print l1;
-
-     -- Before doing this, we have to map everything back 
-     -- to the original ring to make the comparison work!
-     l1 = l1 / ((p) -> sub (p,R));
-     l2 = l2 / ((p) -> sub (p,R));
-     maxstdmon := toList (set(l2) - set(l1));
+     maxstdmon := maxNonCellstdm I / (i -> sub (i,R));
      print "The maximally standard monomials are:";
      print maxstdmon;
      
@@ -343,7 +409,7 @@ testPrimary = (I) ->(
 	  -- Mapping down to cellvars:
 	  q2 := kernel map (R/q,S);
      	  -- I_+(sigma) was called prerad above:
-	  if not contained (q2, prerad) then (
+	  if not isSubset(q2, prerad) then (
 	       print "not primary!";
 	       -- We should output two associated primes here ...
 	       );
@@ -352,7 +418,7 @@ testPrimary = (I) ->(
      return I;	  
      )
 
-BinCellAssPrim = (I) -> (
+BinomialAssociatedPrimes = (I) -> (
      -- Computes the associated primes of cellular binomial ideal
      -- Warning: This function is untested !
      
@@ -364,7 +430,7 @@ BinCellAssPrim = (I) -> (
      -- print "Noncellvars"; print ncv;
      ml := nonCellstdm(I); -- List of std monomials in ncv
      -- Coercing to R:
-     ml = ml / ((m) -> sub (m,R) );
+     ml = ml / ( m -> sub (m,R) );
      -- print ml;
      -- The ring k[E]:
      CoeffR := coefficientRing R;
@@ -377,16 +443,18 @@ BinCellAssPrim = (I) -> (
      Im := ideal;
      pC := {}; sat = {};
      for m in ml do (
-	  print m;
+	  -- print m;
 	  Im = kernel map (R/(I:m),S);
 	  pC = partialCharacter(Im);
 	  sat = satIdeals(pC);
 	  -- Coercing back to R:
-	  sat = sat / ((I) -> sub (I,CR));
-	  sat = sat / ((I) -> I + M);
-	  primes = primes | sat;
+	  sat = sat / (I -> sub (I,CR));
+	  sat = sat / (I -> I + M);
+	  -- adding and removing duplicates
+	  if isSubset ({sat}, primes) then continue;
+	  primes = primes | toList set sat;
 	  );
-     return primes;
+     return toList set primes;
      )   
      
 -- cd = binomialCD(J)
@@ -520,3 +588,75 @@ BinCellAssPrim = (I) -> (
 --      return (S,cl)
 --      )
 
+
+beginDocumentation()
+needsPackage "SimpleDoc";
+
+doc ///
+     Key 
+          FourTiTwo
+     Headline
+     	  Interface for 4ti2
+     Description
+          Text
+	       Interfaces most of the functionality of the software {\tt 4ti2} available at  {\tt http://www.4ti2.de/}.
+	       (The user needs to have 4ti2 installed on his/her machine.)
+	        
+	       A {\tt d\times n} integral matrix {\tt A} (with nonnegative entries) specifies a map from a polynomial 
+	       ring in d variables to a polynomial ring with n variables by specifying exponents of the variables indexing
+	       its columns. For example, if {\tt A} is a matrix <br>
+	       3 2 1 0<br>
+	       0 1 2 3<br>
+	       the map from {\tt k[s,t]} to {\tt k[a,b,c,d]} is given by <br> 
+	       {\tt (s,t)-> (s^3, s^2t,st^2,t^3)}. <br>
+	       
+	       The toric ideal I_A is the kernel of this map. 
+	       It is minimally generated by the 2-minors of the matrix <br>
+	       x y z<br>
+	       y z w<br>
+	       Given the matrix {\tt A}, one can compute its lattice basis ideal specified by the integral basis
+	       of the lattice {\tt A}, the toric ideal I_A, its Groebner bases, etc. In practice, however, 
+	       these are nontrivial computational tasks. 
+	       The software 4ti2 is very efficient in computing these objects. 	      
+	       
+	       For more theoretical details (and more generality), see the standard reference: 
+	       B. Sturmfels, {\bf Gr\"obner bases and convex polytopes.} 
+	       American Mathematical Society, University Lectures Series, No 8, Providence, Rhode Island, 1996. 
+	       
+               {\bf Note for cygwin users:} 
+	       If a problem occurs during package installation and/or loading, it should be fixed 
+	       by setting the path inside the file .Macaulay2/init-FourTiTwo.m2  to whatever folder 4ti2 is installed.
+	       For example, if  4ti2 has been installed in C:/cygwin/4ti2/win32 , then the line 
+	       inside the init-FourTiTwo.m2 file will look like this:  "path" => "C:/cygwin/4ti2/win32/"  .<br>
+	       Alternately, the path for 4ti2 may be set when loading the package using the following command:<br>
+	       loadPackage("FourTiTwo", Configuration=>{"path"=>"C:/cygwin/4ti2/win32/"})  <br>
+	       assuming that 4ti2 has been installed in C:/cygwin/4ti2/win32.
+      	       
+	       {\bf Caveat:}   
+      	       If package SimpleDoc is not found when installing FourTiTwo.m2, 
+	       see questions and answers 6, 7, and 8 on the Macaulay 2 web site.	       
+///;
+
+-- doc ///
+--     Key
+-- 	getMatrix
+-- 	(getMatrix, String)
+--     Headline
+-- 	reads a matrix from a 4ti2-formatted input file
+--     Usage
+-- 	getMatrix s
+--     Inputs
+--     	s:String
+-- 	     file name
+--     Outputs
+-- 	A:Matrix
+--     Description
+-- 	Text
+-- 	     The file should contain a matrix in the format such as<br>
+-- 	     2 4<br>
+-- 	     1 1 1 1<br>
+-- 	     1 2 3 4<br>
+-- 	     The first two numbers are the numbers of rows and columns.
+--     SeeAlso
+-- 	putMatrix
+-- ///;
