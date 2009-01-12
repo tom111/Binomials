@@ -39,6 +39,7 @@ export {binomialCD,
      testPrimary,
      BinomialAssociatedPrimes,
      BinomialPrimaryDecomposition,
+     testPrime,
      doExample,
      nonCellstdm,
      maxNonCellstdm
@@ -144,7 +145,7 @@ binomialCD = (I) -> (
 
 -- This function saturates an integer lattice. It expects 
 -- the matrix A, whose image is the lattice. 
-Lsat = (A) -> syz transpose syz transpose A;
+Lsat = A -> syz transpose syz transpose A;
 
 partialCharacter = (I) -> (
      vs := {}; -- This will hold the lattice generators
@@ -418,6 +419,26 @@ testPrimary = I ->(
      return I;	  
      )
 
+testPrime = I -> (
+     -- A cellular binomial ideal is prime if all its 
+     -- monomial components have power one and the 
+     -- associated partial character is saturated.
+     R := ring I;
+     pc := partialCharacter I;
+     ncv := toList(set (gens R) - pc#0);
+     for v in ncv do (
+	  if not isSubset(ideal (v) , I) then return false;
+     	  );
+
+     -- Is the partial character saturated ???     
+     if image Lsat pc#1 != image pc#1 then return false;
+     
+     -- all tests passed:
+     return true;
+     )
+     
+    
+
 BinomialAssociatedPrimes = (I) -> (
      -- Computes the associated primes of cellular binomial ideal
      -- Warning: This function is untested !
@@ -457,186 +478,33 @@ BinomialAssociatedPrimes = (I) -> (
      return toList set primes;
      )   
      
--- cd = binomialCD(J)
--- II = cd#0;
--- pC = partialCharacter(II);
--- spC = satpchar(pC);
-     
------------------------------------
--- The island of misfit mascots  --
--- (and unneeded code parts)     --
------------------------------------
-
--- satpchar = ( A , c) -> (
---      -- print A;
---      -- print c;
--- 
---      -- If the lattice is saturated, the character is saturated     
---      if (image Lsat A == image A) then (
--- 	  return (A,c);
--- 	  );
---      
---      S := Lsat(A);
---      K = A // S;
---      
---      sageprogfile := temporaryFileName() | ".sage";
---      sageoutfile := temporaryFileName();
---      -- We paste the whole program in:
---      F := openOut(sageprogfile);
---      
--- F << "S = matrix(ZZ,[";
--- -- Here goes the saturated lattice defining matrix
--- ent := entries S;
--- for r in (0..(#ent -1)) do (
---      F << "[";
---      for c in (0..(#(ent#r)-1)) do (
--- 	  F << ent#r#c;
--- 	  if (c < (numcols S) -1 ) then F << ",";
--- 	  );
---      F << "]";
---      if (r < (numrows S) -1) then F << ",";
---      );
--- F << "])" << endl;
---      
--- F << "A = matrix(ZZ,[";
--- -- Here goes the lattice defining matrix
--- ent = entries A;
--- for r in (0..(#ent -1)) do (
---      F << "[";
---      for c in (0..(#(ent#r)-1)) do (
--- 	  F << ent#r#c;
--- 	  if (c < (numcols A) -1 ) then F << ",";
--- 	  );
---      F << "]";
---      if (r < (numrows A) -1) then F << ",";
---      );
--- F << "])" << endl;
--- 
--- F << "K = matrix(ZZ,[";
--- -- Here goes the coefficient matrix
--- ent = entries K;
--- for r in (0..(#ent -1)) do (
---      F << "[";
---      for c in (0..(#(ent#r)-1)) do (
--- 	  F << ent#r#c;
--- 	  if (c < (numcols K) -1 ) then F << ",";
--- 	  );
---      F << "]";
---      if (r < (numrows K) -1) then F << ",";
---      );
--- F << "])" << endl;
--- 
--- -- Here goes the character
--- F << "l = [";
--- for i in (0..((#c)-1)) do (
---      F << c#i ;
---      if (i< (#c -1)) then F << ",";
---      );
--- F << "]" << endl;
--- 
--- -- The main program
--- F << "varnames = []" << endl;
--- F << "rg = len(S.columns())" << endl;
--- F << "for i in range(rg) :" << endl;
--- F << "    varnames = varnames + ['m'+str(i)]" << endl;
--- F << "for v in varnames:" << endl;
--- F << "    # print v" << endl;
--- F << "    var (v)" << endl;
--- F << "eqns = []" << endl;
--- F << "kr = len(K.rows())" << endl;
--- F << "kc = len(K.columns());" << endl;
--- F << "for col in range(kc):" << endl;
--- F << "    monom = 1" << endl;
--- F << "    for row in range(kr):" << endl;
--- F << "        monom *= eval('m'+str(row))^K[row,col]" << endl;
--- F << "        # print eval('m'+str(row))^K[row,col]" << endl;
--- F << "    eqns = eqns + [ monom - l[col] ]" << endl;
--- F << "satlist = [] # The list of saturations" << endl;
--- F << "vs = [eval(v) for v in varnames]" << endl;
--- F << "if (len (eqns) > 1) :" << endl;
--- F << "    s = solve (eqns , tuple(vs), solution_dict=True)" << endl;
--- F << "else :" << endl;
--- F << "    spre = solve (eqns , tuple(vs))" << endl;
--- F << "    # print spre" << endl;
--- F << "    s= [dict([(eq.left(),eq.right())]) for eq in spre ]" << endl;
--- F << "m = [] " << endl;
--- F << "for sol in s :" << endl;
--- F << "    n = [] " << endl;
--- F << "    for v in varnames:" << endl;
--- F << "        n = n + [sol[v]]" << endl;
--- F << "    m = m + [n]" << endl;
--- 
--- -- Here we do output
--- F << "charstr = str(m).replace('I','ii');" << endl;
--- F << "charstr = charstr.replace('[','{');" << endl;
--- F << "charstr = charstr.replace(']','}');" << endl;
--- F << "print 'c := ' + charstr" << endl;
--- 
---      close (F);
---      
---      execstr = "sage "|sageprogfile | " > " | sageoutfile ;
---      -- print execstr;
---      ret := run (execstr);
---      if (ret != 0) then (
--- 	  print "sage did not run correctly, sorry :(";
--- 	  return False;
--- 	  );
---      
---      outlines := lines get sageoutfile;
---      
---      cl := value outlines#0;
---      return (S,cl)
---      )
-
-
 beginDocumentation()
 needsPackage "SimpleDoc";
 
-doc ///
-     Key 
-          FourTiTwo
-     Headline
-     	  Interface for 4ti2
-     Description
-          Text
-	       Interfaces most of the functionality of the software {\tt 4ti2} available at  {\tt http://www.4ti2.de/}.
-	       (The user needs to have 4ti2 installed on his/her machine.)
-	        
-	       A {\tt d\times n} integral matrix {\tt A} (with nonnegative entries) specifies a map from a polynomial 
-	       ring in d variables to a polynomial ring with n variables by specifying exponents of the variables indexing
-	       its columns. For example, if {\tt A} is a matrix <br>
-	       3 2 1 0<br>
-	       0 1 2 3<br>
-	       the map from {\tt k[s,t]} to {\tt k[a,b,c,d]} is given by <br> 
-	       {\tt (s,t)-> (s^3, s^2t,st^2,t^3)}. <br>
-	       
-	       The toric ideal I_A is the kernel of this map. 
-	       It is minimally generated by the 2-minors of the matrix <br>
-	       x y z<br>
-	       y z w<br>
-	       Given the matrix {\tt A}, one can compute its lattice basis ideal specified by the integral basis
-	       of the lattice {\tt A}, the toric ideal I_A, its Groebner bases, etc. In practice, however, 
-	       these are nontrivial computational tasks. 
-	       The software 4ti2 is very efficient in computing these objects. 	      
-	       
-	       For more theoretical details (and more generality), see the standard reference: 
-	       B. Sturmfels, {\bf Gr\"obner bases and convex polytopes.} 
-	       American Mathematical Society, University Lectures Series, No 8, Providence, Rhode Island, 1996. 
-	       
-               {\bf Note for cygwin users:} 
-	       If a problem occurs during package installation and/or loading, it should be fixed 
-	       by setting the path inside the file .Macaulay2/init-FourTiTwo.m2  to whatever folder 4ti2 is installed.
-	       For example, if  4ti2 has been installed in C:/cygwin/4ti2/win32 , then the line 
-	       inside the init-FourTiTwo.m2 file will look like this:  "path" => "C:/cygwin/4ti2/win32/"  .<br>
-	       Alternately, the path for 4ti2 may be set when loading the package using the following command:<br>
-	       loadPackage("FourTiTwo", Configuration=>{"path"=>"C:/cygwin/4ti2/win32/"})  <br>
-	       assuming that 4ti2 has been installed in C:/cygwin/4ti2/win32.
-      	       
-	       {\bf Caveat:}   
-      	       If package SimpleDoc is not found when installing FourTiTwo.m2, 
-	       see questions and answers 6, 7, and 8 on the Macaulay 2 web site.	       
-///;
-
+-- doc ///
+--      Key 
+--           Binomial Ideals
+--      Headline
+--      	  Specialized algorithms for Binomial Ideals
+--      Description
+--           Text
+-- 	       A binomial ideal is a polyonmial ideal in which each 
+-- 	       generator has at most two terms. This package provides an 
+-- 	       implementation of Algorithms from 
+-- 	       
+-- 	       D. Eisenbud and B. Sturmfels : "Binomial Ideals"
+-- 	       
+-- 	       with additional ideas from 
+-- 	       I. Ojeda and R. Sanchez: 
+-- 	       "Cellular Binomial Ideals. Primary Decomposition of Binomial Ideals"
+-- 	       
+-- 	       and
+-- 	       
+-- 	       A. Dickenstein, L. Matusevich, E. Miller: 
+-- 	       "Combinatorics of binomial primary decomposition".
+-- 
+-- ///;
+-- 
 -- doc ///
 --     Key
 -- 	getMatrix
