@@ -27,7 +27,7 @@ newPackage(
     	Authors => {
 	     {Name => "Thomas Kahle", Email => "kahle@mis.mpg.de", HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
     	Headline => "Spezialised routines for binomial Ideals",
-	Configuration => { "doNumerics" => true	},
+	Configuration => { "doNumerics" => false },
     	DebuggingMode => true
     	)
    
@@ -36,6 +36,7 @@ export {binomialCD,
      cellVars,
      idealFromCharacter,
      saturatePChar,
+     satIdeals,
      testPrimary,
      BinomialAssociatedPrimes,
      BinomialPrimaryDecomposition,
@@ -45,10 +46,12 @@ export {binomialCD,
      nonCellstdm,
      maxNonCellstdm,
      BCDisPrimary,
-     isBinomial
+     isBinomial,
+     minimalPrimaryComponent
      }
 
 needsPackage "SingSolve";
+doNumerics := (options Binomials).Configuration#"doNumerics"
 
 -- Here are some example
 
@@ -237,6 +240,7 @@ cellVars = I -> (
      )
 
 nonCellstdm = I -> (
+     -- Extracts the monomials in the non-Cell variables.
      R := ring I;
      cv := set cellVars I; 
      -- Here go the non-cell variables
@@ -253,9 +257,8 @@ nonCellstdm = I -> (
      )
 
 maxNonCellstdm = I -> (
+     -- Extracts the Maximal elements in the set of monomials 
      nm := nonCellstdm I;
-     -- Extract the maximal ones
-     -- Take the maximal element
      -- print nm;
      result := {};
      maxel := 0;
@@ -350,7 +353,8 @@ saturatePChar = (va, A, c) -> (
      Q := QQ[varlist / value];
      eqs := idealFromCharacter(Q,K,c);
      
-     -- print eqs;
+     print "The character defining equations are:";
+     print eqs;
      -- print ring eqs;
      
      -- We carefully(tm) clear denominators:
@@ -360,14 +364,23 @@ saturatePChar = (va, A, c) -> (
      if eqso == eqs then print "Saturation was not needed !";
      
      -- And solve using singsolve:
-     result = singsolve eqs;
-     return (va, S, result);
+     if doNumerics then (
+	  print "Warning, using numerics !!!.";
+	  result = singsolve eqs;
+	  return (va, S, result);
+	  )
+     else (
+	  print "Would need numerics to continue ... :( ";
+	  return false;
+	  );
      )
 
 satIdeals = (va, A, d) -> (
      -- computes all the ideals belonging to saturations of 
      -- a given partial character.
      satpc = saturatePChar(va, A, d);
+     -- The following should be the smallest ring 
+     -- containing all new coefficients
      Q := CC[satpc#0];
      satideals = apply (satpc#2 , (c) -> (
 	       -- print {Q, satpc#1, c};
@@ -424,6 +437,7 @@ testPrimary = I ->(
      -- the radical is not prime
      if image Lsat(pc#1) != image pc#1 then (
 	  print "The radical is not prime, as the character is not saturated";
+	  return false;
 	  -- We can output distinct associated primes by 
 	  -- saturating the character here ...
 	  );
@@ -498,7 +512,7 @@ BinomialAssociatedPrimes = (I) -> (
 	  -- Coercing back to R:
 	  sat = sat / (I -> sub (I,CR));
 	  sat = sat / (I -> I + M);
-	  -- adding and removing duplicates
+	  -- adding result and removing duplicates
 	  if isSubset ({sat}, primes) then continue;
 	  primes = primes | toList set sat;
 	  );
@@ -522,11 +536,18 @@ BCDisPrimary = I -> (
      return cd;
      )
 
+minimalPrimaryComponent = I -> (
+     -- Input a cellular binomial ideal whose radical is prime.
+     -- Ouptut, generators for Hull(I)
+     J := BinomialRadical I;
+     )
+
 BinomialPrimaryDecomposition = I -> (
      -- computes the binomial primary decomposition of a cellular ideal
      -- I needs to be cellular which is not checked at the moment.
      -- Implements algorithm 
      )
+
      
 beginDocumentation()
 needsPackage "SimpleDoc";
