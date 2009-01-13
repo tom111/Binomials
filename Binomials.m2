@@ -43,7 +43,9 @@ export {binomialCD,
      BinomialRadical,
      doExample,
      nonCellstdm,
-     maxNonCellstdm
+     maxNonCellstdm,
+     BCDisPrimary,
+     isBinomial
      }
 
 needsPackage "SingSolve";
@@ -110,7 +112,7 @@ binomialCD = (I) -> (
      IntersectAnswer = ideal(1_R);
      ToDo = {{1_R,toList(0..n-1),I}};
      compo = 0;
-     next = () -> (
+     next := () -> (
 	 if #ToDo === 0 then false
 	 else (
 	      L = ToDo#0;
@@ -220,6 +222,14 @@ partialCharacter = (I) -> (
      return (cellvars, transpose matrix vs , cl);
      )
 
+isBinomial = I -> (
+     ge := flatten entries gens I;
+     for g in ge do (
+          if #(terms g) > 2 then return false;	  
+	  );
+     return true;
+     )
+     
 cellVars = I -> (
      cv = {};
      for i in gens ring I do if saturate (I,i) != substitute(ideal(1), ring I) then cv=cv|{i};
@@ -246,7 +256,7 @@ maxNonCellstdm = I -> (
      nm := nonCellstdm I;
      -- Extract the maximal ones
      -- Take the maximal element
-     print nm;
+     -- print nm;
      result := {};
      maxel := 0;
      while nm != {} do (
@@ -366,6 +376,7 @@ satIdeals = (va, A, d) -> (
      )
 
 BinomialRadical = I -> (
+     -- Computes the radical of a cellular binomial ideal
      R := ring I;
      -- Get the partial character of I
      pc := partialCharacter(I);
@@ -395,7 +406,7 @@ testPrimary = I ->(
      noncellvars := toList(set (gens R) - pc#0);
      
      M := sub (ideal (noncellvars),R);
-     print ("The monomial ideal M: " | toString M);
+     -- print ("The monomial ideal M: " | toString M);
      
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
@@ -406,8 +417,8 @@ testPrimary = I ->(
      -- print prerad;
      
      rad := sub (prerad ,R) + M;
-     print "The radical is:";
-     print rad;
+     -- print "The radical is:";
+     -- print rad;
      
      -- If the partial character is not saturated, 
      -- the radical is not prime
@@ -419,8 +430,8 @@ testPrimary = I ->(
      
      -- The list of maximally standard monomials:
      maxstdmon := maxNonCellstdm I / (i -> sub (i,R));
-     print "The maximally standard monomials are:";
-     print maxstdmon;
+     -- print "The maximally standard monomials are:";
+     -- print maxstdmon;
      
      for m in maxstdmon do (
 	  q := quotient (I, m);
@@ -433,7 +444,7 @@ testPrimary = I ->(
 	       return false;
 	       );
 	  );
-     print "I is primary";
+     -- print "Ideal is primary";
      return true;	  
      )
 
@@ -492,7 +503,30 @@ BinomialAssociatedPrimes = (I) -> (
 	  primes = primes | toList set sat;
 	  );
      return toList set primes;
-     )   
+     )
+
+BCDisPrimary = I -> (
+     print "Computing Cellular Decomposition";
+     cd := binomialCD I;
+     print "Testing for primaryness of components";
+     i := 0;
+     for c in cd do (
+	  i = i+1;
+	  print ("Component number " | i );
+	  if testPrimary c == true then continue;
+	  print "Following component is not primary: ";
+	  print c;
+	  return false;
+	  );
+     print "The cellular decomposition is primary !";
+     return cd;
+     )
+
+BinomialPrimaryDecomposition = I -> (
+     -- computes the binomial primary decomposition of a cellular ideal
+     -- I needs to be cellular which is not checked at the moment.
+     -- Implements algorithm 
+     )
      
 beginDocumentation()
 needsPackage "SimpleDoc";
