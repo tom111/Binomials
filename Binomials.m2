@@ -33,6 +33,7 @@ newPackage(
    
 export {binomialCD,
      partialCharacter,
+     testCellular,
      cellVars,
      idealFromCharacter,
      saturatePChar,
@@ -58,7 +59,7 @@ doNumerics := (options Binomials).Configuration#"doNumerics"
 -- R = QQ[x1,x2,x3,x4,x5]
 -- I = ideal( x1*x4^2 - x2*x5^2,  x1^3*x3^3 - x4^2*x2^4, x2*x4^8 - x3^3*x5^6)
 -- -- Here is a cellular decomp  of I:
--- -- This is also a prime decomposition
+-- -- This is also a primary decomposition
 -- J1 = ideal({x1^2 , x1*x4^2 - x2*x5^2, x2^5, x5^6, x2^4 * x4^2,x4^8})
 -- J2 = ideal({x1*x4^2 - x2*x5^2, x1^3*x3^3 - x4^2*x2^4, x2^3*x4^4 - x1^2*x3^3*x5^2, x2^2*x4^6 - x1*x3^3*x5^4, x2*x4^8 - x3^3 *x5^6 })
 -- 
@@ -80,13 +81,14 @@ doNumerics := (options Binomials).Configuration#"doNumerics"
 -- load "/home/tom/BPDcode/SingSolve.m2"
 
 doExample = () -> (
-  Q = QQ[x,y,z,w];
-  J = ideal(x^4*w^2-z^6,x^3*y^2-z^5,x^7-y^3*w^2,x^2*x^3-z^7);
-  cd = binomialCD(J); 
-  I = cd#0;
-  pc = partialCharacter(I);
-  saturatePChar(Q,pc#1,pc#2);
-  return pc;
+     -- A fun example, not to small, not too big.
+     Q = QQ[x,y,z,w];
+     J = ideal(x^3*y^2-z^2,x^5*y^2-w^7,w^3-z^8);
+     cd = binomialCD J; 
+     I = cd#0;
+     pc = partialCharacter cd#0;
+     print ( testPrimary \ cd);
+     return pc;
   )
 
 axisSaturate = (I,i) -> (
@@ -152,6 +154,14 @@ binomialCD = (I) -> (
 -- This function saturates an integer lattice. It expects 
 -- the matrix A, whose image is the lattice. 
 Lsat = A -> syz transpose syz transpose A;
+
+testCellular = I -> (
+     R := ring I;
+     cv := cellVars I;
+     if cv == {} then prod := 1_R else prod = product cv;
+     if I == saturate (I, prod) then return true
+     else return false;
+     )
 
 partialCharacter = (I) -> (
      vs := {}; -- This will hold the lattice generators
@@ -389,6 +399,7 @@ satIdeals = (va, A, d) -> (
      )
 
 BinomialRadical = I -> (
+     if not testCellular I then error "Input was not cellular.";
      -- Computes the radical of a cellular binomial ideal
      R := ring I;
      -- Get the partial character of I
@@ -411,6 +422,7 @@ testPrimary = I ->(
      -- I must be a cellular ideal
      -- Returns the radical of I and whether I is primary
 
+     if not testCellular I then error "Input was not cellular.";
      -- The ring of I :
      R := ring I;
           
@@ -463,9 +475,10 @@ testPrimary = I ->(
      )
 
 testPrime = I -> (
-     -- A cellular binomial ideal is prime if all its 
-     -- monomial components have power one and the 
+     -- A binomial ideal is prime if all its 
+     -- monomial generators have power one and the 
      -- associated partial character is saturated.
+     -- (Corollary 2.6 in ES96 )
      R := ring I;
      pc := partialCharacter I;
      ncv := toList(set (gens R) - pc#0);
@@ -484,6 +497,7 @@ BinomialAssociatedPrimes = (I) -> (
      -- Computes the associated primes of cellular binomial ideal
      -- Warning: This function is untested !
      
+     if not testCellular I then error "Input was not cellular.";     
      R := ring I;
      cv := cellVars(I); -- cell variables E
      -- print "Cellvars:"; print cv;
@@ -534,6 +548,10 @@ BCDisPrimary = I -> (
 	  );
      print "The cellular decomposition is primary !";
      return cd;
+     )
+
+ImFeelingLucky = I -> (
+     
      )
 
 minimalPrimaryComponent = I -> (
