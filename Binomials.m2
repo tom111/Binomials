@@ -54,7 +54,8 @@ export {binomialCD,
      isBinomial,
      minimalPrimaryComponent,
      lcm,
-     binomialQuasiPower
+     binomialQuasiPower,
+     BinomialQuotient
      }
 
 needsPackage "SingSolve";
@@ -490,7 +491,10 @@ testPrimary = I ->(
      if not testCellular I then error "Input was not cellular.";
      -- The ring of I :
      R := ring I;
-          
+     
+     -- Only proper ideals are considered primary
+     if I == ideal(1_R) then return false;      
+     
      -- Get the partial character of I
      pc := partialCharacter(I);
      noncellvars := toList(set (gens R) - pc#0);
@@ -543,7 +547,9 @@ testPrime = I -> (
      -- monomial generators have power one and the 
      -- associated partial character is saturated.
      -- (Corollary 2.6 in ES96 )
+     
      R := ring I;
+     if I == ideal (1_R) then return false;
      pc := partialCharacter I;
      ncv := toList(set (gens R) - pc#0);
      for v in ncv do (
@@ -674,23 +680,20 @@ minimalPrimaryComponent = I -> (
 		 -- Here are the lattice generators
 		 L2cols := entries transpose pc2#1;
 		 -- Try them one by one:
-		 i := 0;
+		 i := 0; -- Counter to determine which generator fits
 		 for c in L2cols do (
 		      -- The span of c:
 		      imc := image transpose matrix {c};
 		      if dim intersect {imc , L} < 1 then (
 			   -- We have winner 
 			   m := c;
-			   print m;
 			   break;
 			   );
 		      -- Lets try the next vector.
 		      i = i+1;
 		      );
-		 -- now m holds a vector with the desired property. 
-		 -- Find the value of the partial character :
-		 coeff := pc2#2#i;
-		 b = makeBinomial(R, m, coeff);		    
+     	         -- now i has the suitable index !
+		 b = makeBinomial(R, L2cols#i, pc2#2#i);		    
 	    	 -- Take the quotient of I with respect to b, such that the result is binomial
 	    	 return minimalPrimaryComponent BinomialQuotient (I,b);
 	    	 );
@@ -705,8 +708,11 @@ BinomialQuotient = (I,b) -> (
      -- result is binomial
      
      R := ring I;
-     cv = cellvars (I);
-     ncvm := nonCellstdm(I);
+     cv := cellVars (I);
+     
+     --Transporting the standardmonomials to R:
+     ncvm := ((i) -> sub (i,R) ) \ nonCellstdm I ;
+     print ncvm;
   
      U' := {}; -- U' as in the paper
      D  := {};
@@ -715,6 +721,7 @@ BinomialQuotient = (I,b) -> (
      -- We will often need the image of bexp, so lets cache it
      bexpim := image transpose matrix {bexp};
      quot := ideal; -- will hold quotients
+     pc := {}; -- Will hold partial characters;
      CoeffR := coefficientRing R;
      S := CoeffR[cv]; -- k[\delta] in the paper
      
@@ -737,17 +744,22 @@ BinomialQuotient = (I,b) -> (
 			 )
 		    else i = i+1;
 		    );
-	       print D;
+	       print ("The order of " | toString bexp | "in " | toString image pc#1 | "is " | toString i);
+	       -- print D;
 	       );
 	  ); -- loop over monomials
      -- Compute the least common multiple of the orders
      e := lcm D; -- e' in paper, but we dont need e later.
-     bqp := binomialQuasiPower (b,e); -- e'th quasipower
+     print ("binomialQuasiPower" | toString (b,e));
+     bqp := sub (binomialQuasiPower (b,e) , R); -- e'th quasipower
+     print bqp;
+     print ring bqp;
      print ( "Least common multiple : " | toString e);
      for m in U' do(
 	  quot = quotient (I,m);
 	  if bqp % quot == 0 then J = J + ideal(m);		
      	  );
+     print J;
      return I + J;
      )     
 
@@ -760,7 +772,7 @@ lcm = l -> (
 binomialQuasiPower = (b,e) -> (
      -- returns the e-th quasipower of the binomial b
      -- i.e. (b_1)^e - (b_2)^e
-     return (terms b)#0^e - (- (terms b)#0)^e;
+     return ((terms b)#0)^e - (- (terms b)#1)^e;
      )
 
 BinomialPrimaryDecomposition = I -> (
