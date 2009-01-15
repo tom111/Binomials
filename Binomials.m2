@@ -217,7 +217,7 @@ partialCharacter = (I) -> (
 	  -- compute new ones
 	  -- print t;
 	  -- print  {((exponents (t))#0 - (exponents (t))#1)};
-	  vs = vs | {((exponents (t))#0 - (exponents (t))#1)};
+	  vs = vs | {((exponents t)#0 - (exponents t)#1)};
 	  -- print vs;
 	  vsmat = transpose matrix vs;
 	  
@@ -230,7 +230,7 @@ partialCharacter = (I) -> (
 	  else (
 	       -- So we have a new generator : update coefficient list
 	       coeffs := entries ((coefficients(t))#1);
-               cl = cl | { -coeffs#1#0 / coeffs#0#0}
+               cl = cl | { sub (-coeffs#1#0 / coeffs#0#0, CoeffR) }
 	       );
 	  );
 --    print coeffs;
@@ -501,12 +501,11 @@ testPrimary = I ->(
      -- print "The radical is:";
      -- print rad;
      
-     -- If the partial character is not saturated, 
-     -- the radical is not prime
+     -- If the partial character is not saturated, the radical is not prime
      if image Lsat(pc#1) != image pc#1 then (
 	  print "The radical is not prime, as the character is not saturated";
 	  return false;
-	  -- We can output distinct associated primes by 
+	  -- We could output distinct associated primes by 
 	  -- saturating the character here ...
 	  );
      
@@ -620,6 +619,7 @@ minimalPrimaryComponent = I -> (
      if testPrimary I then return I
      else (
        	  --Remark: This also test for cellularity of input.
+	  R := ring I;
      	  J := BinomialRadical I;
      	  pc := partialCharacter J;
 	  
@@ -637,15 +637,78 @@ minimalPrimaryComponent = I -> (
 	  -- i.e. find a generator on which pc and pc2 take different values.
 	  print pc;
 	  print pc2;
-     	  b := 0; -- will hold the binomial
-	  for i in 0..#(pc#2) do (
-	       if pc#2#i == pc#2#i then continue
+	  for i in 0..#(pc#2)-1 do (
+	       if pc#2#i == pc2#2#i then continue
 	       else (
 		    -- Character differs. Form binomial:
+		    b := makeBinomial (R, (entries transpose pc2#1)#i, pc2#2#i );
+		    print b;
 		    break;
 		    );
 	       );
+	  -- Take the quotient of I with respect to b, such that the result is binomial
+	  
      	  );
+     )
+
+BinomialQuotient = (I,b) -> (
+     -- Algorithm A.3 in Ojeda / Sanchez
+     -- Input I - Cellular Binomial Ideal 
+     -- b -- Binomial in the cell variables of I which is a zerodivisor mod I
+     -- Output : The quotient (I : b^[e]) for a suitably choosen e, such that the
+     -- result is binomial
+     
+     R := ring I;
+     cv = cellvars (I);
+     ncvm := nonCellstdm(I);
+  
+     U' := {}; -- U' as in the paper
+     D  := {};
+     J := ideal (0_R); -- initialize with zero ideal
+     bexp := (exponents b)#0 - (exponents b)#1 -- exponent vector of b
+     -- We will often need the image of bexp, so lets cache it
+     bexpim := image transpose matrix {bexp};
+     quot := ideal; -- will hold quotients
+     CoeffR := coefficientRing R;
+     S := CoeffR[cv]; -- k[\delta] in the paper
+     
+     for m in ncvm do(
+	  quot = quotient (I, m);
+	  
+	  --Mapping to k[delta] and taking character
+	  quot = kernel map (R/quot, S);
+	  pc = partialCharacter quot;
+	  
+	  --determine whether the exponents of b are in the saturated lattice
+	  if isSubset (bexpim, image Lsat pc#1) then (
+     	       U' = U' | {m};
+	       i := 1;
+	       -- Computing the order of bexp in Lsat / L
+	       while true do (
+		    if isSubset (image transpose matrix {i * bexp} , image pc#1) then (
+			 D = D | {i};
+			 break;
+			 )
+		    else i = i+1;
+		    )
+	       print D;
+	       )
+	  ) -- loop over monomials
+     -- Compute the least common multiple of the orders
+     lc = lcm D;
+     print lc;
+     D = {};
+     for m in U' do(
+	  quot = quotient (I,m);
+	     
+		
+		
+     )
+
+lcm = l -> (
+     if #l == 0 then return 1;
+     sublcm := lcm delete (l#0,l);
+     return l#0 * sublcm / gcd (l#0, sublcm);
      )
 
 BinomialPrimaryDecomposition = I -> (
@@ -705,3 +768,4 @@ needsPackage "SimpleDoc";
 --     SeeAlso
 -- 	putMatrix
 -- ///;
+ 
