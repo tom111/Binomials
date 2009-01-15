@@ -35,14 +35,18 @@ export {binomialCD,
      partialCharacter,
      testCellular,
      cellVars,
+     Lsat,
      idealFromCharacter,
      saturatePChar,
+     saturatePCharNum,
+     BinomialSolve,
      satIdeals,
      testPrimary,
      BinomialAssociatedPrimes,
      BinomialPrimaryDecomposition,
      testPrime,
      BinomialRadical,
+     makeBinomial,
      doExample,
      nonCellstdm,
      maxNonCellstdm,
@@ -54,7 +58,7 @@ export {binomialCD,
 needsPackage "SingSolve";
 doNumerics := (options Binomials).Configuration#"doNumerics"
 
--- Here are some example
+-- Here are some examples
 
 -- R = QQ[x1,x2,x3,x4,x5]
 -- I = ideal( x1*x4^2 - x2*x5^2,  x1^3*x3^3 - x4^2*x2^4, x2*x4^8 - x3^3*x5^6)
@@ -78,18 +82,21 @@ doNumerics := (options Binomials).Configuration#"doNumerics"
 -- pc = partialCharacter(I)
 -- satpchar(Q,pc#1,pc#2)
 
--- load "/home/tom/BPDcode/SingSolve.m2"
+-- A fun example, not to small, not too big, but with some
+-- nasty features
+--   Q = QQ[x,y,z,w];
+--   J = ideal(x^3*y^2-z^2,x^5*y^2-w^7,w^3-z^8);
+--   cd = binomialCD J; 
+--   I = cd#0;
+--   pc = partialCharacter cd#0;
+--   print ( testPrimary \ cd);
 
-doExample = () -> (
-     -- A fun example, not to small, not too big.
-     Q = QQ[x,y,z,w];
-     J = ideal(x^3*y^2-z^2,x^5*y^2-w^7,w^3-z^8);
-     cd = binomialCD J; 
-     I = cd#0;
-     pc = partialCharacter cd#0;
-     print ( testPrimary \ cd);
-     return pc;
-  )
+-- Is the following a bug or does it only take very long ????
+-- Appearently it has to do with the SY Strategy for Primdec Failing
+-- Q = QQ[x,y,z,w]
+-- I = ideal (x^3*y^2-z^2, w^7-x^2*z^2, x*y^2*z^4*w^4-1); 
+-- time isPrime I;
+
 
 axisSaturate = (I,i) -> (
 -- By Ignacio Ojeda and Mike Stillman
@@ -244,7 +251,7 @@ isBinomial = I -> (
      )
      
 cellVars = I -> (
-     cv = {};
+     cv := {};
      for i in gens ring I do if saturate (I,i) != substitute(ideal(1), ring I) then cv=cv|{i};
      return cv;
      )
@@ -285,6 +292,23 @@ maxNonCellstdm = I -> (
      return result;
      )
 
+makeBinomial = (R,m,c) -> (
+     -- constructs the binomial associated to 
+     -- exponent vector m and coefficient c in the R
+     var = gens R;
+     posmon :=1;
+     negmon :=1;
+     for i in 0..#m-1 do (
+     	  if m#i > 0 then (
+		    posmon = posmon * var#i^(m#i)
+		    )
+	       else (
+		    negmon = negmon * var#i^(-m#i)
+		    );
+	       );	  
+     return posmon - c*negmon;
+     )
+
 idealFromCharacter = (R,A,c) -> (
      -- Constructs the Ideal I_+(c) in R
      -- R is a ring in which the ideal is returned
@@ -298,25 +322,9 @@ idealFromCharacter = (R,A,c) -> (
      -- We coerce the coefficients to R:
      c = apply (c, a -> (sub (a,R)));
       
-     var := gens R;
      cols := entries transpose A;
-     posmon := 1;
-     negmon := 1;
-     binomials := {};
-     for i in 0..numcols A-1 do (
-	  for j in 0..numrows A-1 do (
-	       if cols#i#j > 0 then (
-		    posmon = posmon * var#j^(cols#i#j)
-		    )
-	       else (
-		    negmon = negmon * (var#j)^(-cols#i#j)
-		    );
-	       );
-     	  binomials = binomials | {posmon - c#i * negmon};
-	  posmon = 1;
-	  negmon = 1;
-	  );
-     -- print ideal (binomials);
+     binomials := for i in 0..numcols A-1 list makeBinomial (R,cols#i, c#i);
+
      -- If the coefficients are all "1". Can we use 4ti2 here?
      -- TODO: This saturation will typically fail if 
      -- we have complex coefficients :(
@@ -338,11 +346,50 @@ idealFromCharacter = (R,A,c) -> (
 --     return IdealfromCharacter(R,A,c);
 --     )
 
-saturatePChar = (va, A, c) -> (
-     -- This function saturates a partial character, 
-     -- numerically if needed.
+saturatePCharNum = (va, A, c) -> (
+     -- This function saturates a partial character numerically.
+     -- This is pretty useless.
      
-     -- Todo : Clean up the types. 
+     -- Currently a saturated character is distinguished from its 
+     -- saturation as the saturation has a list as third entry.
+     
+     -- If the lattice is saturated, the character is saturated     
+     if image Lsat A == image A then (
+	  return (va, A, {c});
+	  );
+     
+     -- The saturated lattice
+     S := Lsat(A);
+     -- The coefficient matrix :
+     K := A // S;
+     
+     -- print K;
+     -- Now we find the (binomal) equations for the saturated character:
+     numvars := numrows K;
+     varlist := for i in 0..numvars-1 list value ("m"|i);
+     Q := QQ[varlist / value];
+     eqs := idealFromCharacter(Q,K,c);
+     
+     print "The character defining equations are:";
+     print eqs;
+     -- print ring eqs;
+     
+     -- Is this saturation needed ??
+     eqso := eqs;
+     eqs = saturate(eqs, product gens ring eqs);
+     if eqso == eqs then print "Saturation was not needed !" 
+     else print "!!!!!!! Saturation was needed - this is a bug  !!!!!!!!";
+     
+     -- And solve using singsolve:
+     print "Warning, using numerics !!!.";
+     result = singsolve eqs;
+     return (va, S, result);
+     )
+
+saturatePChar = (va, A, c) -> (
+     -- This function saturates a partial character numerically.
+     -- This is pretty useless.
+     
      -- Currently a saturated character is distinguished from its 
      -- saturation as the saturation has a list as third entry.
      
@@ -371,19 +418,28 @@ saturatePChar = (va, A, c) -> (
      -- Is this saturation needed ??
      eqso := eqs;
      eqs = saturate(eqs, product gens ring eqs);
-     if eqso == eqs then print "Saturation was not needed !";
-     
-     -- And solve using singsolve:
-     if doNumerics then (
-	  print "Warning, using numerics !!!.";
-	  result = singsolve eqs;
-	  return (va, S, result);
-	  )
-     else (
-	  print "Would need numerics to continue ... :( ";
-	  return false;
-	  );
+     if eqso == eqs then print "Saturation was not needed !" 
+     else print "!!!!!!! Saturation was needed - this is a bug  !!!!!!!!";
+
+     result = BinomialSolve eqs;
+     return (va, S, result);
      )
+
+BinomialSolve = I ->(
+     -- Should find the solutions to the pure binomial system 
+     -- and construct a cyclotomic field in which all exist.
+     -- Currently it will set to zero everything that is not 
+     -- in QQ.
+     print "Currently we run Singular and parse the result";
+     sols := singsolve I;
+     for sol in sols do(
+	  for entry in sol do(
+	       entry = sub (entry, QQ);
+	       );
+	  );
+     return sols;
+     )
+     
 
 satIdeals = (va, A, d) -> (
      -- computes all the ideals belonging to saturations of 
@@ -391,7 +447,7 @@ satIdeals = (va, A, d) -> (
      satpc = saturatePChar(va, A, d);
      -- The following should be the smallest ring 
      -- containing all new coefficients
-     Q := CC[satpc#0];
+     Q := QQ[satpc#0];
      satideals = apply (satpc#2 , (c) -> (
 	       -- print {Q, satpc#1, c};
 	       idealFromCharacter(Q,satpc#1,c)));
@@ -513,8 +569,10 @@ BinomialAssociatedPrimes = (I) -> (
      S := CoeffR[cv];
      prerad := kernel map (R/I,S);
      -- The primes will live in a complex ring... 
-     CR = CC[gens R];
-     M := sub (ideal (ncv),CR); -- The monomial radical ideal
+     -- Maybe later. For now they will ive in R
+     -- CR = CC[gens R];
+     --M := sub (ideal (ncv),CR); -- The monomial radical ideal
+     M := sub (ideal (ncv),R); -- The monomial radical ideal
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pC := {}; sat = {};
@@ -523,8 +581,9 @@ BinomialAssociatedPrimes = (I) -> (
 	  Im = kernel map (R/(I:m),S);
 	  pC = partialCharacter(Im);
 	  sat = satIdeals(pC);
-	  -- Coercing back to R:
-	  sat = sat / (I -> sub (I,CR));
+	  -- Coercing back to R: 
+	  -- needed ??
+	  sat = sat / (I -> sub (I,R));
 	  sat = sat / (I -> I + M);
 	  -- adding result and removing duplicates
 	  if isSubset ({sat}, primes) then continue;
@@ -557,7 +616,36 @@ ImFeelingLucky = I -> (
 minimalPrimaryComponent = I -> (
      -- Input a cellular binomial ideal whose radical is prime.
      -- Ouptut, generators for Hull(I)
-     J := BinomialRadical I;
+     
+     if testPrimary I then return I
+     else (
+       	  --Remark: This also test for cellularity of input.
+     	  J := BinomialRadical I;
+     	  pc := partialCharacter J;
+	  
+	  ap := BinomialAssociatedPrimes I;
+	  -- ap has at least 2 elements which correspond to 
+	  -- distinct saturations of pc.
+	  
+	  -- choosing the 2nd one, saving in J2
+	  J2 := ideal;
+	  if J != ap#0 then J2 = ap#0 else J2 =ap#1;
+	  
+	  pc2 := partialCharacter J2;
+	  
+	  -- Compute a binomial in J2 which is not in J1.
+	  -- i.e. find a generator on which pc and pc2 take different values.
+	  print pc;
+	  print pc2;
+     	  b := 0; -- will hold the binomial
+	  for i in 0..#(pc#2) do (
+	       if pc#2#i == pc#2#i then continue
+	       else (
+		    -- Character differs. Form binomial:
+		    break;
+		    );
+	       );
+     	  );
      )
 
 BinomialPrimaryDecomposition = I -> (
