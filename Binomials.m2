@@ -52,7 +52,9 @@ export {binomialCD,
      maxNonCellstdm,
      BCDisPrimary,
      isBinomial,
-     minimalPrimaryComponent
+     minimalPrimaryComponent,
+     lcm,
+     binomialQuasiPower
      }
 
 needsPackage "SingSolve";
@@ -96,6 +98,12 @@ doNumerics := (options Binomials).Configuration#"doNumerics"
 -- Q = QQ[x,y,z,w]
 -- I = ideal (x^3*y^2-z^2, w^7-x^2*z^2, x*y^2*z^4*w^4-1); 
 -- time isPrime I;
+
+
+-- In the following example cd#1 is not primary, but the radical is prime.
+-- Q = QQ[c,d,x,y,z,w];
+-- I = ideal(x^3*d^2*w-c*z^2,x^5*y^2-w^7,w^3-z^8,z^2-d*w*x^7)
+-- cd = binomialCD I
 
 
 axisSaturate = (I,i) -> (
@@ -195,7 +203,7 @@ partialCharacter = (I) -> (
      -- The partial Character of the zero ideal is the 
      -- zero lattice.       
      if ( II == 0 ) then (
-	  for i in gens ring II do vs = vs | { 0 };
+	  for i in gens ring II do vs = vs | { 0_ZZ };
 	  cl = {1};
 	  return (cellvars, transpose matrix {vs}, cl);
 	  );
@@ -295,7 +303,7 @@ maxNonCellstdm = I -> (
 makeBinomial = (R,m,c) -> (
      -- constructs the binomial associated to 
      -- exponent vector m and coefficient c in the R
-     var = gens R;
+     var := gens R;
      posmon :=1;
      negmon :=1;
      for i in 0..#m-1 do (
@@ -317,6 +325,7 @@ idealFromCharacter = (R,A,c) -> (
      -- in the coefficient ring of R !!!
      
      use R;
+     var := gens R;
      if A == 0 then return ideal 0_R;
      
      -- We coerce the coefficients to R:
@@ -620,36 +629,73 @@ minimalPrimaryComponent = I -> (
      else (
        	  --Remark: This also test for cellularity of input.
 	  R := ring I;
-     	  J := BinomialRadical I;
-     	  pc := partialCharacter J;
+     	  J1 := BinomialRadical I;
+     	  pc1 := partialCharacter J1;
 	  
 	  ap := BinomialAssociatedPrimes I;
 	  -- ap has at least 2 elements which correspond to 
-	  -- distinct saturations of pc.
+	  -- distinct lattices L1 and L2
+	  L1 := image pc1#1;
 	  
-	  -- choosing the 2nd one, saving in J2
+	  -- choosing the other one, saving in J2
 	  J2 := ideal;
-	  if J != ap#0 then J2 = ap#0 else J2 =ap#1;
-	  
+	  if J1 != ap#0 then J2 = ap#0 else J2 =ap#1;
 	  pc2 := partialCharacter J2;
+	  L2 := image pc2#1;
 	  
-	  -- Compute a binomial in J2 which is not in J1.
-	  -- i.e. find a generator on which pc and pc2 take different values.
-	  print pc;
-	  print pc2;
-	  for i in 0..#(pc#2)-1 do (
-	       if pc#2#i == pc2#2#i then continue
-	       else (
-		    -- Character differs. Form binomial:
-		    b := makeBinomial (R, (entries transpose pc2#1)#i, pc2#2#i );
-		    print b;
-		    break;
-		    );
-	       );
-	  -- Take the quotient of I with respect to b, such that the result is binomial
-	  
-     	  );
-     )
+	  L = intersect {L1,L2};
+	  -- The index of L inside L2 is finite if and only if their dimensions coincide
+	  if dim L == dim L2 then (
+	       -- The finite index case :  
+	       
+	       -- Compute a binomial in J2 which is not in J1.
+	       -- i.e. find a generator on which pc1 and pc2 take different values.
+	       print pc1;
+	       print pc2;
+	       for i in 0..#(pc#2)-1 do (
+	       	    if pc1#2#i == pc2#2#i then continue
+	       	    else (
+		    	 -- Character differs. Form binomial:
+		    	 b := makeBinomial (R, (entries transpose pc2#1)#i, pc2#2#i );
+		    	 print b;
+		    	 break;
+		    	 );
+	       	    );
+	       -- Take the quotient of I with respect to b, such that the result is binomial
+	       return minimalPrimaryComponent BinomialQuotient (I,b);
+	       )
+       	   else (
+		-- The case of infinite index :
+		    
+                -- Find an exponent vector which has infinite order:
+		-- i.e. a vector m \in L2 such that image m \cap L has dimension < 1;
+		-- One of the generators must have this property !
+     		    
+		 -- Here are the lattice generators
+		 L2cols := entries transpose pc2#1;
+		 -- Try them one by one:
+		 i := 0;
+		 for c in L2cols do (
+		      -- The span of c:
+		      imc := image transpose matrix {c};
+		      if dim intersect {imc , L} < 1 then (
+			   -- We have winner 
+			   m := c;
+			   print m;
+			   break;
+			   );
+		      -- Lets try the next vector.
+		      i = i+1;
+		      );
+		 -- now m holds a vector with the desired property. 
+		 -- Find the value of the partial character :
+		 coeff := pc2#2#i;
+		 b = makeBinomial(R, m, coeff);		    
+	    	 -- Take the quotient of I with respect to b, such that the result is binomial
+	    	 return minimalPrimaryComponent BinomialQuotient (I,b);
+	    	 );
+	    ) -- else path of if not testPrimary
+     ) -- minimalPrimaryComponent
 
 BinomialQuotient = (I,b) -> (
      -- Algorithm A.3 in Ojeda / Sanchez
@@ -665,7 +711,7 @@ BinomialQuotient = (I,b) -> (
      U' := {}; -- U' as in the paper
      D  := {};
      J := ideal (0_R); -- initialize with zero ideal
-     bexp := (exponents b)#0 - (exponents b)#1 -- exponent vector of b
+     bexp := (exponents b)#0 - (exponents b)#1; -- exponent vector of b
      -- We will often need the image of bexp, so lets cache it
      bexpim := image transpose matrix {bexp};
      quot := ideal; -- will hold quotients
@@ -690,25 +736,31 @@ BinomialQuotient = (I,b) -> (
 			 break;
 			 )
 		    else i = i+1;
-		    )
+		    );
 	       print D;
-	       )
-	  ) -- loop over monomials
+	       );
+	  ); -- loop over monomials
      -- Compute the least common multiple of the orders
-     lc = lcm D;
-     print lc;
-     D = {};
+     e := lcm D; -- e' in paper, but we dont need e later.
+     bqp := binomialQuasiPower (b,e); -- e'th quasipower
+     print ( "Least common multiple : " | toString e);
      for m in U' do(
 	  quot = quotient (I,m);
-	     
-		
-		
-     )
+	  if bqp % quot == 0 then J = J + ideal(m);		
+     	  );
+     return I + J;
+     )     
 
 lcm = l -> (
      if #l == 0 then return 1;
      sublcm := lcm delete (l#0,l);
      return l#0 * sublcm / gcd (l#0, sublcm);
+     )
+
+binomialQuasiPower = (b,e) -> (
+     -- returns the e-th quasipower of the binomial b
+     -- i.e. (b_1)^e - (b_2)^e
+     return (terms b)#0^e - (- (terms b)#0)^e;
      )
 
 BinomialPrimaryDecomposition = I -> (
