@@ -55,7 +55,8 @@ export {binomialCD,
      minimalPrimaryComponent,
      lcm,
      binomialQuasiPower,
-     BinomialQuotient
+     BinomialQuotient,
+     projectToCellRing
      }
 
 needsPackage "SingSolve";
@@ -76,6 +77,16 @@ doNumerics := (options Binomials).Configuration#"doNumerics"
 -- The cellular decomposition is also a primary decomposition.
 -- No lattice needs to be saturated, only roots of monomials
 
+-- Here is a constructed example where the saturations take only values in QQ:
+-- R = QQ[a,b,c,d];
+-- I = ideal (a^2-b^2, b^2-c^2);
+-- testCellular I
+-- bp = BinomialPrimaryDecomposition I
+-- testPrimary bp
+-- intersect bp == I
+ 
+-- Here is a nontrivial example, the first component of the
+-- cellular decomposition is not primary
 -- R = QQ[a,b,c]
 -- I = ideal(a-b^5,a^2-c,b^2-c^3,c^2-a*b)
 
@@ -340,12 +351,11 @@ idealFromCharacter = (R,A,c) -> (
      -- we have complex coefficients :(
      
      -- At least if A is the unit matrix we are done.
-     -- Why is it so complicated to test for identity matrix ?
      idmat := matrix mutableIdentity(ZZ,#var);
      if A == idmat then return ideal binomials;
      
      -- Otherwise a saturation may be needed.  
-     print "Warning ! This step possibly does not terminate !";
+     -- print "Warning ! This step possibly does not terminate !";
      return saturate (ideal binomials, product var);
      )
 
@@ -658,7 +668,7 @@ minimalPrimaryComponent = I -> (
 	       -- i.e. find a generator on which pc1 and pc2 take different values.
 	       print pc1;
 	       print pc2;
-	       for i in 0..#(pc#2)-1 do (
+	       for i in 0..#(pc2#2)-1 do (
 	       	    if pc1#2#i == pc2#2#i then continue
 	       	    else (
 		    	 -- Character differs. Form binomial:
@@ -710,6 +720,10 @@ BinomialQuotient = (I,b) -> (
      R := ring I;
      cv := cellVars (I);
      
+     --First check if we can save a lot of time if already I:b is binomial,
+     -- and no quasipowers have to be taken.
+     if isBinomial (I: sub(ideal(b),R)) then return I: sub(ideal(b),R);
+          
      --Transporting the standardmonomials to R:
      ncvm := ((i) -> sub (i,R) ) \ nonCellstdm I ;
      print ncvm;
@@ -726,9 +740,9 @@ BinomialQuotient = (I,b) -> (
      S := CoeffR[cv]; -- k[\delta] in the paper
      
      for m in ncvm do(
-	  quot = quotient (I, m);
-	  
-	  --Mapping to k[delta] and taking character
+	  quot = I:m;
+	  	  
+	  -- Mapping to k[delta] and taking character
 	  quot = kernel map (R/quot, S);
 	  pc = partialCharacter quot;
 	  
@@ -777,9 +791,34 @@ binomialQuasiPower = (b,e) -> (
 
 BinomialPrimaryDecomposition = I -> (
      -- computes the binomial primary decomposition of a cellular ideal
-     -- I needs to be cellular which is not checked at the moment.
-     -- Implements algorithm 
+     -- I needs to be cellular 
+     -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
+     R := ring I;
+     J := projectToCellRing I;
+     pc := partialCharacter J;
+     ap := BinomialAssociatedPrimes I;
+     -- Projecting down the assoc. primes, removing monomials
+     pap := ap / projectToCellRing;
+     -- Lifting back the result to R:
+     pap = pap / ((P) -> sub(P,R));
+     -- Compute minimal primary Components:
+     hulls := pap / ( (P) -> minimalPrimaryComponent (I + P));
+     -- return beautified result
+     return ideal \ mingens \ hulls;
      )
+
+projectToCellRing = I -> (
+     -- projects a cellular ideal down to the ring k[\deta]
+     -- where delta is the set of cell variables
+     R := ring I;
+     cv := cellVars I;
+          -- Extracts the monomials in the non-Cell variables.
+     -- We map I to the subring: k[ncv]
+     CoeffR := coefficientRing R;
+     S := CoeffR[cv];
+     return kernel map (R/I,S);     
+     )
+     
 
      
 beginDocumentation()
