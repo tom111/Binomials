@@ -43,8 +43,10 @@ export {binomialCD,
      satIdeals,
      testPrimary,
      BinomialAssociatedPrimes,
-     BinomialPrimaryDecomposition,
+     CellularBinomialPrimaryDecomposition,
+     BPD,
      testPrime,
+     testRadical,
      BinomialRadical,
      makeBinomial,
      doExample,
@@ -56,7 +58,8 @@ export {binomialCD,
      lcm,
      binomialQuasiPower,
      BinomialQuotient,
-     projectToCellRing
+     projectToCellRing,
+     removeRedundant
      }
 
 needsPackage "SingSolve";
@@ -79,10 +82,10 @@ doNumerics := (options Binomials).Configuration#"doNumerics"
 
 -- Here is a constructed example where the saturations take only values in QQ:
 -- R = QQ[a,b,c,d];
--- I = ideal (a^2-b^2, b^2-c^2);
+-- I = ideal (a^2-b^2, b^3-c^3);
 -- testCellular I
 -- bp = BinomialPrimaryDecomposition I
--- testPrimary bp
+-- testPrimary \ bp
 -- intersect bp == I
  
 -- Here is a nontrivial example, the first component of the
@@ -647,7 +650,10 @@ minimalPrimaryComponent = I -> (
 	  R := ring I;
      	  J1 := BinomialRadical I;
      	  pc1 := partialCharacter J1;
-	  
+	 
+	  -- TODO:
+	  -- Speed this up by caching the associated primes, 
+	  -- respectively computing only two ! 
 	  ap := BinomialAssociatedPrimes I;
 	  -- ap has at least 2 elements which correspond to 
 	  -- distinct lattices L1 and L2
@@ -659,9 +665,16 @@ minimalPrimaryComponent = I -> (
 	  pc2 := partialCharacter J2;
 	  L2 := image pc2#1;
 	  
+	  print J1;
+	  print pc1;
+	  print "------------";
+	  print J2;
+	  print pc2; 
+	  
 	  L = intersect {L1,L2};
 	  -- The index of L inside L2 is finite if and only if their dimensions coincide
-	  if dim L == dim L2 then (
+	  if rank L == rank L2 then (
+	       print "finite index case !";
 	       -- The finite index case :  
 	       
 	       -- Compute a binomial in J2 which is not in J1.
@@ -672,7 +685,7 @@ minimalPrimaryComponent = I -> (
 	       	    if pc1#2#i == pc2#2#i then continue
 	       	    else (
 		    	 -- Character differs. Form binomial:
-		    	 b := makeBinomial (R, (entries transpose pc2#1)#i, pc2#2#i );
+		    	 b := makeBinomial (QQ[pc2#0], (entries transpose pc2#1)#i, pc2#2#i );
 		    	 print b;
 		    	 break;
 		    	 );
@@ -681,6 +694,7 @@ minimalPrimaryComponent = I -> (
 	       return minimalPrimaryComponent BinomialQuotient (I,b);
 	       )
        	   else (
+		print "infinite index case !";
 		-- The case of infinite index :
 		    
                 -- Find an exponent vector which has infinite order:
@@ -689,12 +703,13 @@ minimalPrimaryComponent = I -> (
      		    
 		 -- Here are the lattice generators
 		 L2cols := entries transpose pc2#1;
+		 -- print L2cols;
 		 -- Try them one by one:
 		 i := 0; -- Counter to determine which generator fits
 		 for c in L2cols do (
 		      -- The span of c:
 		      imc := image transpose matrix {c};
-		      if dim intersect {imc , L} < 1 then (
+		      if rank intersect {imc , L} < 1 then (
 			   -- We have winner 
 			   m := c;
 			   break;
@@ -702,8 +717,10 @@ minimalPrimaryComponent = I -> (
 		      -- Lets try the next vector.
 		      i = i+1;
 		      );
+		 -- print i;
      	         -- now i has the suitable index !
-		 b = makeBinomial(R, L2cols#i, pc2#2#i);		    
+		 b = makeBinomial(QQ[pc2#0], L2cols#i, pc2#2#i);		    
+		 print b;
 	    	 -- Take the quotient of I with respect to b, such that the result is binomial
 	    	 return minimalPrimaryComponent BinomialQuotient (I,b);
 	    	 );
@@ -722,7 +739,8 @@ BinomialQuotient = (I,b) -> (
      
      --First check if we can save a lot of time if already I:b is binomial,
      -- and no quasipowers have to be taken.
-     if isBinomial (I: sub(ideal(b),R)) then return I: sub(ideal(b),R);
+     quot :=  quotient (I , sub(ideal(b),R));
+     if isBinomial quot then return quot;
           
      --Transporting the standardmonomials to R:
      ncvm := ((i) -> sub (i,R) ) \ nonCellstdm I ;
@@ -734,7 +752,6 @@ BinomialQuotient = (I,b) -> (
      bexp := (exponents b)#0 - (exponents b)#1; -- exponent vector of b
      -- We will often need the image of bexp, so lets cache it
      bexpim := image transpose matrix {bexp};
-     quot := ideal; -- will hold quotients
      pc := {}; -- Will hold partial characters;
      CoeffR := coefficientRing R;
      S := CoeffR[cv]; -- k[\delta] in the paper
@@ -789,7 +806,28 @@ binomialQuasiPower = (b,e) -> (
      return ((terms b)#0)^e - (- (terms b)#1)^e;
      )
 
-BinomialPrimaryDecomposition = I -> (
+BPD = I -> (
+     -- The full binomial primary decomposition 
+     -- starting from a not necessarily cellular binomial ideal
+     cd := binomialCD I;
+     counter := 1;
+     cdc := #cd;
+     bpd := {};
+     scan (cd , ( (i) -> (
+	   	    print ("Decomposing cellular component: " | toString counter | " of " | toString cdc);
+		    counter = counter +1;
+--		    print i;
+--		    print CellularBinomialPrimaryDecomposition i;
+		    bpd = bpd | CellularBinomialPrimaryDecomposition i;
+		    )
+	       )
+    	  ); -- apply
+     print bpd;
+     return removeRedundant bpd;
+     )
+     
+
+CellularBinomialPrimaryDecomposition = I -> (
      -- computes the binomial primary decomposition of a cellular ideal
      -- I needs to be cellular 
      -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
@@ -798,17 +836,37 @@ BinomialPrimaryDecomposition = I -> (
      pc := partialCharacter J;
      ap := BinomialAssociatedPrimes I;
      -- Projecting down the assoc. primes, removing monomials
+     -- TODO: Don't compute cell variables twice, thrice,...
      pap := ap / projectToCellRing;
      -- Lifting back the result to R:
      pap = pap / ((P) -> sub(P,R));
-     -- Compute minimal primary Components:
-     hulls := pap / ( (P) -> minimalPrimaryComponent (I + P));
-     -- return beautified result
-     return ideal \ mingens \ hulls;
+     -- Compute and return minimal primary Components:
+     return pap / ( (P) -> minimalPrimaryComponent (I + P));
+     )
+
+removeRedundant = l -> (
+     -- Removes redundant components from a list of ideals to be intersected
+     if #l == 0 then error "empty list given !";
+     Answer := l#0; -- Will hold Intersection of everything in the end
+     result := {l#0};
+     l = drop (l,1); -- Drop l#0;
+     isect := ideal; -- dummy 
+     while #l > 0 do (
+	  isect = intersect (Answer , l#0); -- intersect with next
+	  -- if something was happened, add l#0 to the result
+	  if isect != Answer then (
+	       result = result | {l#0};
+	       print l#0;
+	       )
+	  else print "redundant component found !";
+	  -- short the todolist
+	  l = drop (l,1);
+	  );
+     return ideal \ mingens \ result;
      )
 
 projectToCellRing = I -> (
-     -- projects a cellular ideal down to the ring k[\deta]
+     -- projects a cellular ideal down to the ring k[\delta]
      -- where delta is the set of cell variables
      R := ring I;
      cv := cellVars I;
@@ -818,8 +876,6 @@ projectToCellRing = I -> (
      S := CoeffR[cv];
      return kernel map (R/I,S);     
      )
-     
-
      
 beginDocumentation()
 needsPackage "SimpleDoc";
