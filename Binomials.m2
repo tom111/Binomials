@@ -856,10 +856,11 @@ removeRedundant = l -> (
 	  -- if something was happened, add l#0 to the result
 	  if isect != Answer then (
 	       result = result | {l#0};
+	       Answer = isect;
 	       print l#0;
 	       )
 	  else print "redundant component found !";
-	  -- short the todolist
+	  -- shorten the todolist
 	  l = drop (l,1);
 	  );
      return ideal \ mingens \ result;
