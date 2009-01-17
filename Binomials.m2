@@ -59,7 +59,10 @@ export {binomialCD,
      binomialQuasiPower,
      BinomialQuotient,
      projectToCellRing,
-     removeRedundant
+     removeRedundant,
+     -- Options
+     cellVariables, -- for partialCharacter
+     returnPrimes -- for testPrimary 
      }
 
 needsPackage "SingSolve";
@@ -193,15 +196,23 @@ testCellular = I -> (
      else return false;
      )
 
-partialCharacter = (I) -> (
+partialCharacter = method (Options => {cellVariables => null})
+partialCharacter Ideal := Ideal => o -> I -> (
+     -- Will compute the partial character associated to a cellular binomial Ideal.
+     -- If the cell variables are known they can be given as an optional argument,
+     -- to save cpu cycles.
      vs := {}; -- This will hold the lattice generators
-     vs2 := {};
      vsmat := matrix "0"; -- Holds the matrix whose image is L 
      cl := {}; -- This will hold the coefficients
      R := ring I;
-          
+     
+     -- print o.cellVariables;
      -- The input should be a cellular ideal 
-     cellvars := cellVars(I);
+     if o#cellVariables === null then (
+	  -- No cell variables are given -> compute them
+	  cellvars := cellVars(I);
+	  )
+     else cellvars = o#cellVariables;
      
      -- If there are no cellular variables, 
      -- the ideal is monomial and the partial character is zero:
@@ -496,12 +507,17 @@ BinomialRadical = I -> (
      return sub (prerad ,R) + M;
      )
 
-testPrimary = I ->(
+testPrimary = method (Options => {returnPrimes => false})
+testPrimary Ideal := Ideal => o -> I -> (
      -- Implements Alg. 9.4 in [ES96]
      -- I must be a cellular ideal
      -- Returns the radical of I and whether I is primary
-
-     if not testCellular I then error "Input was not cellular.";
+     -- if the option returnPrimes is true, then it will return 
+     -- the radical in the affirmative case and two distinct associated primes
+     -- otherwise
+     
+     -- this test is expensive ...
+     -- if not testCellular I then error "Input was not cellular.";
      -- The ring of I :
      R := ring I;
      
@@ -530,9 +546,14 @@ testPrimary = I ->(
      -- If the partial character is not saturated, the radical is not prime
      if image Lsat(pc#1) != image pc#1 then (
 	  print "The radical is not prime, as the character is not saturated";
-	  return false;
-	  -- We could output distinct associated primes by 
-	  -- saturating the character here ...
+	  if o#returnPrimes then (
+	       satpc := saturatePChar pc;
+	       ap1 := sub (idealFromCharacter (S,satpc#1,satpc#2#0), R) + M;
+	       ap2 := sub (idealFromCharacter (S,satpc#1,satpc#2#1), R) + M;
+	       -- Return two distinct associated primes:
+	       return {ap1,ap2};
+     	       )	   	       
+	  else return false;
 	  );
      
      -- The list of maximally standard monomials:
@@ -546,13 +567,19 @@ testPrimary = I ->(
 	  q2 := kernel map (R/q,S);
      	  -- I_+(sigma) was called prerad above:
 	  if not isSubset(q2, prerad) then (
-	       print ( "not primary! A monomial is: " | toString m);
-	       -- We should output two associated primes here ...
-	       return false;
+	       -- print ( "not primary! A monomial is: " | toString m);
+	       if o#returnPrimes then (
+		    qchar := partialCharacter q;
+		    satqchar := saturatePChar qchar;
+		    ap2 := idealFromCharacter (S,satqchar#1,satqchar#2#0);
+		    return {rad, ap2 + M};
+     	       	    )		    
+	       else return false;
 	       );
 	  );
      -- print "Ideal is primary";
-     return true;	  
+     if o#returnPrimes then return {rad}
+     else return true;	  
      )
 
 testPrime = I -> (
@@ -636,40 +663,31 @@ BCDisPrimary = I -> (
      return cd;
      )
 
-ImFeelingLucky = I -> (
-     
-     )
-
 minimalPrimaryComponent = I -> (
      -- Input a cellular binomial ideal whose radical is prime.
      -- Ouptut, generators for Hull(I)
      
-     if testPrimary I then return I
+     ap := testPrimary (I, returnPrimes=> true);
+     if #ap == 1 then return I
      else (
-       	  --Remark: This also test for cellularity of input.
 	  R := ring I;
-     	  J1 := BinomialRadical I;
+	  -- The radical:
+     	  J1 := ap#0; -- = BinomialRadical I;
+	  J2 := ap#1;
      	  pc1 := partialCharacter J1;
+	  pc2 := partialCharacter J2;
 	 
-	  -- TODO:
-	  -- Speed this up by caching the associated primes, 
-	  -- respectively computing only two ! 
-	  ap := BinomialAssociatedPrimes I;
-	  -- ap has at least 2 elements which correspond to 
+	  -- ap#0 and ap#1 correspond to 
 	  -- distinct lattices L1 and L2
 	  L1 := image pc1#1;
-	  
-	  -- choosing the other one, saving in J2
-	  J2 := ideal;
-	  if J1 != ap#0 then J2 = ap#0 else J2 =ap#1;
-	  pc2 := partialCharacter J2;
 	  L2 := image pc2#1;
-	  
-	  print J1;
-	  print pc1;
-	  print "------------";
-	  print J2;
-	  print pc2; 
+
+     	  -- For debugging, this will output ideals and characters:	  
+--	  print J1;
+--	  print pc1;
+--	  print "------------";
+--	  print J2;
+--	  print pc2; 
 	  
 	  L = intersect {L1,L2};
 	  -- The index of L inside L2 is finite if and only if their dimensions coincide
