@@ -421,8 +421,7 @@ saturatePCharNum = (va, A, c) -> (
      )
 
 saturatePChar = (va, A, c) -> (
-     -- This function saturates a partial character numerically.
-     -- This is pretty useless.
+     -- This function saturates a partial character.
      
      -- Currently a saturated character is distinguished from its 
      -- saturation as the saturation has a list as third entry.
@@ -572,7 +571,7 @@ testPrimary Ideal := Ideal => o -> I -> (
 		    qchar := partialCharacter q;
 		    satqchar := saturatePChar qchar;
 		    ap2 := idealFromCharacter (S,satqchar#1,satqchar#2#0);
-		    return {rad, ap2 + M};
+		    return {rad, sub(ap2,R) + M};
      	       	    )		    
 	       else return false;
 	       );
@@ -605,9 +604,9 @@ testPrime = I -> (
      
 BinomialAssociatedPrimes = (I) -> (
      -- Computes the associated primes of cellular binomial ideal
-     -- Warning: This function is untested !
      
-     if not testCellular I then error "Input was not cellular.";     
+     -- Disabling the check for a while, it's too time consuming
+     -- if not testCellular I then error "Input was not cellular.";     
      R := ring I;
      cv := cellVars(I); -- cell variables E
      -- print "Cellvars:"; print cv;
@@ -633,7 +632,8 @@ BinomialAssociatedPrimes = (I) -> (
      for m in ml do (
 	  -- print m;
 	  Im = kernel map (R/(I:m),S);
-	  pC = partialCharacter(Im);
+	  -- We already know the cell variables in the following computation
+	  pC = partialCharacter(Im, cellVariables=>cv);
 	  sat = satIdeals(pC);
 	  -- Coercing back to R: 
 	  -- needed ??
@@ -712,7 +712,7 @@ minimalPrimaryComponent = I -> (
 	       return minimalPrimaryComponent BinomialQuotient (I,b);
 	       )
        	   else (
-		print "infinite index case !";
+		-- print "infinite index case !";
 		-- The case of infinite index :
 		    
                 -- Find an exponent vector which has infinite order:
@@ -738,7 +738,7 @@ minimalPrimaryComponent = I -> (
 		 -- print i;
      	         -- now i has the suitable index !
 		 b = makeBinomial(QQ[pc2#0], L2cols#i, pc2#2#i);		    
-		 print b;
+		 -- print b;
 	    	 -- Take the quotient of I with respect to b, such that the result is binomial
 	    	 return minimalPrimaryComponent BinomialQuotient (I,b);
 	    	 );
@@ -762,7 +762,7 @@ BinomialQuotient = (I,b) -> (
           
      --Transporting the standardmonomials to R:
      ncvm := ((i) -> sub (i,R) ) \ nonCellstdm I ;
-     print ncvm;
+     -- print ncvm;
   
      U' := {}; -- U' as in the paper
      D  := {};
@@ -840,7 +840,8 @@ BPD = I -> (
 		    )
 	       )
     	  ); -- apply
-     print bpd;
+     -- print bpd;
+     print "Removing redundant components (fast)";
      return removeRedundant bpd;
      )
      
@@ -850,8 +851,6 @@ CellularBinomialPrimaryDecomposition = I -> (
      -- I needs to be cellular 
      -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
      R := ring I;
-     J := projectToCellRing I;
-     pc := partialCharacter J;
      ap := BinomialAssociatedPrimes I;
      -- Projecting down the assoc. primes, removing monomials
      -- TODO: Don't compute cell variables twice, thrice,...
