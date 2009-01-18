@@ -1,4 +1,13 @@
-cyclotomic = (i,v) -> (
+cyclotomicField = (i,v) -> (
+     R := QQ[v];
+     return R / sub (ideal(cyclotomicPoly (i,v)) ,R);
+     )
+
+-- Inverting Roots manually
+-- cycloInverse = ()    
+
+
+cyclotomicPoly = (i,v) -> (
      -- returns the i-th cyclotomic polynomial in variable v.
      if i <= 0 then error "the input should be > 0.";
      v1=v;
@@ -16,8 +25,8 @@ cyclotomic = (i,v) -> (
      for f in toList (2..i//2) do (
 	  -- check for factor
 	  if i%f == 0 then (
-	       fac := cyclotomic (f,v);
-	       print fac;
+	       fac := cyclotomicPoly (f,v);
+	       -- print fac;
 	       -- division with result in polynomial ring:
 	       min = (flatten entries syz matrix {{min,fac}})#1;
 	       )
