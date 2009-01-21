@@ -895,8 +895,8 @@ projectToCellRing = I -> (
      return kernel map (R/I,S);     
      )
      
-beginDocumentation()
-needsPackage "SimpleDoc";
+-- beginDocumentation()
+-- needsPackage "SimpleDoc";
 
 -- doc ///
 --      Key 
