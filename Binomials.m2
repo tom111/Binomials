@@ -66,6 +66,7 @@ export {binomialCD,
      }
 
 needsPackage "SingSolve";
+needsPackage "FourTiTwo";
 doNumerics := (options Binomials).Configuration#"doNumerics"
 
 -- Here are some examples
@@ -353,24 +354,31 @@ idealFromCharacter = (R,A,c) -> (
      use R;
      var := gens R;
      if A == 0 then return ideal 0_R;
+     cols := null;
+     binomials :=null;
      
-     -- We coerce the coefficients to R:
-     c = apply (c, a -> (sub (a,R)));
-      
-     cols := entries transpose A;
-     binomials := for i in 0..numcols A-1 list makeBinomial (R,cols#i, c#i);
-
-     -- If the coefficients are all "1". Can we use 4ti2 here?
-     -- TODO: This saturation will typically fail if 
-     -- we have complex coefficients :(
-     
-     -- At least if A is the unit matrix we are done.
      idmat := matrix mutableIdentity(ZZ,#var);
-     if A == idmat then return ideal binomials;
-     
-     -- Otherwise a saturation may be needed.  
-     -- print "Warning ! This step possibly does not terminate !";
-     return saturate (ideal binomials, product var);
+     if A == idmat then (
+	  -- If A is the unit matrix we are lucky,
+	  -- no saturation is needed.
+
+	  -- We coerce the coefficients to R:
+	  c = apply (c, a -> (sub (a,R)));
+     	  cols = entries transpose A;    
+     	  binomials = for i in 0..numcols A-1 list makeBinomial (R,cols#i, c#i);	  
+	  return ideal binomials
+	  )
+     else if set c === set {1} then (
+	  -- all coefficients are one, we can use 4ti2.
+	  return toricMarkov (transpose A, R, InputType => "lattice");
+	  )
+     else (
+     	  -- The general case, fall back to saturation in M2:
+	  c = apply (c, a -> (sub (a,R)));
+     	  cols = entries transpose A;    
+     	  binomials = for i in 0..numcols A-1 list makeBinomial (R,cols#i, c#i);
+     	  return saturate (ideal binomials, product var);
+	  );
      )
 
 -- How to do overloading ?	  
@@ -689,7 +697,7 @@ minimalPrimaryComponent = I -> (
 --	  print J2;
 --	  print pc2; 
 	  
-	  L = intersect {L1,L2};
+	  L := intersect {L1,L2};
 	  -- The index of L inside L2 is finite if and only if their dimensions coincide
 	  if rank L == rank L2 then (
 	       print "finite index case !";
