@@ -451,16 +451,16 @@ saturatePChar = (va, A, c) -> (
      Q := QQ[varlist / value];
      eqs := idealFromCharacter(Q,K,c);
      
-     print "The character defining equations are:";
-     print eqs;
+     -- print "The character defining equations are:";
+     -- print eqs;
      -- print ring eqs;
      
      -- We carefully(tm) clear denominators:
      -- Is this saturation needed ??
-     eqso := eqs;
-     eqs = saturate(eqs, product gens ring eqs);
-     if eqso == eqs then print "Saturation was not needed !" 
-     else print "!!!!!!! Saturation was needed - this is a bug  !!!!!!!!";
+     -- eqso := eqs;
+     -- eqs = saturate(eqs, product gens ring eqs);
+     -- if eqso == eqs then print "Saturation was not needed !" 
+     -- else print "!!!!!!! Saturation was needed - this is a bug  !!!!!!!!";
 
      result = BinomialSolve eqs;
      return (va, S, result);
