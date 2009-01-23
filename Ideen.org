@@ -1,0 +1,12 @@
+* Dividing out monomials that are units:
+> | c-1 ad-1 b^2-1 a^2-1 abe-a |
+    c-1  d-a b^2-1 a^2-1  e-b
+
+Here I have used that, modulo the ideal in question, a = a^{-1} 
+is a unit, and b = b^{-1} is, too.  This ideal is precisely the 
+first ideal
+* Compute all "associated lattices"
+and send to Laura matusevic
+* Make a clear naming convention
+for functions acting only on cellular components and others
+* Compute the associated (and minimal) primes of a non-cellular binomial ideal
