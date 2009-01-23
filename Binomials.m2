@@ -37,6 +37,7 @@ export {binomialCD,
      cellVars,
      Lsat,
      idealFromCharacter,
+     LatticeBasisIdeal,
      saturatePChar,
      saturatePCharNum,
      BinomialSolve,
@@ -147,10 +148,11 @@ binomialCD = (I) -> (
 -- By Ignacio Ojeda and Mike Stillman     
      R := ring I;
      n := numgens R;
-     Answer = {};
-     IntersectAnswer = ideal(1_R);
-     ToDo = {{1_R,toList(0..n-1),I}};
-     compo = 0;
+     Answer := {};
+     L := null;
+     IntersectAnswer := ideal(1_R);
+     ToDo := {{1_R,toList(0..n-1),I}};
+     compo := 0;
      next := () -> (
 	 if #ToDo === 0 then false
 	 else (
@@ -206,6 +208,7 @@ partialCharacter Ideal := Ideal => o -> I -> (
      vsmat := matrix "0"; -- Holds the matrix whose image is L 
      cl := {}; -- This will hold the coefficients
      R := ring I;
+     II := ideal;
      
      -- print o.cellVariables;
      -- The input should be a cellular ideal 
@@ -220,12 +223,18 @@ partialCharacter Ideal := Ideal => o -> I -> (
      if cellvars == {} then (
 	  return ({}, matrix "0", {1});
 	  );
+
+     CoeffR := coefficientRing R;
      
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
-     CoeffR := coefficientRing R;
-     S := CoeffR[cellvars];
-     II := kernel map (R/I,S);
+     if #cellvars != #(gens R) then (
+     	  S := CoeffR[cellvars];
+     	  II = kernel map (R/I,S);
+	  )
+     else (
+	  II = I;
+	  );
 
      -- The partial Character of the zero ideal is the 
      -- zero lattice.       
@@ -381,12 +390,19 @@ idealFromCharacter = (R,A,c) -> (
 	  );
      )
 
--- How to do overloading ?	  
--- IdealfromCharacter = (R,A) -> (
---     c := {};
---     for i in (1..numcols A) do c = c | {1};
---     return IdealfromCharacter(R,A,c);
---     )
+LatticeBasisIdeal = (R,L) -> (
+     -- Constructs the lattice basis ideal (whose saturation is the toric ideal)
+     -- Convention is that L's columns generate the lattice.
+     use R;
+     var := gens R;
+     if L == 0 then return ideal 0_R;
+     cols := null;
+     binomials :=null;
+     cols = entries transpose L;
+     binomials = for i in 0..numcols L-1 list makeBinomial (R,cols#i, 1);
+     return ideal binomials;
+     )
+
 
 saturatePCharNum = (va, A, c) -> (
      -- This function saturates a partial character numerically.
