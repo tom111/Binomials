@@ -748,7 +748,7 @@ CellularAssociatedLattices = I -> (
 	       )
 	  else (
 	       redundant = false;
-	       scan (lats, (l -> if image l == image pc#1 then redundant = true;))
+	       scan (lats, (l -> (if image l == image pc#1 then redundant = true)))
      	       );
 	  if redundant then continue
 	  else (
