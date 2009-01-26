@@ -43,6 +43,7 @@ export {binomialCD,
      BinomialSolve,
      satIdeals,
      testPrimary,
+     BinomialMinimalPrimes,
      BinomialAssociatedPrimes,
      CellularBinomialAssociatedPrimes,
      CellularAssociatedLattices,
@@ -210,6 +211,7 @@ partialCharacter Ideal := Ideal => o -> I -> (
      vsmat := matrix "0"; -- Holds the matrix whose image is L 
      cl := {}; -- This will hold the coefficients
      R := ring I;
+     scan (gens R, (v -> v = local v));
      II := ideal;
      
      -- print o.cellVariables;
@@ -231,8 +233,7 @@ partialCharacter Ideal := Ideal => o -> I -> (
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
      if #cellvars != #(gens R) then (
-	  Mon := monoid cellvars;
-     	  S := CoeffR Mon;
+     	  S := CoeffR[cellvars];
      	  II = kernel map (R/I,S);
 	  )
      else (
@@ -306,13 +307,13 @@ cellVars = I -> (
 nonCellstdm = I -> (
      -- Extracts the monomials in the non-Cell variables.
      R := ring I;
+     scan (gens R, (v -> v = local v));     
      cv := set cellVars I; 
      -- Here go the non-cell variables
      ncv := toList (set gens R - cv);
      -- We map I to the subring: k[ncv]
      CoeffR := coefficientRing R;
-     Mon := monoid ncv;
-     S := CoeffR Mon;
+     S := CoeffR[ncv];
      J := kernel map (R/I,S);
           
      Q = S/J;
@@ -429,7 +430,9 @@ saturatePCharNum = (va, A, c) -> (
      -- Now we find the (binomal) equations for the saturated character:
      numvars := numrows K;
      varlist := for i in 0..numvars-1 list value ("m"|i);
-     Q := QQ[varlist / value];
+     -- Our old trick to make variables local:
+     scan (varlist, (v -> v = local v));
+     Q := QQ[varlist];
      eqs := idealFromCharacter(Q,K,c);
      
      print "The character defining equations are:";
@@ -468,7 +471,8 @@ saturatePChar = (va, A, c) -> (
      -- Now we find the (binomal) equations for the saturated character:
      numvars := numrows K;
      varlist := for i in 0..numvars-1 list value ("m"|i);
-     Q := QQ[varlist / value];
+     scan (varlist, (v -> v = local v));
+     Q := QQ[varlist];
      eqs := idealFromCharacter(Q,K,c);
      
      -- print "The character defining equations are:";
@@ -503,9 +507,12 @@ BinomialSolve = I ->(
      
 
 satIdeals = (va, A, d) -> (
+     -- Expects a coefficient field as first argument !
      -- computes all the ideals belonging to saturations of 
      -- a given partial character.
+     -- TODO: Construct the correct coefficient field
      satpc = saturatePChar(va, A, d);
+     scan (satpc#0, (v -> v = local v));     
      -- The following should be the smallest ring 
      -- containing all new coefficients
      Q := QQ[satpc#0];
@@ -519,6 +526,7 @@ BinomialRadical = I -> (
      if not testCellular I then error "Input was not cellular.";
      -- Computes the radical of a cellular binomial ideal
      R := ring I;
+     scan (gens R, (v -> v = local v));
      -- Get the partial character of I
      pc := partialCharacter(I);
      noncellvars := toList(set (gens R) - pc#0);
@@ -528,8 +536,7 @@ BinomialRadical = I -> (
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
      CoeffR := coefficientRing R;
-     Mon := monoid pc#0;
-     S := CoeffR Mon;
+     S := CoeffR[pc#0];
      -- The the radical missing the monomials:
      prerad := kernel map (R/I,S);
      return sub (prerad ,R) + M;
@@ -548,6 +555,7 @@ testPrimary Ideal := Ideal => o -> I -> (
      -- if not testCellular I then error "Input was not cellular.";
      -- The ring of I :
      R := ring I;
+     scan (gens R, (v -> v = local v));
      
      -- Only proper ideals are considered primary
      if I == ideal(1_R) then return false;      
@@ -562,8 +570,7 @@ testPrimary Ideal := Ideal => o -> I -> (
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
      CoeffR := coefficientRing R;
-     Mon := monoid pc#0;
-     S := CoeffR Mon;
+     S := CoeffR[pc#0];
      -- The the radical missing the monomials:
      prerad := kernel map (R/I,S);
      -- print prerad;
@@ -631,13 +638,39 @@ testPrime = I -> (
      -- all tests passed:
      return true;
      )
+
+BinomialMinimalPrimes = I -> (
+     -- Computes the minimial Primes with Algorithm 9.2 in ES96
+     -- TODO: Implement the shortcut mentioned below the Algorithm
+     
+     R := ring I;
+     -- Compute all subsets of variables
+     everything := ideal (1_R);
+     g := set gens R;
+     ss := subsets g; 
+     mp := {}; -- will hold the minimial primes
+     Is := null; -- Will hold candidate ideals
+     ME := null;
+     for s in ss do (
+	  ME = sub (ideal toList (g - s) , R); -- The monomial ideal outside s
+	  Is = saturate ( I + ME, sub (ideal product toList s, R));
+	  if Is == everything then continue
+	  else (
+	       pc = partialCharacter Is;
+	       mp = mp | satIdeals pc;
+	       );
+	  );
+     print mp;
+     return removeRedundant mp;
+     )
       
-CellularBinomialAssociatedPrimes = (I) -> (
+CellularBinomialAssociatedPrimes = I -> (
      -- Computes the associated primes of cellular binomial ideal
      
      -- Disabling the check for a while, it's too time consuming
      -- if not testCellular I then error "Input was not cellular.";     
      R := ring I;
+     scan (gens R, (v -> v = local v));
      cv := cellVars(I); -- cell variables E
      -- print "Cellvars:"; print cv;
      primes := {}; -- This will hold the list of primes
@@ -649,8 +682,7 @@ CellularBinomialAssociatedPrimes = (I) -> (
      -- print ml;
      -- The ring k[E]:
      CoeffR := coefficientRing R;
-     Mon := monoid cv;
-     S := CoeffR Mon;
+     S := CoeffR[cv];
      prerad := kernel map (R/I,S);
      -- The primes will live in a complex ring... 
      -- Maybe later. For now they will ive in R
@@ -688,7 +720,8 @@ CellularAssociatedLattices = I -> (
      -- Todo: Can we get the multiplicities too ?
      
      R := ring I;
-     cv := cellVars(I); -- cell variables E
+     scan (gens R, (v -> v = local v));
+     cv := cellVars I; -- cell variables E
      lats := {}; -- This will hold the list of lattices
      ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
      -- print "Noncellvars"; print ncv;
@@ -697,10 +730,7 @@ CellularAssociatedLattices = I -> (
      ml = ml / ( m -> sub (m,R) );
      -- The ring k[E]:
      CoeffR := coefficientRing R;
-     -- We create a local monoid to avoid polluting namespaces
-     -- outside the function
-     Mon := monoid cv;
-     S := CoeffR Mon;
+     S := CoeffR[cv];
      prerad := kernel map (R/I,S);
      -- A dummy ideal and partial Characters:
      Im := ideal;
@@ -753,6 +783,8 @@ minimalPrimaryComponent = I -> (
      if #ap == 1 then return I
      else (
 	  R := ring I;
+	  -- A trick to not clobber the global variables
+	  scan (gens R, (v -> v = local v));
 	  -- The radical:
      	  J1 := ap#0; -- = BinomialRadical I;
 	  J2 := ap#1;
@@ -835,6 +867,7 @@ BinomialQuotient = (I,b) -> (
      -- result is binomial
      
      R := ring I;
+     scan (gens R, (v -> v = local v));     
      cv := cellVars (I);
      
      --First check if we can save a lot of time if already I:b is binomial,
@@ -854,8 +887,7 @@ BinomialQuotient = (I,b) -> (
      bexpim := image transpose matrix {bexp};
      pc := {}; -- Will hold partial characters;
      CoeffR := coefficientRing R;
-     Mon := monoid cv;
-     S := CoeffR Mon; -- k[\delta] in the paper
+     S := CoeffR[cv]; -- k[\delta] in the paper
      
      for m in ncvm do(
 	  quot = I:m;
@@ -970,12 +1002,12 @@ projectToCellRing = I -> (
      -- projects a cellular ideal down to the ring k[\delta]
      -- where delta is the set of cell variables
      R := ring I;
+     scan (gens R, (v -> v = local v));
      cv := cellVars I;
           -- Extracts the monomials in the non-Cell variables.
      -- We map I to the subring: k[ncv]
      CoeffR := coefficientRing R;
-     Mon := monoid cv;
-     S := CoeffR Mon;
+     S := CoeffR[cv];
      return kernel map (R/I,S);     
      )
      
