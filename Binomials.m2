@@ -44,6 +44,8 @@ export {binomialCD,
      satIdeals,
      testPrimary,
      BinomialAssociatedPrimes,
+     CellularBinomialAssociatedPrimes,
+     CellularAssociatedLattices,
      CellularBinomialPrimaryDecomposition,
      BPD,
      testPrime,
@@ -229,7 +231,8 @@ partialCharacter Ideal := Ideal => o -> I -> (
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
      if #cellvars != #(gens R) then (
-     	  S := CoeffR[cellvars];
+	  Mon := monoid cellvars;
+     	  S := CoeffR Mon;
      	  II = kernel map (R/I,S);
 	  )
      else (
@@ -308,7 +311,8 @@ nonCellstdm = I -> (
      ncv := toList (set gens R - cv);
      -- We map I to the subring: k[ncv]
      CoeffR := coefficientRing R;
-     S := CoeffR[ncv];
+     Mon := monoid ncv;
+     S := CoeffR Mon;
      J := kernel map (R/I,S);
           
      Q = S/J;
@@ -524,7 +528,8 @@ BinomialRadical = I -> (
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
      CoeffR := coefficientRing R;
-     S := CoeffR[pc#0];
+     Mon := monoid pc#0;
+     S := CoeffR Mon;
      -- The the radical missing the monomials:
      prerad := kernel map (R/I,S);
      return sub (prerad ,R) + M;
@@ -557,7 +562,8 @@ testPrimary Ideal := Ideal => o -> I -> (
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
      CoeffR := coefficientRing R;
-     S := CoeffR[pc#0];
+     Mon := monoid pc#0;
+     S := CoeffR Mon;
      -- The the radical missing the monomials:
      prerad := kernel map (R/I,S);
      -- print prerad;
@@ -567,7 +573,7 @@ testPrimary Ideal := Ideal => o -> I -> (
      -- print rad;
      
      -- If the partial character is not saturated, the radical is not prime
-     if image Lsat(pc#1) != image pc#1 then (
+     if image Lsat pc#1 != image pc#1 then (
 	  print "The radical is not prime, as the character is not saturated";
 	  if o#returnPrimes then (
 	       satpc := saturatePChar pc;
@@ -625,8 +631,8 @@ testPrime = I -> (
      -- all tests passed:
      return true;
      )
-     
-BinomialAssociatedPrimes = (I) -> (
+      
+CellularBinomialAssociatedPrimes = (I) -> (
      -- Computes the associated primes of cellular binomial ideal
      
      -- Disabling the check for a while, it's too time consuming
@@ -643,7 +649,8 @@ BinomialAssociatedPrimes = (I) -> (
      -- print ml;
      -- The ring k[E]:
      CoeffR := coefficientRing R;
-     S := CoeffR[cv];
+     Mon := monoid cv;
+     S := CoeffR Mon;
      prerad := kernel map (R/I,S);
      -- The primes will live in a complex ring... 
      -- Maybe later. For now they will ive in R
@@ -669,6 +676,57 @@ BinomialAssociatedPrimes = (I) -> (
 	  );
      return toList set primes;
      )
+
+BinomialAssociatedPrimes = I -> (
+     -- Todo: Compute the Associated Primes of any Binomial Ideal
+     if testCellular I then return CellularBinomialAssociatedPrimes I 
+     else error "Not implemented, sorry!";
+     )
+
+CellularAssociatedLattices = I -> (
+     -- Computes the associated lattices of a cellular binomial ideal
+     -- Todo: Can we get the multiplicities too ?
+     
+     R := ring I;
+     cv := cellVars(I); -- cell variables E
+     lats := {}; -- This will hold the list of lattices
+     ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
+     -- print "Noncellvars"; print ncv;
+     ml := nonCellstdm(I); -- List of std monomials in ncv
+     -- Coercing to R:
+     ml = ml / ( m -> sub (m,R) );
+     -- The ring k[E]:
+     CoeffR := coefficientRing R;
+     -- We create a local monoid to avoid polluting namespaces
+     -- outside the function
+     Mon := monoid cv;
+     S := CoeffR Mon;
+     prerad := kernel map (R/I,S);
+     -- A dummy ideal and partial Characters:
+     Im := ideal;
+     pc := {};
+     redundant := true;
+     -- For each monomial, check if I:m has a different lattice !
+     for m in ml do (
+	  -- print m;
+	  Im = kernel map (R/(I:m),S);
+	  -- We already know the cell variables in the following computation
+	  pc = partialCharacter(Im, cellVariables=>cv);
+	  if #lats == 0 then (
+	       lats = {pc#1};
+	       continue;
+	       )
+	  else (
+	       redundant = false;
+	       scan (lats, (l -> if image l == image pc#1 then redundant = true;))
+     	       );
+	  if redundant then continue
+	  else (
+	       lats = lats | {pc#1};
+	       );
+      	  ); -- for m in ml	    
+     return {cv, lats};
+     ) -- CellularAssociatedLattices
 
 BCDisPrimary = I -> (
      print "Computing Cellular Decomposition";
@@ -796,7 +854,8 @@ BinomialQuotient = (I,b) -> (
      bexpim := image transpose matrix {bexp};
      pc := {}; -- Will hold partial characters;
      CoeffR := coefficientRing R;
-     S := CoeffR[cv]; -- k[\delta] in the paper
+     Mon := monoid cv;
+     S := CoeffR Mon; -- k[\delta] in the paper
      
      for m in ncvm do(
 	  quot = I:m;
@@ -915,7 +974,8 @@ projectToCellRing = I -> (
           -- Extracts the monomials in the non-Cell variables.
      -- We map I to the subring: k[ncv]
      CoeffR := coefficientRing R;
-     S := CoeffR[cv];
+     Mon := monoid cv;
+     S := CoeffR Mon;
      return kernel map (R/I,S);     
      )
      
