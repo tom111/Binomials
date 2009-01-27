@@ -132,6 +132,7 @@ doNumerics := (options Binomials).Configuration#"doNumerics"
 axisSaturate = (I,i) -> (
 -- By Ignacio Ojeda and Mike Stillman
 -- For computing saturations w.r.t. a single variable:
+-- Comments by TK:
     R := ring I;
     I1 := ideal(1_R);
     s = 0;
@@ -139,6 +140,7 @@ axisSaturate = (I,i) -> (
     while not(I1 == I) do (
 	s = s + 1;
 	I1 = I;
+	-- This should be just the quotient. Is this faster ??
 	I = ideal syz gb(matrix{{f}}|gens I,
             SyzygyRows=>1,Syzygies=>true););
     {s-1, I}

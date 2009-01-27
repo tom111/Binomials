@@ -9,4 +9,5 @@ first ideal
 and send to Laura matusevic
 * Make a clear naming convention
 for functions acting only on cellular components and others
-* Compute the associated (and minimal) primes of a non-cellular binomial ideal
+* Compute the associated primes of a non-cellular binomial ideal
+* For Imn compute the monomials, clarify the combinatorial structure !
