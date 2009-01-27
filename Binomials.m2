@@ -323,7 +323,7 @@ nonCellstdm = I -> (
      )
 
 maxNonCellstdm = I -> (
-     -- Extracts the Maximal elements in the set of monomials 
+     -- Extracts the maximal elements in the set of monomials 
      nm := nonCellstdm I;
      -- print nm;
      result := {};
@@ -657,11 +657,40 @@ BinomialMinimalPrimes = I -> (
 	  if Is == everything then continue
 	  else (
 	       pc = partialCharacter Is;
-	       mp = mp | satIdeals pc;
+	       si := satIdeals pc;
+	       si = apply (si , i -> sub(i,R)); -- Coercing to R;
+	       si = si / (i -> (i + ME)); -- Adding monomials;
+	       mp = mp | si;
 	       );
 	  );
-     print mp;
-     return removeRedundant mp;
+     -- print mp;
+     return removeEmbedded mp;
+     )
+
+removeEmbedded = l -> (
+     -- Computes the minimal primes from a list of primes.
+     -- Algorithm : Take elements from the list one by one and remove from the result list
+     -- every element which contains the element at hand.
+     
+     ToDo := copy l;
+     i := ideal;
+     su := {};
+     while #ToDo > 0 do (
+	  print ToDo;
+	  print l;
+	  i = ToDo#0;
+	  su = for i2 in l list (if (isSubset (i,i2)) and (i!=i2) then i2);
+	  
+     	  -- Remove any occurrences of redundant primes from l 
+	  -- and the todolist;
+	  for s in su do (
+	       ToDo = delete (s, ToDo);
+	       l = delete (s, l);
+	       );
+	  -- Remove i from the todolist;
+	  ToDo = delete (i, ToDo);
+	  );
+     return l;
      )
       
 CellularBinomialAssociatedPrimes = I -> (
