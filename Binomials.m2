@@ -27,7 +27,7 @@ newPackage(
     	Authors => {
 	     {Name => "Thomas Kahle", Email => "kahle@mis.mpg.de", HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
     	Headline => "Spezialised routines for binomial Ideals",
-	Configuration => { "doNumerics" => false },
+	Configuration => { },
     	DebuggingMode => true
     	)
    
@@ -71,7 +71,6 @@ export {binomialCD,
 
 needsPackage "SingSolve";
 needsPackage "FourTiTwo";
-doNumerics := (options Binomials).Configuration#"doNumerics"
 
 -- Here are some examples
 
