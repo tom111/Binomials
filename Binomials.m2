@@ -538,7 +538,7 @@ satIdeals = (va, A, d) -> (
 
 BinomialRadical = I -> (
      if testCellular I then (
-	  print "Input cellular, fast method will be used".
+	  print "Input cellular, fast method will be used";
      	  -- Computes the radical of a cellular binomial ideal
      	  R := ring I;
      	  scan (gens R, (v -> v = local v));
@@ -664,6 +664,7 @@ testPrime = I -> (
 
 BinomialMinimalPrimes = I -> (
      -- Computes the minimial Primes with Algorithm 9.2 in ES96
+     -- TODO: This function typically fails due to large demand for memory
      -- TODO: Implement the shortcut mentioned below the Algorithm
      
      R := ring I;
@@ -832,6 +833,8 @@ minimalPrimaryComponent = I -> (
      -- Ouptut, generators for Hull(I)
      
      ap := testPrimary (I, returnPrimes=> true);
+     -- TODO: Can we save time if this guy returns the 
+     -- partial Characters directly ?
      if #ap == 1 then return I
      else (
 	  R := ring I;
