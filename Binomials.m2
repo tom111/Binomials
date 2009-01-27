@@ -66,7 +66,8 @@ export {binomialCD,
      removeRedundant,
      -- Options
      cellVariables, -- for partialCharacter
-     returnPrimes -- for testPrimary 
+     returnPrimes, -- for testPrimary 
+     returnPChars -- for testPrimary
      }
 
 needsPackage "SingSolve";
@@ -565,7 +566,7 @@ BinomialRadical = I -> (
 	  )
      )
 
-testPrimary = method (Options => {returnPrimes => false})
+testPrimary = method (Options => {returnPrimes => false , returnPChars => false})
 testPrimary Ideal := Ideal => o -> I -> (
      -- Implements Alg. 9.4 in [ES96]
      -- I must be a cellular ideal
@@ -573,6 +574,9 @@ testPrimary Ideal := Ideal => o -> I -> (
      -- if the option returnPrimes is true, then it will return 
      -- the radical in the affirmative case and two distinct associated primes
      -- otherwise
+     -- if the option returnPChars is true then it will return partial Characters 
+     -- of the primes instead. 
+     -- If both are true then it will return characters.
      
      -- this test is expensive ...
      -- if not testCellular I then error "Input was not cellular.";
@@ -605,8 +609,14 @@ testPrimary Ideal := Ideal => o -> I -> (
      -- If the partial character is not saturated, the radical is not prime
      if image Lsat pc#1 != image pc#1 then (
 	  print "The radical is not prime, as the character is not saturated";
+	  satpc := null; -- Creating local name
+	  if o#returnPChars then (
+	       -- This one is the fastest, so check it first
+	       satpc = saturatePChar pc;
+	       return {{satpc#0,satpc#1,satpc#2#0}, {satpc#0,satpc#1,satpc#2#1}}
+	       );
 	  if o#returnPrimes then (
-	       satpc := saturatePChar pc;
+	       satpc = saturatePChar pc;
 	       ap1 := sub (idealFromCharacter (S,satpc#1,satpc#2#0), R) + M;
 	       ap2 := sub (idealFromCharacter (S,satpc#1,satpc#2#1), R) + M;
 	       -- Return two distinct associated primes:
@@ -626,10 +636,16 @@ testPrimary Ideal := Ideal => o -> I -> (
 	  q2 := kernel map (R/q,S);
      	  -- I_+(sigma) was called prerad above:
 	  if not isSubset(q2, prerad) then (
-	       -- print ( "not primary! A monomial is: " | toString m);
+	       -- creating some local names:
+	       qchar := null; satqchar := null;
+	       if o#returnPChars then(
+		    qchar = partialCharacter q;
+		    satqchar = saturatePChar qchar;
+		    return {pc, {satqchar#0,satqchar#1,satqchar#2#0}}
+		    );
 	       if o#returnPrimes then (
-		    qchar := partialCharacter q;
-		    satqchar := saturatePChar qchar;
+		    qchar = partialCharacter q;
+		    satqchar = saturatePChar qchar;
 		    ap2 := idealFromCharacter (S,satqchar#1,satqchar#2#0);
 		    return {rad, sub(ap2,R) + M};
      	       	    )		    
@@ -637,8 +653,9 @@ testPrimary Ideal := Ideal => o -> I -> (
 	       );
 	  );
      -- print "Ideal is primary";
-     if o#returnPrimes then return {rad}
-     else return true;	  
+     if o#returnPChars then return {pc};
+     if o#returnPrimes then return {rad};
+     return true;	  
      )
 
 testPrime = I -> (
@@ -832,32 +849,21 @@ minimalPrimaryComponent = I -> (
      -- Input a cellular binomial ideal whose radical is prime.
      -- Ouptut, generators for Hull(I)
      
-     ap := testPrimary (I, returnPrimes=> true);
-     -- TODO: Can we save time if this guy returns the 
-     -- partial Characters directly ?
-     if #ap == 1 then return I
+     apc := testPrimary (I, returnPChars=>true);
+     if #apc == 1 then return I -- radical is only associated prime!
      else (
 	  R := ring I;
 	  -- A trick to not clobber the global variables
 	  scan (gens R, (v -> v = local v));
-	  -- The radical:
-     	  J1 := ap#0; -- = BinomialRadical I;
-	  J2 := ap#1;
-     	  pc1 := partialCharacter J1;
-	  pc2 := partialCharacter J2;
+	  
+     	  pc1 := apc#0;
+	  pc2 := apc#1;
 	 
 	  -- ap#0 and ap#1 correspond to 
 	  -- distinct lattices L1 and L2
 	  L1 := image pc1#1;
 	  L2 := image pc2#1;
 
-     	  -- For debugging, this will output ideals and characters:	  
---	  print J1;
---	  print pc1;
---	  print "------------";
---	  print J2;
---	  print pc2; 
-	  
 	  L := intersect {L1,L2};
 	  -- The index of L inside L2 is finite if and only if their dimensions coincide
 	  if rank L == rank L2 then (
@@ -931,7 +937,7 @@ BinomialQuotient = (I,b) -> (
      if isBinomial quot then return quot;
           
      --Transporting the standardmonomials to R:
-     ncvm := ((i) -> sub (i,R) ) \ nonCellstdm I ;
+     ncvm := (i -> sub (i,R) ) \ nonCellstdm I ;
      -- print ncvm;
   
      U' := {}; -- U' as in the paper
