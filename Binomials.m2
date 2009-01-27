@@ -523,23 +523,32 @@ satIdeals = (va, A, d) -> (
      )
 
 BinomialRadical = I -> (
-     if not testCellular I then error "Input was not cellular.";
-     -- Computes the radical of a cellular binomial ideal
-     R := ring I;
-     scan (gens R, (v -> v = local v));
-     -- Get the partial character of I
-     pc := partialCharacter(I);
-     noncellvars := toList(set (gens R) - pc#0);
+     if testCellular I then (
+	  print "Input cellular, fast method will be used".
+     	  -- Computes the radical of a cellular binomial ideal
+     	  R := ring I;
+     	  scan (gens R, (v -> v = local v));
+     	  -- Get the partial character of I
+     	  pc := partialCharacter(I);
+     	  noncellvars := toList(set (gens R) - pc#0);
+          
+     	  M := sub (ideal (noncellvars),R);
      
-     M := sub (ideal (noncellvars),R);
-     
-     -- We intersect I with the ring k[E]
-     -- In many cases this will be zero
-     CoeffR := coefficientRing R;
-     S := CoeffR[pc#0];
-     -- The the radical missing the monomials:
-     prerad := kernel map (R/I,S);
-     return sub (prerad ,R) + M;
+          -- We intersect I with the ring k[E]
+     	  -- In many cases this will be zero
+     	  CoeffR := coefficientRing R;
+     	  S := CoeffR[pc#0];
+     	  -- The the radical missing the monomials:
+     	  prerad := kernel map (R/I,S);
+     	  return sub (prerad ,R) + M;
+	  )
+     else (
+	  -- In the general case
+	  print "Input not cellular, computing minimial primes ...";
+	  mp := BinomialMinimalPrimes I;
+	  print mp;
+	  return ideal mingens intersect mp;
+	  )
      )
 
 testPrimary = method (Options => {returnPrimes => false})
