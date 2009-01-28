@@ -1,0 +1,14 @@
+#!/bin/sh
+
+#$ -N I23-cellular-decomposition
+#$ -cwd 
+#$ -l long
+#$ -j y
+#$ -o I23.out
+
+echo "starting the job on "
+hostname
+
+. /opt/local/intel/ifort11-settings.sh && /opt/local/bin/M2 I23.m2
+
+echo "finished the job"
