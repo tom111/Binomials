@@ -1,0 +1,20 @@
+\documentclass[a4paper]{article}
+
+\title{Bastard Language from Hell: What is wrong with SINGULAR}
+\begin{document}
+In this document we collect questions about the SINGULAR programming
+language. 
+
+\section{Ideal vs. Standard Bases}
+\label{sec:ideal-vs.-standard}
+
+One major mistake when designing Singular was not to implement
+seperate types for ideal and standard bases. Many algorithms require
+standard bases as input but will still run (and produce wrong results)
+if called with an ideal as argument. 
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
