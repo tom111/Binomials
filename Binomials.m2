@@ -40,7 +40,7 @@ export {binomialCD,
      LatticeBasisIdeal,
      saturatePChar,
      saturatePCharNum,
-     BinomialSolve,
+     BinSolveWrap,
      satIdeals,
      testPrimary,
      BinomialMinimalPrimes,
@@ -501,11 +501,11 @@ saturatePChar = (va, A, c) -> (
      -- if eqso == eqs then print "Saturation was not needed !" 
      -- else print "!!!!!!! Saturation was needed - this is a bug  !!!!!!!!";
 
-     result = BinomialSolve eqs;
+     result = BinSolveWrap eqs;
      return (va, S, result);
      )
 
-BinomialSolve = I ->(
+BinSolveWrap = I ->(
      -- Should find the solutions to the pure binomial system 
      -- and construct a cyclotomic field in which all exist.
      -- Currently it will set to zero everything that is not 
