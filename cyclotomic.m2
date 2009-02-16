@@ -1,21 +1,21 @@
-cyclotomicField = (i,v) -> (
-     R := QQ[v];
-     return R / sub (ideal(cyclotomicPoly (i,v)) ,R);
+cyclotomicField = (i,R) -> (
+     -- Given a ring R, and a power i, the cyclotomic field is returned
+     return toField (R / sub (ideal(cyclotomicPoly (i,R_0)) ,R));
      )
 
 -- Inverting Roots manually
 -- cycloInverse = ()    
 
-
 cyclotomicPoly = (i,v) -> (
      -- returns the i-th cyclotomic polynomial in variable v.
+     -- v must be a variable a priori
+     v = value v;
      if i <= 0 then error "the input should be > 0.";
-     v1=v;
-     if i==1 then return v1-1 ;
-     min := v1^i -1;
+     if i==1 then return v-1 ;
+     min := v^i -1;
      -- dividing out the first cylcotomic polynomial
      -- (with result a polynomial)
-     min = (flatten entries syz matrix {{min ,(v1-1)}})#1; 
+     min = (flatten entries syz matrix {{min ,(v-1)}})#1; 
 
      -- i is prime:
      if isPrime i then return min / (leadCoefficient min);
