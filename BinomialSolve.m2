@@ -1,9 +1,9 @@
-BinomialSolve = I -> (
+BinomialSolve = (I,varname) -> (
      -- Solves a zero dimensional pure difference binomial ideal by
      -- constructing the apropriate cyclotomic field
      -- Make an Option to name the variable for the roots of unity.
      
-     symb := "ww";
+     varname = value varname;
           
      R := ring I;
      RLex := newRing(R,MonomialOrder => Lex);
@@ -29,9 +29,14 @@ BinomialSolve = I -> (
      print "Least common exponent is:";
      print lce;
      
-     -- Construct the Cyclotomic field
-     CF := QQ[symb];
-     print cyclotomicPoly (lce, ww);
-               
-     -- 
+     S := QQ[varname];
+     Mon := monoid flatten entries vars R;
+     C := cyclotomicField(lce,S);
+     RSOL = C Mon;
+
+     -- So RSol is a polynomial ring over QQ[zeta] for a good choice
+     -- of zeta now
+     
+     -- Next we have to construct the list of solutions from the GB
+     
      )
