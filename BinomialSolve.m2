@@ -108,13 +108,28 @@ SolveMore = (binom,psol) -> (
        	   );
       return newsols;	  
       )
-
-BinomialSolve = (I,varname) -> (
-     -- Solves a zero dimensional pure difference binomial ideal by
-     -- constructing the apropriate cyclotomic field
-    
+ 
+BinomialSolve = (I, varname) -> (
+     R := ring I;
+     cd := binomialCD I;
+     exponentsols = flatten for c in cd list CellularBinomialExponentSolve c;
+     
+     -- determine the least common denominator
+     lcd = lcm (denominator  \ exponentsols )
+     
      ww = value varname;
-          
+     S := QQ[ww];
+     Mon := monoid flatten entries vars R;
+     C := cyclotomicField(lcd,S);
+     
+     
+     
+     )
+
+CellularBinomialExponentSolve = I -> (
+     -- Solves a zero dimensional cellular pure difference binomial
+     -- ideal by constructing the apropriate cyclotomic field
+     
      R := ring I;
      varlist := flatten entries vars R;
      RLex := newRing(R,MonomialOrder => Lex);
@@ -127,47 +142,25 @@ BinomialSolve = (I,varname) -> (
      -- a list of n-tuples where n is the number of variables. These
      -- tuples contain either rational numbers at already solved
      -- positions or the symbol '*' indicating that this position is
-     -- unsolved and the special symbol "n" indicating that the
+     -- unsolved and the special symbol null indicating that the
      -- solution(not exponent) is zero
 
-     psols := for v in varlist list "*"; -- Saves the list of partial solutions
+     -- For each variable we check if it is a non-cell variable, ie 
+     -- each solution of the ideal has coordinate zero there
+     psols := for v in varlist list if saturate(I,v) != I then null else "*"; 
+
      -- make it a proper list of solutions
      psols = {psols};
 
-     -- We solve on a log-scale for the exponents, the only difficulty
-     -- would be if a term like (x^3-x) which have zero solutions
+     -- We solve on a log-scale for the exponents
      while #groeb > 0 do (
-	  psols = SolveMore(groeb#0, psols);
+	  -- check if the current term is a binomial
+	  if #(exponents groeb#0) > 1 then (
+	       psols = SolveMore(groeb#0, psols);
+	       );
      	  groeb = drop(groeb, 1);
 	  );
      
-     print psols;
-     
--- Maybe we dont need to create the cyclotomic field     
---      -- Solution for the variable in mon: var = ww	    
---      soldic#varindex = ex;
---      
---           -- We compute the lcm of the exponents to determine the smallest 
---      -- root of unity to adjoin
---      
---      ex := {};
---           
---      apply (groeb, (t -> (
---      	       	    ex = ex | flatten exponents t;	       	    		    
--- 		    )));
---      -- need to strip zeros:
---      lce := lcm toList (set ex - set ({0}));
---      
---      print "Lex Groebner Basis is :";          
---      print groeb;
---      
---      print "Least common exponent is:";
---      print lce;
---      
---      S := QQ[ww];
---      Mon := monoid flatten entries vars R;
---      C := cyclotomicField(lce,S);
---      RSOL = C Mon;
--- 
+     return psols;
      
      )
