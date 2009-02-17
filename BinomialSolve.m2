@@ -35,55 +35,83 @@ SolveMore = (binom,psol) -> (
      -- INPUT: A partial solution and a binomial which after plugging
      -- in the partial solutions is univariate
      -- OUTPUT: An extended partial solution
-     	  	  
+     
      -- Since Lex is a global order the true monomial comes first, right ?
      mon := (terms binom)#0; -- The monomial in the new variable.
-     	  
-      -- we need the index of the variable that we will solve now
-      -- <incomprehensable hack>
-      ind := index (flatten entries gens radical monomialIdeal mon)#0;
-      -- </incomprehensable hack>
+     
+     -- we need the index of the variable that we will solve now
+     -- <incomprehensable hack>
+     ind := index (flatten entries gens radical monomialIdeal mon)#0;
+     var := (flatten entries gens radical monomialIdeal mon)#0;
+     -- </incomprehensable hack>
 
-      rhs := (terms binom)#1; -- The right hand side which is a power
-			      -- of a root of unity
-      erhs := flatten exponents rhs;
-	  				  
-      -- one element list containing the exponent
-      n := (toList (set flatten exponents mon - set {0}))#0; 
-      print mon, n;
-      print psol;
-     	  
-      newsols := {}; -- A list accumulating extended solutions
+     rhs := (terms binom)#1; -- The right hand side which is a power
+			     -- of a root of unity
+     erhs := flatten exponents rhs;
+     
+     newsols := {}; -- A list accumulating extended solutions
+      
+     -- If the binomial contains a common variable in both of its
+     -- monomials then zero is a solution for this variable We are
+     -- looking at erhs at position ind to determine this case
+     
+     roots := {};
+     
+     rhsvarpow := erhs#ind;
+     
+     if rhsvarpow > 0 then (
+	  -- zero is a solution for variable ind
+	  -- We fork of a new solution with entry "n" and divide by 
+	  -- the offending variable
+	  roots = {"n"};
+     	  mon = lift(mon / var^rhsvarpow, ring mon);
+	  rhs = lift(rhs / var^rhsvarpow, ring rhs);
+	  erhs = flatten exponents rhs;
+      	  );
+
+     emon := flatten exponents mon;
+     -- one element list containing the exponent
+     n := (toList (set emon - set {0}))#0; 
+
      	  	  
       -- This needs to be done for each entry in psol:
-      for onesol in psol list (
+      for onesol in psol do (
 	   -- now determine the right hand side exponent from the
 	   -- partial solutions.
-	       
+	   zeroflag := false;    
        	   q := for v in 0..#erhs-1 list (
+		-- First case: variable does not appear -> exponent 0
 		if (erhs#v == 0) then 0
+		else if onesol#v === "n" then (
+		     -- if erhs > 0 and onesol has a "n", then the rhs is zero!
+     	       	     zeroflag = true;
+		     break 
+		     )
+		-- otherwise exponent times old exponent
 		else erhs#v * onesol#v
 		);
-	   print q;
-	   q = sum q;
+	   
+	   if zeroflag and #roots == 0 then (
+		roots = roots | {"n"};
+		)
+	   else (
+		if not zeroflag then q = sum q;
+		);
 	   print q;
      	       
-       -- now everthing is set for the Rooter:
-       roots := Rooter (n,q);
-       extensions := for r in roots list (
-	    for i in 0..#onesol-1 list if i==ind then r else onesol#i
-	    );
-       newsols = newsols | extensions;
-       );
-  return newsols;	  
-  );
-
-
+       	   -- now everthing is set for the Rooter:
+       	   roots = roots | Rooter (n,q);
+       	   extensions := for r in roots list (
+	    	for i in 0..#onesol-1 list if i==ind then r else onesol#i
+	    	);
+       	   newsols = newsols | extensions;
+       	   );
+      return newsols;	  
+      )
 
 BinomialSolve = (I,varname) -> (
      -- Solves a zero dimensional pure difference binomial ideal by
      -- constructing the apropriate cyclotomic field
-     -- Make an Option to name the variable for the roots of unity.
     
      ww = value varname;
           
@@ -95,30 +123,26 @@ BinomialSolve = (I,varname) -> (
      -- First we need a Lex Groebner Basis of our ideal.     
      groeb := flatten entries gens gb sub(I,RLex);
      
-     
      -- The data structure for a partial solution is as follows: It is
      -- a list of n-tuples where n is the number of variables. These
      -- tuples contain either rational numbers at already solved
      -- positions or the symbol '*' indicating that this position is
-     -- unsolved
+     -- unsolved and the special symbol "n" indicating that the
+     -- solution(not exponent) is zero
 
      psols := for v in varlist list "*"; -- Saves the list of partial solutions
-     
-     -- First element of the Groebner basis must be univariate,
-     -- i.e of the form (x_i)^n-1
-     
-     
-     solvable := groeb#0;
-     drop(groeb, 1);
-     
-     print "This equation should be univariate:";     
-     print solvable;
-     
-     print SolveMore(b^4-a,{{0,"*"}});
-     
-    
-     
+     -- make it a proper list of solutions
+     psols = {psols};
 
+     -- We solve on a log-scale for the exponents, the only difficulty
+     -- would be if a term like (x^3-x) which have zero solutions
+     while #groeb > 0 do (
+	  psols = SolveMore(groeb#0, psols);
+     	  groeb = drop(groeb, 1);
+	  );
+     
+     print psols;
+     
 -- Maybe we dont need to create the cyclotomic field     
 --      -- Solution for the variable in mon: var = ww	    
 --      soldic#varindex = ex;
