@@ -146,7 +146,19 @@ BinomialSolve = (I, varname) -> (
      print ("BinomialSolve created a cyclotomic field by adjoining a " | toString lcd | "th root of unity"); 
      
      print ("This root is called " | toString ww ); 
-     return sols; 
+     
+     -- Removing duplicates
+     -- This should not be necessary
+     todo := sols;
+     result = {};
+     while #todo > 0 do (
+	  result = result | todo#0;
+	  cur = todo#0;
+	  print cur;
+	  todo = for t in todo list if t != cur then t else continue;
+     	  );
+     
+     return result; 
      )
 
 CellularBinomialExponentSolve = I -> (
