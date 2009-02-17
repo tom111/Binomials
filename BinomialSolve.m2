@@ -1,7 +1,6 @@
 load "cyclotomic.m2"
-R = QQ[a,b];
-I = ideal (b^3-1,b^2*a^4-b);
-
+R = QQ[a,b,c];
+I = ideal (b^2-a,a^2-c,c^2-b);
 
 -- We solve such equations using modulo 1 arithmetics.  The basic task
 -- is to solve a^n = 1^{k/m}, whose solutions are the equivalence
@@ -114,16 +113,40 @@ BinomialSolve = (I, varname) -> (
      cd := binomialCD I;
      exponentsols = flatten for c in cd list CellularBinomialExponentSolve c;
      
-     -- determine the least common denominator
-     lcd = lcm (denominator  \ exponentsols )
+     print exponentsols;
+     -- determine the least common denominator, ignoring nulls
+     denoms := for i in flatten exponentsols list if i =!= null then denominator i else continue;
+     print denoms;
+     lcd = lcm denoms;
+     print lcd;
+
+     -- This is our standard. Coefficients are rational?
+     C := QQ;     
+     if lcd > 2 then (
+	  ww = value varname;
+     	  S := QQ[ww];
+     	  Mon := monoid flatten entries vars R;
+     	  C = cyclotomicField(lcd,S);
+	  );
      
-     ww = value varname;
-     S := QQ[ww];
-     Mon := monoid flatten entries vars R;
-     C := cyclotomicField(lcd,S);
+     expo = q -> (
+     -- This inline function maps a quotient from QQ to its element in S	  
+	  if q === null then return 0_C;
+	  if q == 0 then return 1_C;
+	  k := numerator sub (q,QQ);
+	  m := denominator sub(q,QQ);
+	  if m != lcd then k = k * lcd / m;
+	  return sub(ww^k,C);
+	  );
      
+     sols = flatten exponentsols;
+     sols = expo \ sols;
+     sols = pack (#(gens ring I),sols);
      
+     print ("BinomialSolve created a cyclotomic field by adjoining a " | toString lcd | "th root of unity"); 
      
+     print ("This root is called " | toString ww ); 
+     return sols; 
      )
 
 CellularBinomialExponentSolve = I -> (
