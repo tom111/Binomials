@@ -1,7 +1,7 @@
 load "cyclotomic.m2"
 load "Binomials.m2"
-R = QQ[a,b,c];
-I = ideal (b^2-a,a^2-c,c^2-b);
+R = QQ[a,b,c,d];
+I = ideal (b^2-a,a^2-c,c^2-b,d^4-a*b^2);
 
 -- We solve such equations using modulo 1 arithmetics.  The basic task
 -- is to solve a^n = 1^{k/m}, whose solutions are the equivalence
@@ -36,10 +36,10 @@ SolveMore = (binom,psol) -> (
      -- in the partial solutions is univariate
      -- OUTPUT: An extended partial solution
 
-     print "Entering function SolveMore";     
-     print psol;
-     print binom;
-     
+--      print "Entering function SolveMore";     
+--      print psol;
+--      print binom;
+--      
      -- Since Lex is a global order the true monomial comes first, right ?
      mon := (terms binom)#0; -- The monomial in the new variable.
      
@@ -111,12 +111,25 @@ SolveMore = (binom,psol) -> (
        	   newsols = newsols | extensions;
        	   );
       
-      print "Leaving Function SolveMore";
-      print newsols;
-      
+--       print "Leaving Function SolveMore";
+--       print newsols;
+--       
       
       return newsols;	  
       )
+
+expo = q -> (
+     -- This auxiallary function maps a quotient from QQ to its
+     -- element in S
+     if q === null then return 0_C;
+     if q == 0 or q == 1 then return 1_C;
+     if q == (1/2) then return -1_C;
+     k := numerator sub(q,QQ);
+     m := denominator sub(q,QQ);
+     if m != lcd then k = k * sub(lcd / m,ZZ);
+     return sub(ww^k,C);
+     );
+     
  
 BinomialSolve = (I, varname) -> (
      R := ring I;
@@ -135,7 +148,6 @@ BinomialSolve = (I, varname) -> (
 
      -- This is our standard. Coefficients are rational?
      C := QQ;     
-     print describe C;
      if lcd > 2 then (
 	  print "Adjoining roots of unity is needed";
 	  ww = value varname;
@@ -144,31 +156,9 @@ BinomialSolve = (I, varname) -> (
      	  C = cyclotomicField(lcd,S);
 	  );
      
-     print describe C;
-     
-     print ww^3;
-     
-     
-     expo = q -> (
-     -- This inline function maps a quotient from QQ to its element in S	  
-	  if q === null then return 0_C;
-	  if q == 0 or q == 1 then return 1_C;
-	  if q == (1/2) then return -1_C;
-	  k := numerator sub(q,QQ);
-	  m := denominator sub(q,QQ);
-	  if m != lcd then k = k * sub(lcd / m,ZZ);
-	  return sub(ww^k,C);
-	  );
-     
-     print exponentsols#2;
-     print exponentsols#3;
      sols = flatten exponentsols;
-     print sols#0;
      sols = expo \ sols;
      sols = pack (#(gens ring I),sols);
-     print sols#2;
-     print sols#3;
-     
      
      print ("BinomialSolve created a cyclotomic field by adjoining a " | toString lcd | "th root of unity"); 
      
