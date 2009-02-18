@@ -22,8 +22,8 @@
 
 newPackage(
 	"Binomials",
-    	Version => "0.1", 
-    	Date => "January 2009",
+    	Version => "0.2", 
+    	Date => "February 2009",
     	Authors => {
 	     {Name => "Thomas Kahle", Email => "kahle@mis.mpg.de", HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
     	Headline => "Spezialised routines for binomial Ideals",
@@ -72,6 +72,7 @@ export {binomialCD,
 
 needsPackage "SingSolve";
 needsPackage "FourTiTwo";
+needsPackage "BinomialSolve";
 
 -- Here are some examples
 
@@ -1021,7 +1022,6 @@ BPD = I -> (
      return removeRedundant bpd;
      )
      
-
 CellularBinomialPrimaryDecomposition = I -> (
      -- computes the binomial primary decomposition of a cellular ideal
      -- I needs to be cellular 
