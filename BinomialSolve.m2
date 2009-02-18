@@ -35,6 +35,10 @@ SolveMore = (binom,psol) -> (
      -- INPUT: A partial solution and a binomial which after plugging
      -- in the partial solutions is univariate
      -- OUTPUT: An extended partial solution
+
+     print "Entering function SolveMore";     
+     print psol;
+     print binom;
      
      -- Since Lex is a global order the true monomial comes first, right ?
      mon := (terms binom)#0; -- The monomial in the new variable.
@@ -73,9 +77,9 @@ SolveMore = (binom,psol) -> (
      -- one element list containing the exponent
      n := (toList (set emon - set {0}))#0; 
 
-     	  	  
       -- This needs to be done for each entry in psol:
       for onesol in psol do (
+	   roots = {};
 	   -- now determine the right hand side exponent from the
 	   -- partial solutions.
 	   zeroflag := false;    
@@ -97,7 +101,7 @@ SolveMore = (binom,psol) -> (
 	   else (
 		if not zeroflag then q = sum q;
 		);
-	   print q;
+	   -- print q;
      	       
        	   -- now everthing is set for the Rooter:
        	   roots = roots | Rooter (n,q);
@@ -106,6 +110,11 @@ SolveMore = (binom,psol) -> (
 	    	);
        	   newsols = newsols | extensions;
        	   );
+      
+      print "Leaving Function SolveMore";
+      print newsols;
+      
+      
       return newsols;	  
       )
  
@@ -151,10 +160,15 @@ BinomialSolve = (I, varname) -> (
 	  return sub(ww^k,C);
 	  );
      
-     -- print sols;
+     print exponentsols#2;
+     print exponentsols#3;
      sols = flatten exponentsols;
+     print sols#0;
      sols = expo \ sols;
      sols = pack (#(gens ring I),sols);
+     print sols#2;
+     print sols#3;
+     
      
      print ("BinomialSolve created a cyclotomic field by adjoining a " | toString lcd | "th root of unity"); 
      
@@ -171,7 +185,7 @@ BinomialSolve = (I, varname) -> (
 -- 	  todo = for t in todo list if t != cur then t else continue;
 --      	  );
 --      
-     return result; 
+     return sols; 
      )
 
 CellularBinomialExponentSolve = I -> (
