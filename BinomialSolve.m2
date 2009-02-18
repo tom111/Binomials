@@ -1,11 +1,46 @@
-load "cyclotomic.m2"
-load "Binomials.m2"
-R = QQ[a,b,c,d];
-I = ideal (b^2-a,a^2-c,c^2-b,d^4-a*b^2);
+-- -*- coding: utf-8 -*-
+--  BinomialSolve.m2
+--
+--  Copyright (C) 2009 Thomas Kahle <kahle@mis.mpg.de>
+--
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--
+--  This program is free software; you can redistribute it and/or modify
+--  it under the terms of the GNU General Public License as published by
+--  the Free Software Foundation; either version 2 of the License, or (at
+--  your option) any later version.
+--
+--  This program is distributed in the hope that it will be useful, but
+--  WITHOUT ANY WARRANTY; without even the implied warranty of
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+--  General Public License for more details.
+--
+--  You should have received a copy of the GNU General Public License along
+--  with this program; if not, write to the Free Software Foundation, Inc.,
+--  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+--
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--- We solve such equations using modulo 1 arithmetics.  The basic task
--- is to solve a^n = 1^{k/m}, whose solutions are the equivalence
--- classes of: k/nm, 1/n + k/m, 2/mn + k/nm,... , (n-1)/n + k/nm
+newPackage(
+	"BinomialSolve",
+    	Version => "0.1", 
+    	Date => "February, 2009",
+    	Authors => {{Name => "Thomas Kahle", 
+		  Email => "kahle@mis.mpg.de", 
+		  HomePage => "http://www.math.uiuc.edu/~doe/"}},
+    	Headline => "a solver for pure difference binomial ideals",
+    	DebuggingMode => true
+    	)
+
+export {BinomialSolve}
+
+needsPackage "cyclotomic.m2"
+needsPackage "Binomials.m2"
+
+-- We solve pure difference binomial equations using modulo 1
+-- arithmetics. The basic task is to solve a^n = 1^{k/m}, whose
+-- solutions are the equivalence classes of: k/nm, 1/n + k/m, 2/mn +
+-- k/nm,... , (n-1)/n + k/nm
           
 -- The following function implements this:
 Rooter = (n,q) -> (
@@ -118,20 +153,11 @@ SolveMore = (binom,psol) -> (
       return newsols;	  
       )
 
-expo = q -> (
-     -- This auxiallary function maps a quotient from QQ to its
-     -- element in S
-     if q === null then return 0_C;
-     if q == 0 or q == 1 then return 1_C;
-     if q == (1/2) then return -1_C;
-     k := numerator sub(q,QQ);
-     m := denominator sub(q,QQ);
-     if m != lcd then k = k * sub(lcd / m,ZZ);
-     return sub(ww^k,C);
-     );
-     
- 
 BinomialSolve = (I, varname) -> (
+     -- A ready to use solver for zero-dim'l pure difference Binomial
+     -- Ideals INPUT: I, the ideal, "varname", A free symbol to be
+     -- used as the name of a root of unity which will be adjoined
+     -- OUTPUT: The list of solutions in QQ(some root of unity)
      R := ring I;
      cd := binomialCD I;
      exponentsols = flatten for c in cd list CellularBinomialExponentSolve c;
@@ -155,6 +181,19 @@ BinomialSolve = (I, varname) -> (
      	  Mon := monoid flatten entries vars R;
      	  C = cyclotomicField(lcd,S);
 	  );
+     
+     expo = q -> (
+     -- This auxiallary function maps a quotient from QQ to its
+     -- element in S
+     if q === null then return 0_C;
+     if q == 0 or q == 1 then return 1_C;
+     if q == (1/2) then return -1_C;
+     k := numerator sub(q,QQ);
+     m := denominator sub(q,QQ);
+     if m != lcd then k = k * sub(lcd / m,ZZ);
+     return sub(ww^k,C);
+     );
+     
      
      sols = flatten exponentsols;
      sols = expo \ sols;
