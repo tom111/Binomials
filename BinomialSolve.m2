@@ -1,4 +1,5 @@
 load "cyclotomic.m2"
+load "Binomials.m2"
 R = QQ[a,b,c];
 I = ideal (b^2-a,a^2-c,c^2-b);
 
@@ -117,8 +118,11 @@ BinomialSolve = (I, varname) -> (
      -- determine the least common denominator, ignoring nulls
      denoms := for i in flatten exponentsols list if i =!= null then denominator i else continue;
      print denoms;
+     -- If there are no denominators, the ideal was monomial
+     -- and we return only (0,0,...,0)
+     if denoms === {} then return {for i in gens R list 0};
      lcd = lcm denoms;
-     print lcd;
+--     print lcd;
 
      -- This is our standard. Coefficients are rational?
      C := QQ;     
@@ -154,7 +158,7 @@ BinomialSolve = (I, varname) -> (
      while #todo > 0 do (
 	  result = result | todo#0;
 	  cur = todo#0;
-	  print cur;
+	  -- print cur;
 	  todo = for t in todo list if t != cur then t else continue;
      	  );
      
@@ -173,6 +177,9 @@ CellularBinomialExponentSolve = I -> (
      -- First we need a Lex Groebner Basis of our ideal.     
      groeb := flatten entries gens gb sub(I,RLex);
      
+     print "This is the Groebner basis. Is it ordered correctly ??";
+     print groeb;
+          
      -- The data structure for a partial solution is as follows: It is
      -- a list of n-tuples where n is the number of variables. These
      -- tuples contain either rational numbers at already solved
