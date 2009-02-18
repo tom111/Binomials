@@ -114,10 +114,10 @@ BinomialSolve = (I, varname) -> (
      cd := binomialCD I;
      exponentsols = flatten for c in cd list CellularBinomialExponentSolve c;
      
-     print exponentsols;
+     -- print exponentsols;
      -- determine the least common denominator, ignoring nulls
      denoms := for i in flatten exponentsols list if i =!= null then denominator i else continue;
-     print denoms;
+     -- print denoms;
      -- If there are no denominators, the ideal was monomial
      -- and we return only (0,0,...,0)
      if denoms === {} then return {for i in gens R list 0};
@@ -136,13 +136,17 @@ BinomialSolve = (I, varname) -> (
      expo = q -> (
      -- This inline function maps a quotient from QQ to its element in S	  
 	  if q === null then return 0_C;
-	  if q == 0 then return 1_C;
+	  if q == 0 or q == 1 then return 1_C;
+	  if q == (1/2) then return -1_C;
 	  k := numerator sub (q,QQ);
 	  m := denominator sub(q,QQ);
 	  if m != lcd then k = k * lcd / m;
 	  return sub(ww^k,C);
 	  );
      
+     print expo (1/2);
+          
+     -- print sols;
      sols = flatten exponentsols;
      sols = expo \ sols;
      sols = pack (#(gens ring I),sols);
@@ -153,15 +157,15 @@ BinomialSolve = (I, varname) -> (
      
      -- Removing duplicates
      -- This should not be necessary
-     todo := sols;
-     result = {};
-     while #todo > 0 do (
-	  result = result | todo#0;
-	  cur = todo#0;
-	  -- print cur;
-	  todo = for t in todo list if t != cur then t else continue;
-     	  );
-     
+--      todo := sols;
+--      result = {};
+--      while #todo > 0 do (
+-- 	  result = result | todo#0;
+-- 	  cur = todo#0;
+-- 	  -- print cur;
+-- 	  todo = for t in todo list if t != cur then t else continue;
+--      	  );
+--      
      return result; 
      )
 
