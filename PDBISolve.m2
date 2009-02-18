@@ -22,12 +22,12 @@
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 newPackage(
-	"BinomialSolve",
+	"PDBISolve",
     	Version => "0.1", 
     	Date => "February, 2009",
     	Authors => {{Name => "Thomas Kahle", 
 		  Email => "kahle@mis.mpg.de", 
-		  HomePage => "http://www.math.uiuc.edu/~doe/"}},
+		  HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
     	Headline => "a solver for pure difference binomial ideals",
     	DebuggingMode => true
     	)

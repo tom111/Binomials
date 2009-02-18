@@ -1,3 +1,4 @@
+-- -*- coding: utf-8 -*-
 --  Binomials.m2
 --
 --  Copyright (C) 2009 Thomas Kahle <kahle@mis.mpg.de>
@@ -72,7 +73,7 @@ export {binomialCD,
 
 needsPackage "SingSolve";
 needsPackage "FourTiTwo";
-needsPackage "BinomialSolve";
+needsPackage "PDBISolve";
 
 -- Here are some examples
 
