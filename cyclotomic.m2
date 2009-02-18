@@ -1,3 +1,41 @@
+-- -*- coding: utf-8 -*-
+--  cyclotomic.m2
+--
+--  Copyright (C) 2009 Thomas Kahle <kahle@mis.mpg.de>
+--
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--
+--  This program is free software; you can redistribute it and/or modify
+--  it under the terms of the GNU General Public License as published by
+--  the Free Software Foundation; either version 2 of the License, or (at
+--  your option) any later version.
+--
+--  This program is distributed in the hope that it will be useful, but
+--  WITHOUT ANY WARRANTY; without even the implied warranty of
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+--  General Public License for more details.
+--
+--  You should have received a copy of the GNU General Public License along
+--  with this program; if not, write to the Free Software Foundation, Inc.,
+--  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+--
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+newPackage(
+	"cyclotomic",
+    	Version => "0.1", 
+    	Date => "February, 2009",
+    	Authors => {{Name => "Thomas Kahle", 
+		  Email => "kahle@mis.mpg.de", 
+		  HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
+    	Headline => "routines for cyclotomic fields",
+    	DebuggingMode => true
+    	)
+
+export {cyclotomicField,
+        cyclotomicPoly
+       }
+
 cyclotomicField = (i,R) -> (
      -- Given a ring R, and a power i, the cyclotomic field is returned
      return toField (R / sub (ideal(cyclotomicPoly (i,R_0)) ,R));
