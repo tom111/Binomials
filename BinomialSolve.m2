@@ -122,30 +122,35 @@ BinomialSolve = (I, varname) -> (
      -- and we return only (0,0,...,0)
      if denoms === {} then return {for i in gens R list 0};
      lcd = lcm denoms;
---     print lcd;
+     print lcd;
 
      -- This is our standard. Coefficients are rational?
      C := QQ;     
+     print describe C;
      if lcd > 2 then (
+	  print "Adjoining roots of unity is needed";
 	  ww = value varname;
      	  S := QQ[ww];
      	  Mon := monoid flatten entries vars R;
      	  C = cyclotomicField(lcd,S);
 	  );
      
+     print describe C;
+     
+     print ww^3;
+     
+     
      expo = q -> (
      -- This inline function maps a quotient from QQ to its element in S	  
 	  if q === null then return 0_C;
 	  if q == 0 or q == 1 then return 1_C;
 	  if q == (1/2) then return -1_C;
-	  k := numerator sub (q,QQ);
+	  k := numerator sub(q,QQ);
 	  m := denominator sub(q,QQ);
-	  if m != lcd then k = k * lcd / m;
+	  if m != lcd then k = k * sub(lcd / m,ZZ);
 	  return sub(ww^k,C);
 	  );
      
-     print expo (1/2);
-          
      -- print sols;
      sols = flatten exponentsols;
      sols = expo \ sols;
