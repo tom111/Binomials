@@ -511,8 +511,9 @@ BinSolveWrap = I ->(
      -- and construct a cyclotomic field in which all exist.
      -- Currently it will set to zero everything that is not 
      -- in QQ.
-     print "Currently we run Singular and parse the result";
-     sols := singsolve I;
+--     print "Currently we run Singular and parse the result";
+--    sols := singsolve I;
+     sols = BinomialSolve I;
      for sol in sols do(
 	  for entry in sol do(
 	       entry = sub (entry, QQ);
@@ -710,9 +711,11 @@ BinomialMinimalPrimes = I -> (
      )
 
 removeEmbedded = l -> (
-     -- Computes the minimal primes from a list of primes.
-     -- Algorithm : Take elements from the list one by one and remove from the result list
-     -- every element which contains the element at hand.
+     -- Computes the minimal primes from a list of primes.  
+     
+     -- Algorithm: Copy the input list, then walk through the input
+     -- list and remove from the copy every element which contains the
+     -- element at hand.
      
      ToDo := copy l;
      i := ideal;
@@ -755,10 +758,6 @@ CellularBinomialAssociatedPrimes = I -> (
      CoeffR := coefficientRing R;
      S := CoeffR[cv];
      prerad := kernel map (R/I,S);
-     -- The primes will live in a complex ring... 
-     -- Maybe later. For now they will ive in R
-     -- CR = CC[gens R];
-     --M := sub (ideal (ncv),CR); -- The monomial radical ideal
      M := sub (ideal (ncv),R); -- The monomial radical ideal
      -- A dummy ideal and partial Characters:
      Im := ideal;
@@ -774,6 +773,8 @@ CellularBinomialAssociatedPrimes = I -> (
 	  sat = sat / (I -> sub (I,R));
 	  sat = sat / (I -> I + M);
 	  -- adding result and removing duplicates
+	  -- This looks wrong !! 
+	  -- CHECK IT !!!
 	  if isSubset ({sat}, primes) then continue;
 	  primes = primes | toList set sat;
 	  );

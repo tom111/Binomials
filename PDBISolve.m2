@@ -1,5 +1,5 @@
 -- -*- coding: utf-8 -*-
---  BinomialSolve.m2
+--  PDBISolve.m2
 --
 --  Copyright (C) 2009 Thomas Kahle <kahle@mis.mpg.de>
 --
@@ -34,8 +34,8 @@ newPackage(
 
 export {BinomialSolve}
 
-needsPackage "cyclotomic.m2"
-needsPackage "Binomials.m2"
+needsPackage "cyclotomic"
+needsPackage "Binomials"
 
 -- We solve pure difference binomial equations using modulo 1
 -- arithmetics. The basic task is to solve a^n = 1^{k/m}, whose
