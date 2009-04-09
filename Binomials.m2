@@ -136,8 +136,8 @@ axisSaturate = (I,i) -> (
 -- Comments by TK:
     R := ring I;
     I1 := ideal(1_R);
-    s = 0;
-    f = R_i;
+    s := 0;
+    f := R_i;
     while not(I1 == I) do (
 	s = s + 1;
 	I1 = I;
