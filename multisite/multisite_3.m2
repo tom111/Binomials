@@ -34,5 +34,5 @@ reactionsIdeal=ideal(	e*s000-i000, i000*(s000-e*s100),
 	f*s111-j111, j111*(s111-f*s110));
 -- Try to decompose! 
 time cd = binomialCD (reactionsIdeal + ideal(e)); 
-time cd = binomialCD (reactionsIdeal + ideal(s000)); 
-time cd = binomialCD (reactionsIdeal + ideal(s100)); 
+-- time cd = binomialCD (reactionsIdeal + ideal(s000)); 
+-- time cd = binomialCD (reactionsIdeal + ideal(s100)); 
