@@ -1070,7 +1070,5 @@ projectToCellRing = I -> (
      -- We map I to the subring: k[ncv]
      CoeffR := coefficientRing R;
      S := CoeffR[cv];
-     return kernel map (R/I,S);     
+     return kernel map (R/I,S);
      )
-     
-     
