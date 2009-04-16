@@ -1,7 +1,10 @@
+* Handling the git-beast:
+** The experimental branch is the one we are working on
+** The master branch is kind of a release branch that tracks public versions
 * To make the cellular decomposition faster
 ** Can we guess a priori some monomial primes ?
 * Dividing out monomials that are units:
-> | c-1 ad-1 b^2-1 a^2-1 abe-a |
+  > | c-1 ad-1 b^2-1 a^2-1 abe-a |
     c-1  d-a b^2-1 a^2-1  e-b
 
 Here I have used that, modulo the ideal in question, a = a^{-1} 
