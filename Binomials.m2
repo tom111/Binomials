@@ -70,7 +70,6 @@ export {binomialCD,
      returnPChars -- for testPrimary
      }
 
-needsPackage "SingSolve";
 needsPackage "FourTiTwo";
 needsPackage "PDBISolve";
 
@@ -511,8 +510,6 @@ BinSolveWrap = I ->(
      -- and construct a cyclotomic field in which all exist.
      -- Currently it will set to zero everything that is not 
      -- in QQ.
---     print "Currently we run Singular and parse the result";
---    sols := singsolve I;
      sols = BinomialSolve I;
      for sol in sols do(
 	  for entry in sol do(
