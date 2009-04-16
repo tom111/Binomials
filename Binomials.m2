@@ -23,8 +23,8 @@
 
 newPackage(
 	"Binomials",
-    	Version => "0.2", 
-    	Date => "February 2009",
+    	Version => "0.21", 
+    	Date => "April 2009",
     	Authors => {
 	     {Name => "Thomas Kahle", Email => "kahle@mis.mpg.de", HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
     	Headline => "Spezialised routines for binomial Ideals",
