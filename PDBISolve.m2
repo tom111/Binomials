@@ -169,7 +169,7 @@ BinomialSolve = (I, varname) -> (
      -- If there are no denominators, the ideal was monomial
      -- and we return only (0,0,...,0)
      if denoms === {} then return {for i in gens R list 0};
-     lcd = lcm denoms;
+     lcd := lcm denoms;
      print lcd;
 
      -- This is our standard. Coefficients are rational?
