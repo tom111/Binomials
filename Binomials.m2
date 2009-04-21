@@ -1,3 +1,4 @@
+
 -- -*- coding: utf-8 -*-
 --  Binomials.m2
 --
@@ -23,8 +24,8 @@
 
 newPackage(
 	"Binomials",
-    	Version => "0.21", 
-    	Date => "April 2009",
+    	Version => "0.3", 
+    	Date => "May 2009",
     	Authors => {
 	     {Name => "Thomas Kahle", Email => "kahle@mis.mpg.de", HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
     	Headline => "Spezialised routines for binomial Ideals",
@@ -329,9 +330,8 @@ nonCellstdm = I -> (
      -- We map I to the subring: k[ncv]
      CoeffR := coefficientRing R;
      S := CoeffR[ncv];
-     J := kernel map (R/I,S);
-          
-     Q = S/J;
+     J := kernel map (R/I,S); -- image of I in the subring S
+     Q = S/J; 
      slist = flatten entries flatten basis Q;
      use R;
      return slist;
@@ -358,7 +358,7 @@ maxNonCellstdm = I -> (
 
 makeBinomial = (R,m,c) -> (
      -- constructs the binomial associated to 
-     -- exponent vector m and coefficient c in the R
+     -- exponent vector m and coefficient c in R
      var := gens R;
      posmon :=1;
      negmon :=1;
@@ -405,6 +405,7 @@ idealFromCharacter = (R,A,c) -> (
      	  -- The general case, fall back to saturation in M2:
 	  c = apply (c, a -> (sub (a,R)));
      	  cols = entries transpose A;    
+	  for i in 0..numcols A-1 do print (R,cols#i,c#i);
      	  binomials = for i in 0..numcols A-1 list makeBinomial (R,cols#i, c#i);
      	  return saturate (ideal binomials, product var);
 	  );
@@ -494,14 +495,9 @@ saturatePChar = (va, A, c) -> (
      -- print eqs;
      -- print ring eqs;
      
-     -- We carefully(tm) clear denominators:
-     -- Is this saturation needed ??
-     -- eqso := eqs;
-     -- eqs = saturate(eqs, product gens ring eqs);
-     -- if eqso == eqs then print "Saturation was not needed !" 
-     -- else print "!!!!!!! Saturation was needed - this is a bug  !!!!!!!!";
-
-     result = BinSolveWrap eqs;
+     result = BinomialSolve (eqs,ww);
+     print "In saturatePChar the result is";
+     print result;
      return (va, S, result);
      )
 
@@ -521,15 +517,17 @@ BinSolveWrap = I ->(
      
 
 satIdeals = (va, A, d) -> (
-     -- Expects a coefficient field as first argument !
-     -- computes all the ideals belonging to saturations of 
+     -- Computes all the ideals belonging to saturations of 
      -- a given partial character.
      -- TODO: Construct the correct coefficient field
      satpc = saturatePChar(va, A, d);
+     print "The cyclotomic field is:";
+     print ring satpc#2#0#0; -- The apropriate cyclotomic field
      scan (satpc#0, (v -> v = local v));     
      -- The following should be the smallest ring 
      -- containing all new coefficients
-     Q := QQ[satpc#0];
+     F := ring satpc#2#0#0;
+     Q := F [satpc#0];
      satideals = apply (satpc#2 , (c) -> (
 	       -- print {Q, satpc#1, c};
 	       idealFromCharacter(Q,satpc#1,c)));
@@ -738,8 +736,6 @@ removeEmbedded = l -> (
 CellularBinomialAssociatedPrimes = I -> (
      -- Computes the associated primes of cellular binomial ideal
      
-     -- Disabling the check for a while, it's too time consuming
-     -- if not testCellular I then error "Input was not cellular.";     
      R := ring I;
      scan (gens R, (v -> v = local v));
      cv := cellVars(I); -- cell variables E
@@ -750,7 +746,8 @@ CellularBinomialAssociatedPrimes = I -> (
      ml := nonCellstdm(I); -- List of std monomials in ncv
      -- Coercing to R:
      ml = ml / ( m -> sub (m,R) );
-     -- print ml;
+     print "The list of standard monomials: ";
+     print ml;
      -- The ring k[E]:
      CoeffR := coefficientRing R;
      S := CoeffR[cv];
@@ -764,15 +761,19 @@ CellularBinomialAssociatedPrimes = I -> (
 	  Im = kernel map (R/(I:m),S);
 	  -- We already know the cell variables in the following computation
 	  pC = partialCharacter(Im, cellVariables=>cv);
+	  print "The partial character: ";
+	  print pC;
 	  sat = satIdeals(pC);
-	  -- Coercing back to R: 
-	  -- needed ??
-	  sat = sat / (I -> sub (I,R));
+	  print sat;
+	  print sat#0;
+	  
+	  -- sat = sat / (I -> sub (I,R));
+	  M = sub (ideal (ncv), ring sat#0);
 	  sat = sat / (I -> I + M);
 	  -- adding result and removing duplicates
 	  -- This looks wrong !! 
 	  -- CHECK IT !!!
-	  if isSubset ({sat}, primes) then continue;
+	  -- if isSubset ({sat}, primes) then continue;
 	  primes = primes | toList set sat;
 	  );
      return toList set primes;
