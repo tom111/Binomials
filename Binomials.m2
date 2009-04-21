@@ -464,10 +464,10 @@ BinomialRadical = I -> (
 	  )
      )
 
-testPrimary = method (Options => {returnPrimes => false , returnPChars => false})
+testPrimary = method (Options => {returnPrimes => false , returnPChars => false, cellVariables=> null})
 testPrimary Ideal := Ideal => o -> I -> (
      -- Implements Alg. 9.4 in [ES96]
-     -- I must be a cellular ideal
+     -- I must be a cellular ideal, cellVariables can be given for speedup
      -- Returns the radical of I and whether I is primary
      -- if the option returnPrimes is true, then it will return 
      -- the radical in the affirmative case and two distinct associated primes
@@ -476,8 +476,12 @@ testPrimary Ideal := Ideal => o -> I -> (
      -- of the primes instead. 
      -- If both are true then it will return characters.
      
-     -- this test is expensive ...
-     -- if not testCellular I then error "Input was not cellular.";
+     cv := {};
+     if o#cellVariables === null then (
+	  print "CellVariables not given, Please consider precomputing them";
+	  cv = cellVars I;
+	  )
+     else cv = o#cellVariables;
      -- The ring of I :
      R := ring I;
      scan (gens R, (v -> v = local v));
@@ -486,8 +490,8 @@ testPrimary Ideal := Ideal => o -> I -> (
      if I == ideal(1_R) then return false;      
      
      -- Get the partial character of I
-     pc := partialCharacter(I);
-     noncellvars := toList(set (gens R) - pc#0);
+     pc := partialCharacter(I, cellVariables=>cv);
+     noncellvars := toList(set (gens R) - cv);
      
      M := sub (ideal (noncellvars),R);
      -- print ("The monomial ideal M: " | toString M);
@@ -495,7 +499,7 @@ testPrimary Ideal := Ideal => o -> I -> (
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
      CoeffR := coefficientRing R;
-     S := CoeffR[pc#0];
+     S := CoeffR[cv];
      -- The the radical missing the monomials:
      prerad := kernel map (R/I,S);
      -- print prerad;
@@ -934,7 +938,6 @@ CellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- computes the binomial primary decomposition of a cellular ideal
      -- I needs to be cellular. Cell variables can be given to speed up
      -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
-     R := ring I;
      ap := {};
      if o#cellVariables === null then (
           ap = CellularBinomialAssociatedPrimes I;
@@ -943,7 +946,7 @@ CellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      
      -- Projecting down the assoc. primes, removing monomials
      pap := ap / projectToCellRing;
-     -- Lifting back the result to R:
+     R := ring ap#0;
      pap = pap / ((P) -> sub(P,R));
      -- Compute and return minimal primary Components:
      return pap / ( (P) -> minimalPrimaryComponent (I + P));
