@@ -78,10 +78,11 @@ cyclotomicPoly = (i,v) -> (
 FindRootPower = R -> (
      -- Finds the power of the adjoined root of unity in the
      -- coefficient ring of R by just exponentiating.
+     -- Returns zero if the input was a polynomial ring over QQ
      r := 0;
      F := coefficientRing R;
      g := gens F;
-     if #g == 0 then error "The coefficient ring has no generator";
+     if #g == 0 then return 0;
      if #g > 1 then error "The coefficient field has more than one generator";
      g = value (g#0);
      gg := g; -- the generator
