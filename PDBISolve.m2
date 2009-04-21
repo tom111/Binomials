@@ -160,7 +160,7 @@ BinomialSolve = (I, varname) -> (
      -- OUTPUT: The list of solutions in QQ(some root of unity)
      R := ring I;
      cd := binomialCD I;
-     exponentsols = flatten for c in cd list CellularBinomialExponentSolve c;
+     exponentsols := flatten for c in cd list CellularBinomialExponentSolve c;
      
      -- print exponentsols;
      -- determine the least common denominator, ignoring nulls
