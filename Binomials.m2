@@ -655,9 +655,7 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      
      primes := {}; -- This will hold the list of primes
      ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
-     print "Noncellvars"; print ncv;
      ml := nonCellstdm(I); -- List of std monomials in ncv
-     print ml;
      -- Coercing to R:
      ml = ml / ( m -> sub (m,R) );
 --     print "The list of standard monomials: ";
@@ -675,18 +673,8 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	  Im = kernel map (R/(I:m),S);
 	  -- We already know the cell variables in the following computation
 	  pC = partialCharacter(Im, cellVariables=>cv);
---	  print "The partial character: ";
---	  print pC;
 	  sat = satIdeals(pC);
---	  print sat;
---	  print sat#0;
-	  
-	  M = sub (ideal (ncv), ring sat#0);
-	  sat = sat / (I -> I + M);
-	  -- adding result and removing duplicates
-	  -- This looks wrong !! 
-	  -- CHECK IT !!!
-	  primes = primes | toList set sat;
+	  primes = primes | sat;
 	  );
      -- We need to remove redundant elements
      -- We coerce all associated primes to an apropriate
@@ -706,6 +694,9 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	  S = F[v];
 	  );
      primes = primes / ( I -> sub (I,S));
+     M = sub (ideal (ncv), S);
+     primes = primes / (I -> I + M);
+
      return toList set primes;
      )
 

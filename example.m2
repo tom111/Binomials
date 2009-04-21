@@ -5,7 +5,11 @@ load "Binomials.m2"
 
 R = QQ[x,y]
 I = ideal (x^3 - 1, y^5-1)
-J = trim intersect BinomialAssociatedPrimes I
+ap = BinomialAssociatedPrimes I
+print (toString \ ap);
+J = intersect ap;
+mingens J;
+gens gb J;
 
 -- Here are some more examples
 
