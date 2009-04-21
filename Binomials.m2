@@ -72,6 +72,7 @@ export {binomialCD,
 
 needsPackage "FourTiTwo";
 needsPackage "PDBISolve";
+needsPackage "cyclotomic"
 
 axisSaturate = (I,i) -> (
 -- By Ignacio Ojeda and Mike Stillman
@@ -654,8 +655,9 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      
      primes := {}; -- This will hold the list of primes
      ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
-     -- print "Noncellvars"; print ncv;
+     print "Noncellvars"; print ncv;
      ml := nonCellstdm(I); -- List of std monomials in ncv
+     print ml;
      -- Coercing to R:
      ml = ml / ( m -> sub (m,R) );
 --     print "The list of standard monomials: ";
@@ -679,15 +681,31 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 --	  print sat;
 --	  print sat#0;
 	  
-	  -- sat = sat / (I -> sub (I,R));
 	  M = sub (ideal (ncv), ring sat#0);
 	  sat = sat / (I -> I + M);
 	  -- adding result and removing duplicates
 	  -- This looks wrong !! 
 	  -- CHECK IT !!!
-	  -- if isSubset ({sat}, primes) then continue;
 	  primes = primes | toList set sat;
 	  );
+     -- We need to remove redundant elements
+     -- We coerce all associated primes to an apropriate
+     -- new ring that contains all their coefficients
+        
+     l := lcm for p in primes list FindRootPower (ring p);
+     v := gens R;
+     -- Down here we reuse the Symbol S...
+     if l<3 then(
+	  -- Coefficients are in QQ !
+	  S = QQ[v];
+	  )
+     else (
+	  -- Construct a new cylcotomic field which contains all
+	  -- necessary coefficients
+	  F := cyclotomicField(l,QQ[ww]);
+	  S = F[v];
+	  );
+     primes = primes / ( I -> sub (I,S));
      return toList set primes;
      )
 
