@@ -349,7 +349,7 @@ idealFromCharacter = (R,A,c) -> (
      	  -- The general case, fall back to saturation in M2:
 	  c = apply (c, a -> (sub (a,R)));
      	  cols = entries transpose A;    
-	  for i in 0..numcols A-1 do print (R,cols#i,c#i);
+	--  for i in 0..numcols A-1 do print (R,cols#i,c#i);
      	  binomials = for i in 0..numcols A-1 list makeBinomial (R,cols#i, c#i);
      	  return saturate (ideal binomials, product var);
 	  );
@@ -397,8 +397,8 @@ saturatePChar = (va, A, c) -> (
      -- print ring eqs;
      
      result = BinomialSolve (eqs,ww);
-     print "In saturatePChar the result is";
-     print result;
+--     print "In saturatePChar the result is";
+--     print result;
      return (va, S, result);
      )
 
@@ -422,8 +422,8 @@ satIdeals = (va, A, d) -> (
      -- a given partial character.
      -- TODO: Construct the correct coefficient field
      satpc = saturatePChar(va, A, d);
-     print "The cyclotomic field is:";
-     print ring satpc#2#0#0; -- The apropriate cyclotomic field
+--     print "The cyclotomic field is:";
+--     print ring satpc#2#0#0; -- The apropriate cyclotomic field
      scan (satpc#0, (v -> v = local v));     
      -- The following should be the smallest ring 
      -- containing all new coefficients
@@ -617,8 +617,8 @@ removeEmbedded = l -> (
      i := ideal;
      su := {};
      while #ToDo > 0 do (
-	  print ToDo;
-	  print l;
+--	  print ToDo;
+--	  print l;
 	  i = ToDo#0;
 	  su = for i2 in l list (if (isSubset (i,i2)) and (i!=i2) then i2);
 	  
@@ -654,8 +654,8 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      ml := nonCellstdm(I); -- List of std monomials in ncv
      -- Coercing to R:
      ml = ml / ( m -> sub (m,R) );
-     print "The list of standard monomials: ";
-     print ml;
+--     print "The list of standard monomials: ";
+--     print ml;
      -- The ring k[E]:
      CoeffR := coefficientRing R;
      S := CoeffR[cv];
@@ -669,11 +669,11 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	  Im = kernel map (R/(I:m),S);
 	  -- We already know the cell variables in the following computation
 	  pC = partialCharacter(Im, cellVariables=>cv);
-	  print "The partial character: ";
-	  print pC;
+--	  print "The partial character: ";
+--	  print pC;
 	  sat = satIdeals(pC);
-	  print sat;
-	  print sat#0;
+--	  print sat;
+--	  print sat#0;
 	  
 	  -- sat = sat / (I -> sub (I,R));
 	  M = sub (ideal (ncv), ring sat#0);
