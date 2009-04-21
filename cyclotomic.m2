@@ -23,8 +23,8 @@
 
 newPackage(
 	"cyclotomic",
-    	Version => "0.1", 
-    	Date => "February, 2009",
+    	Version => "0.2", 
+    	Date => "May 2009",
     	Authors => {{Name => "Thomas Kahle", 
 		  Email => "kahle@mis.mpg.de", 
 		  HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
@@ -33,7 +33,8 @@ newPackage(
     	)
 
 export {cyclotomicField,
-        cyclotomicPoly
+        cyclotomicPoly,
+	FindRootPower
        }
 
 cyclotomicField = (i,R) -> (
@@ -73,3 +74,20 @@ cyclotomicPoly = (i,v) -> (
      min=min / leadCoefficient(min);            
      return(min);                        
 )
+
+FindRootPower = R -> (
+     -- Finds the power of the adjoined root of unity in the
+     -- coefficient ring of R by just exponentiating.
+     r := 0;
+     F := coefficientRing R;
+     g := gens F;
+     if #g == 0 then error "The coefficient ring has no generator";
+     if #g > 1 then error "The coefficient field has more than one generator";
+     g = value (g#0);
+     gg := g; -- the generator
+     while not 1_F == gg do (
+	  r = r+1;
+	  gg = gg *g;
+	  );
+     return r+1;
+     )
