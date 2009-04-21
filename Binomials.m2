@@ -41,7 +41,6 @@ export {binomialCD,
      idealFromCharacter,
      LatticeBasisIdeal,
      saturatePChar,
-     saturatePCharNum,
      BinSolveWrap,
      satIdeals,
      testPrimary,
@@ -422,49 +421,6 @@ LatticeBasisIdeal = (R,L) -> (
      cols = entries transpose L;
      binomials = for i in 0..numcols L-1 list makeBinomial (R,cols#i, 1);
      return ideal binomials;
-     )
-
-
-saturatePCharNum = (va, A, c) -> (
-     -- This function saturates a partial character numerically.
-     -- This is pretty useless.
-     
-     -- Currently a saturated character is distinguished from its 
-     -- saturation as the saturation has a list as third entry.
-     
-     -- If the lattice is saturated, the character is saturated     
-     if image Lsat A == image A then (
-	  return (va, A, {c});
-	  );
-     
-     -- The saturated lattice
-     S := Lsat(A);
-     -- The coefficient matrix :
-     K := A // S;
-     
-     -- print K;
-     -- Now we find the (binomal) equations for the saturated character:
-     numvars := numrows K;
-     varlist := for i in 0..numvars-1 list value ("m"|i);
-     -- Our old trick to make variables local:
-     scan (varlist, (v -> v = local v));
-     Q := QQ[varlist];
-     eqs := idealFromCharacter(Q,K,c);
-     
-     print "The character defining equations are:";
-     print eqs;
-     -- print ring eqs;
-     
-     -- Is this saturation needed ??
-     eqso := eqs;
-     eqs = saturate(eqs, product gens ring eqs);
-     if eqso == eqs then print "Saturation was not needed !" 
-     else print "!!!!!!! Saturation was needed - this is a bug  !!!!!!!!";
-     
-     -- And solve using singsolve:
-     print "Warning, using numerics !!!.";
-     result = singsolve eqs;
-     return (va, S, result);
      )
 
 saturatePChar = (va, A, c) -> (
