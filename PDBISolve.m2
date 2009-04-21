@@ -176,13 +176,14 @@ BinomialSolve = (I, varname) -> (
      C := QQ;     
      if lcd > 2 then (
 	  print "Adjoining roots of unity is needed";
-	  ww = value varname;
-     	  S := QQ[ww];
+     	  S := QQ[varname];
+	  print value varname;
+	  ww := value varname;
      	  Mon := monoid flatten entries vars R;
      	  C = cyclotomicField(lcd,S);
 	  );
      
-     expo = q -> (
+     expo := q -> (
      -- This auxiallary function maps a quotient from QQ to its
      -- element in S
      if q === null then return 0_C;
@@ -194,26 +195,15 @@ BinomialSolve = (I, varname) -> (
      return sub(ww^k,C);
      );
      
-     
-     sols = flatten exponentsols;
+     sols := flatten exponentsols;
      sols = expo \ sols;
      sols = pack (#(gens ring I),sols);
-     
-     print ("BinomialSolve created a cyclotomic field by adjoining a " | toString lcd | "th root of unity"); 
-     
-     print ("This root is called " | toString ww ); 
-     
-     -- Removing duplicates
-     -- This should not be necessary
---      todo := sols;
---      result = {};
---      while #todo > 0 do (
--- 	  result = result | todo#0;
--- 	  cur = todo#0;
--- 	  -- print cur;
--- 	  todo = for t in todo list if t != cur then t else continue;
---      	  );
---      
+
+     if lcd > 2 then ( 
+	  print ("BinomialSolve created a cyclotomic field by adjoining a " | toString lcd | "th root of unity"); 
+          print ("This root is called " | toString ww ); 
+	  );
+    
      return sols; 
      )
 
