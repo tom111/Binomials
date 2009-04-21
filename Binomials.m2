@@ -175,9 +175,10 @@ partialCharacter Ideal := Ideal => o -> I -> (
      
      -- print o.cellVariables;
      -- The input should be a cellular ideal 
+     cellvars := null; -- Getting a local name
      if o#cellVariables === null then (
 	  -- No cell variables are given -> compute them
-	  cellvars := cellVars(I);
+	  cellvars = cellVars(I);
 	  )
      else cellvars = o#cellVariables;
      
@@ -633,13 +634,20 @@ removeEmbedded = l -> (
      return l;
      )
       
-CellularBinomialAssociatedPrimes = I -> (
+CellularBinomialAssociatedPrimes = method (Options => {cellVariables => null})
+CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> ( 
      -- Computes the associated primes of cellular binomial ideal
      
      R := ring I;
      scan (gens R, (v -> v = local v));
-     cv := cellVars(I); -- cell variables E
-     -- print "Cellvars:"; print cv;
+     
+     cv := null;
+     if o#cellVariables === null then (
+	  -- No cell variables are given -> compute them
+	  cv = cellVars(I);
+	  )
+     else cv = o#cellVariables;
+     
      primes := {}; -- This will hold the list of primes
      ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
      -- print "Noncellvars"; print ncv;
@@ -920,15 +928,20 @@ BPD = I -> (
      print "Removing redundant components (fast)";
      return removeRedundant bpd;
      )
-     
-CellularBinomialPrimaryDecomposition = I -> (
+
+CellularBinomialPrimaryDecomposition = method (Options => {cellVariables => null})
+CellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> ( 
      -- computes the binomial primary decomposition of a cellular ideal
-     -- I needs to be cellular 
+     -- I needs to be cellular. Cell variables can be given to speed up
      -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
      R := ring I;
-     ap := BinomialAssociatedPrimes I;
+     ap := {};
+     if o#cellVariables === null then (
+          ap = CellularBinomialAssociatedPrimes I;
+	  )
+     else ap = CellularBinomialAssociatedPrimes (I, cellVariables = o#cellVariables);
+     
      -- Projecting down the assoc. primes, removing monomials
-     -- TODO: Don't compute cell variables twice, thrice,...
      pap := ap / projectToCellRing;
      -- Lifting back the result to R:
      pap = pap / ((P) -> sub(P,R));
