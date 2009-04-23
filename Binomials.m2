@@ -104,9 +104,9 @@ binomialCD Ideal := Ideal => o -> I -> (
      Answer := {};
      L := null;
      IntersectAnswer := ideal(1_R);
-     ToDo := {{{},toList(0..n-1),I}};
+     ToDo := {{{1_R},toList(0..n-1),I}};
      -- Each entry of the ToDoList is a triple:
-     -- #0 contains product of variables with respect to which is already saturated
+     -- #0 contains list of variables with respect to which is already saturated
      -- #1 contains variables to be considered for cell variables
      -- #2 is the ideal to decompose
      compo := 0;
@@ -125,7 +125,7 @@ binomialCD Ideal := Ideal => o -> I -> (
                    compo = compo + 1; 
 		   newone := trim L#2;
 		   << "component: " << {compo, gens newone} << endl;
-		   if o#returnCellVars then Answer = append(Answer,{newone, L#0})
+		   if o#returnCellVars then Answer = append(Answer,{newone, delete(1_R,L#0)})
 		   else Answer = append (Answer,newone);
 		   IntersectAnswer = intersect(IntersectAnswer,newone);
 		   -- if we have enough, stop after this iteration
@@ -141,7 +141,7 @@ binomialCD Ideal := Ideal => o -> I -> (
 			J2 = L#2 + ideal(R_i^k); 
      	       	    	-- And remove L#0 components from variables that we already
 			-- considered before
-			J2 = saturate(J2, prodcut L#0);
+			J2 = saturate(J2, product L#0);
 			if J2 != ideal(1_R) then
 			    -- If something is left after removing we have more to decompose J2
 			    ToDo = prepend({L#0, newL1, J2},ToDo));
@@ -688,7 +688,8 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      -- Down here we reuse the Symbol S...
      if l<3 then(
 	  -- Coefficients are in QQ !
-	  S = QQ[v];
+	  -- Assumed to be the original ring
+	  S = R;
 	  )
      else (
 	  -- Construct a new cylcotomic field which contains all
@@ -936,7 +937,7 @@ BPD = I -> (
 		    counter = counter +1;
 --		    print i;
 --		    print CellularBinomialPrimaryDecomposition i;
-		    bpd = bpd | CellularBinomialPrimaryDecomposition (i#0, cellVariables = i#1);
+		    bpd = bpd | CellularBinomialPrimaryDecomposition (i#0, cellVariables => i#1);
 		    )
 	       )
     	  ); -- apply
@@ -951,21 +952,26 @@ CellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- I needs to be cellular. Cell variables can be given to speed up
      -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
      ap := {};
-     if o#cellVariables === null then (
-          ap = CellularBinomialAssociatedPrimes I;
-	  )
-     else ap = CellularBinomialAssociatedPrimes (I, cellVariables = o#cellVariables);
+     if o#cellVariables === null then cv = cellVars I
+     else cv = o#cellVariables;
+     ap = CellularBinomialAssociatedPrimes (I, cellVariables => cv);
      
      -- Projecting down the assoc. primes, removing monomials
-     pap := ap / projectToCellRing;
+     proj := (I) -> projectToSubRing (I,cv); 
+     pap := ap / proj ;
      R := ring ap#0;
-     pap = pap / ((P) -> sub(P,R));
+     --
+     -- Where's the sense in that ?
+     -- pap = pap / ((P) -> sub(P,R));
+     J := sub (I,R);
      -- Compute and return minimal primary Components:
-     return pap / ( (P) -> minimalPrimaryComponent (I + P));
+     return pap / ( (P) -> minimalPrimaryComponent (J + P));
      )
 
 removeRedundant = l -> (
      -- Removes redundant components from a list of ideals to be intersected
+     -- TODO: The ideals given might live in different rings, which are 
+     -- mathematically the same. We should handle this in a nice way.
      if #l == 0 then error "empty list given !";
      Answer := l#0; -- Will hold Intersection of everything in the end
      result := {l#0};
@@ -993,5 +999,5 @@ projectToSubRing = (I , delta) -> (
      scan (gens R, (v -> v = local v));
      CoeffR := coefficientRing R;
      S := CoeffR[delta];
-     return kernel map (R/I,S);
+     return sub(kernel map (R/I,S), R);
      )
