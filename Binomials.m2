@@ -62,12 +62,13 @@ export {binomialCD,
      minimalPrimaryComponent,
      binomialQuasiPower,
      BinomialQuotient,
-     projectToCellRing,
+     projectToSubRing,
      removeRedundant,
      -- Options
      cellVariables, -- for partialCharacter
      returnPrimes, -- for testPrimary 
-     returnPChars -- for testPrimary
+     returnPChars, -- for testPrimary
+     returnCellVars -- for binomialCD
      }
 
 needsPackage "FourTiTwo";
@@ -94,7 +95,8 @@ axisSaturate = (I,i) -> (
 -- Cellular decomposition of binomial ideals:
 --
 
-binomialCD = (I) -> (
+binomialCD = method (Options => {returnCellVars => false})
+binomialCD Ideal := Ideal => o -> I -> (
 -- By Ignacio Ojeda and Mike Stillman     
 -- Comments by TK
      R := ring I;
@@ -102,9 +104,9 @@ binomialCD = (I) -> (
      Answer := {};
      L := null;
      IntersectAnswer := ideal(1_R);
-     ToDo := {{1_R,toList(0..n-1),I}};
+     ToDo := {{{},toList(0..n-1),I}};
      -- Each entry of the ToDoList is a triple:
-     -- #0 contains 
+     -- #0 contains product of variables with respect to which is already saturated
      -- #1 contains variables to be considered for cell variables
      -- #2 is the ideal to decompose
      compo := 0;
@@ -123,7 +125,8 @@ binomialCD = (I) -> (
                    compo = compo + 1; 
 		   newone := trim L#2;
 		   << "component: " << {compo, gens newone} << endl;
-		   Answer = append(Answer,newone);
+		   if o#returnCellVars then Answer = append(Answer,{newone, L#0})
+		   else Answer = append (Answer,newone);
 		   IntersectAnswer = intersect(IntersectAnswer,newone);
 		   -- if we have enough, stop after this iteration
 		   if IntersectAnswer == I then ToDo = {})
@@ -138,12 +141,12 @@ binomialCD = (I) -> (
 			J2 = L#2 + ideal(R_i^k); 
      	       	    	-- And remove L#0 components from variables that we already
 			-- considered before
-			J2 = saturate(J2, L#0);
+			J2 = saturate(J2, prodcut L#0);
 			if J2 != ideal(1_R) then
 			    -- If something is left after removing we have more to decompose J2
 			    ToDo = prepend({L#0, newL1, J2},ToDo));
 		       -- Continue with the next variable and add i to L#0
-		   if J != ideal(1_R) then ToDo = prepend({R_i * L#0, newL1, J},ToDo);
+		   if J != ideal(1_R) then ToDo = prepend({L#0|{R_i}, newL1, J},ToDo);
 		   );
 	      true));
      while next() do ();
@@ -924,7 +927,7 @@ binomialQuasiPower = (b,e) -> (
 BPD = I -> (
      -- The full binomial primary decomposition 
      -- starting from a not necessarily cellular binomial ideal
-     cd := binomialCD I;
+     cd := binomialCD (I, returnCellVars => true);
      counter := 1;
      cdc := #cd;
      bpd := {};
@@ -933,7 +936,7 @@ BPD = I -> (
 		    counter = counter +1;
 --		    print i;
 --		    print CellularBinomialPrimaryDecomposition i;
-		    bpd = bpd | CellularBinomialPrimaryDecomposition i;
+		    bpd = bpd | CellularBinomialPrimaryDecomposition (i#0, cellVariables = i#1);
 		    )
 	       )
     	  ); -- apply
@@ -983,15 +986,12 @@ removeRedundant = l -> (
      return ideal \ mingens \ result;
      )
 
-projectToCellRing = I -> (
-     -- projects a cellular ideal down to the ring k[\delta]
-     -- where delta is the set of cell variables
+projectToSubRing = (I , delta) -> (
+     -- projects an ideal down to the ring k[\delta]
+     -- where delta is a  the set of variables
      R := ring I;
      scan (gens R, (v -> v = local v));
-     cv := cellVars I;
-          -- Extracts the monomials in the non-Cell variables.
-     -- We map I to the subring: k[ncv]
      CoeffR := coefficientRing R;
-     S := CoeffR[cv];
+     S := CoeffR[delta];
      return kernel map (R/I,S);
      )
