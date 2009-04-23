@@ -78,7 +78,7 @@ cyclotomicPoly = (i,v) -> (
 FindRootPower = R -> (
      -- Finds the power of the adjoined root of unity in the
      -- coefficient ring of R by just exponentiating.
-     -- Returns zero if the input was a polynomial ring over QQ
+     -- Returns '2' if the input was a polynomial ring over QQ
      r := 0;
      F := coefficientRing R;
      g := gens F;
@@ -90,5 +90,6 @@ FindRootPower = R -> (
 	  r = r+1;
 	  gg = gg *g;
 	  );
-     return r+1;
+     if r<2 then return 2
+     else return r+1;
      )
