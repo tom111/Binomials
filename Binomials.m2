@@ -441,6 +441,7 @@ satIdeals = (va, A, d) -> (
      )
 
 BinomialRadical = I -> (
+     -- Todo: CellVars are computed twice
      if testCellular I then (
 	  print "Input cellular, fast method will be used";
      	  -- Computes the radical of a cellular binomial ideal
@@ -502,16 +503,10 @@ testPrimary Ideal := Ideal => o -> I -> (
      -- print ("The monomial ideal M: " | toString M);
      
      -- We intersect I with the ring k[E]
-     -- In many cases this will be zero
-     CoeffR := coefficientRing R;
-     S := CoeffR[cv];
      -- The the radical missing the monomials:
-     prerad := kernel map (R/I,S);
-     -- print prerad;
+     prerad := ProjectToSubRing (I,cv);
      
-     rad := sub (prerad ,R) + M;
-     -- print "The radical is:";
-     -- print rad;
+     rad := prerad + M;
      
      -- If the partial character is not saturated, the radical is not prime
      if image Lsat pc#1 != image pc#1 then (
@@ -540,7 +535,7 @@ testPrimary Ideal := Ideal => o -> I -> (
      for m in maxstdmon do (
 	  q := quotient (I, m);
 	  -- Mapping down to cellvars:
-	  q2 := kernel map (R/q,S);
+	  q2 := projectToSubRing (q,cv);
      	  -- I_+(sigma) was called prerad above:
 	  if not isSubset(q2, prerad) then (
 	       -- creating some local names:
@@ -555,7 +550,7 @@ testPrimary Ideal := Ideal => o -> I -> (
 		    satqchar = saturatePChar qchar;
 		    ap2 := idealFromCharacter (S,satqchar#1,satqchar#2#0);
 		    return {rad, sub(ap2,R) + M};
-     	       	    )		    
+     	       	    )  
 	       else return false;
 	       );
 	  );
