@@ -280,7 +280,9 @@ nonCellstdm = {cellVariables=>null} >> o -> I -> (
      -- Here go the non-cell variables
      ncv := toList (set gens R - cv);
      -- We map I to the subring: k[ncv]
-     J := projectToSubRing (I,ncv); -- image of I in the subring S
+     CoeffR := coefficientRing R;
+     S := CoeffR[ncv];
+     J := kernel map (R/I,S); -- image of I in the subring S
      Q = S/J; 
      slist = flatten entries flatten basis Q;
      use R;
