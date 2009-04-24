@@ -650,6 +650,8 @@ CellularBinomialAssociatedPrimes = method (Options => {cellVariables => null})
 CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> ( 
      -- Computes the associated primes of cellular binomial ideal
      
+     -- TODO: It could be faster by rearringing things in the m in ml
+     
      R := ring I;
      scan (gens R, (v -> v = local v));
      
@@ -665,19 +667,27 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      ml := nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
      -- Coercing to R:
      ml = ml / ( m -> sub (m,R) );
---     print "The list of standard monomials: ";
---     print ml;
      -- Mapping to the ring k[E]:
      prerad := projectToSubRing (I,cv);
-     M := sub (ideal (ncv),R); -- The monomial radical ideal
+     M := sub (ideal (ncv),R); 
+     -- The monomial radical ideal 
+     
+     -- Here is a nice shortcut: if prerad is zero, we are done since
+     -- all I:m will be zero after intesection with the cell ring, right?
+     if prerad == ideal (0_R) then return {M};
+     
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pC := {}; sat = {};
      for m in ml do (
 	  -- print m;
-	  Im = projectToSubRing ((I:m),cv);
-	  -- We already know the cell variables in the following computation
-	  pC = partialCharacter(Im, cellVariables=>cv);
+	  Im = projectToSubRing (I:m,cv);
+	  -- Do we already know the cell variables in the following computation?
+	  pC = partialCharacter(Im , cellVariables=>cv);
+	  if pC#1 == 0 then (
+	       primes = primes | {ideal(0_R)}; 
+	       continue;
+	       );
 	  sat = satIdeals(pC);
 	  primes = primes | sat;
 	  );
