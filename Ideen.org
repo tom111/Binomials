@@ -74,5 +74,4 @@ monitor = () -> (
 		   )))))
 * Compute the associated primes of a non-cellular binomial ideal
 * For Imn compute the monomials, clarify the combinatorial structure !
-* Implementing a binomial solver
-remember the function toField
+* We should have a function which coerces to a common field

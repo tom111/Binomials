@@ -269,11 +269,17 @@ cellVars = I -> (
      return cv;
      )
 
-nonCellstdm = I -> (
+nonCellstdm = {cellVariables=>null} >> o -> I -> (
+     cv2 := {};
+     if o#cellVariables === null then (
+	  print "CellVariables not given, Please consider precomputing them";
+	  cv2 = cellVars I;
+	  )
+     else cv2 = o#cellVariables;
      -- Extracts the monomials in the non-Cell variables.
      R := ring I;
      scan (gens R, (v -> v = local v));     
-     cv := set cellVars I; 
+     cv := set cv2; 
      -- Here go the non-cell variables
      ncv := toList (set gens R - cv);
      -- We map I to the subring: k[ncv]
@@ -286,9 +292,16 @@ nonCellstdm = I -> (
      return slist;
      )
 
-maxNonCellstdm = I -> (
+maxNonCellstdm = {cellVariables=>null} >> o -> I -> (
      -- Extracts the maximal elements in the set of monomials 
-     nm := nonCellstdm I;
+     cv := {};
+     if o#cellVariables === null then (
+	  print "CellVariables not given, Please consider precomputing them";
+	  cv = cellVars I;
+	  )
+     else cv = o#cellVariables;
+
+     nm := nonCellstdm (I,cellVariables=>cv);
      -- print nm;
      result := {};
      maxel := 0;
@@ -528,7 +541,7 @@ testPrimary Ideal := Ideal => o -> I -> (
 	  );
      
      -- The list of maximally standard monomials:
-     maxstdmon := maxNonCellstdm I / (i -> sub (i,R));
+     maxstdmon := maxNonCellstdm (I,cellVariables=cv) / (i -> sub (i,R));
      -- print "The maximally standard monomials are:";
      -- print maxstdmon;
      
