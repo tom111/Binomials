@@ -541,12 +541,12 @@ testPrimary Ideal := Ideal => o -> I -> (
 	       -- creating some local names:
 	       qchar := null; satqchar := null;
 	       if o#returnPChars then(
-		    qchar = partialCharacter q;
+		    qchar = partialCharacter (q,cellVariables=>cv);
 		    satqchar = saturatePChar qchar;
 		    return {pc, {satqchar#0,satqchar#1,satqchar#2#0}}
 		    );
 	       if o#returnPrimes then (
-		    qchar = partialCharacter q;
+		    qchar = partialCharacter (q,cellVariables=>cv);
 		    satqchar = saturatePChar qchar;
 		    ap2 := idealFromCharacter (S,satqchar#1,satqchar#2#0);
 		    return {rad, sub(ap2,R) + M};
