@@ -81,7 +81,7 @@ reactionsIdeal=ideal(	e*s0000-i0000, i0000*(s0000-e*s1000),
 	e*s1110-i1110, i1110*(s1110-e*s1111),
 	f*s1111-j1111, j1111*(s1111-f*s1110) );
 -- Try to decompose! 
-time bpd1 = BCD (reactionsIdeal + ideal(e)); 
-time bpd2 = BCD (reactionsIdeal + ideal(s0000); 
-time bpd3 = BCD (reactionsIdeal + ideal(s1000); 
-time bpd4 = BCD (reactionsIdeal + ideal(s1100); 
+time bpd1 = BPD (reactionsIdeal + ideal(e)); 
+time bpd2 = BPD (reactionsIdeal + ideal(s0000); 
+time bpd3 = BPD (reactionsIdeal + ideal(s1000); 
+time bpd4 = BPD (reactionsIdeal + ideal(s1100); 
