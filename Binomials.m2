@@ -64,6 +64,7 @@ export {binomialCD,
      BinomialQuotient,
      projectToSubRing,
      removeRedundant,
+     lcm,
      -- Options
      cellVariables, -- for partialCharacter
      returnPrimes, -- for testPrimary 
@@ -936,11 +937,11 @@ BinomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
      return I + J;
      )     
 
--- lcm = l -> (
---      if #l == 0 then return 1;
---      sublcm := lcm delete (l#0,l);
---      return l#0 * sublcm / gcd (l#0, sublcm);
---      )
+lcm = l -> (
+     if #l == 0 then return 1;
+     sublcm := lcm delete (l#0,l);
+     return l#0 * sublcm / gcd (l#0, sublcm);
+     )
 
 binomialQuasiPower = (b,e) -> (
      -- returns the e-th quasipower of the binomial b
