@@ -504,7 +504,7 @@ testPrimary Ideal := Ideal => o -> I -> (
      
      -- We intersect I with the ring k[E]
      -- The the radical missing the monomials:
-     prerad := ProjectToSubRing (I,cv);
+     prerad := projectToSubRing (I,cv);
      
      rad := prerad + M;
      
@@ -841,7 +841,8 @@ minimalPrimaryComponent = I -> (
 	    ) -- else path of if not testPrimary
      ) -- minimalPrimaryComponent
 
-BinomialQuotient = (I,b) -> (
+BinomialQuotient = method (Options => {cellVariables => null})
+BinomialQuotient Ideal,Binomial := Ideal => o -> (I,b) -> ( 
      -- Algorithm A.3 in Ojeda / Sanchez
      -- Input I - Cellular Binomial Ideal 
      -- b -- Binomial in the cell variables of I which is a zerodivisor mod I
@@ -849,8 +850,14 @@ BinomialQuotient = (I,b) -> (
      -- result is binomial
      
      R := ring I;
-     scan (gens R, (v -> v = local v));     
-     cv := cellVars (I);
+     scan (gens R, (v -> v = local v));
+     
+     cv := null;
+     if o#cellVariables === null then (
+	  -- No cell variables are given -> compute them
+	  cv = cellVars(I);
+	  )
+     else cv = o#cellVariables;
      
      --First check if we can save a lot of time if already I:b is binomial,
      -- and no quasipowers have to be taken.
