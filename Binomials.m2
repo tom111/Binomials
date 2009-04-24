@@ -174,27 +174,28 @@ partialCharacter Ideal := Ideal => o -> I -> (
      vsmat := matrix "0"; -- Holds the matrix whose image is L 
      cl := {}; -- This will hold the coefficients
      R := ring I;
+     CoeffR := coefficientRing R; -- needed to form terms below
      scan (gens R, (v -> v = local v));
      II := ideal;
      
      -- print o.cellVariables;
      -- The input should be a cellular ideal 
-     cellvars := null; -- Getting a local name
+     cv := null; -- Getting a local name
      if o#cellVariables === null then (
 	  -- No cell variables are given -> compute them
-	  cellvars = cellVars(I);
+	  cv = cellVars I;
 	  )
-     else cellvars = o#cellVariables;
+     else cv = o#cellVariables;
      
      -- If there are no cellular variables, 
      -- the ideal is monomial and the partial character is zero:
-     if cellvars == {} then (
+     if cv == {} then (
 	  return ({}, matrix "0", {1});
 	  );
 
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
-     if #cellvars != #(gens R) then (
+     if #cv != #(gens R) then (
      	  II = projectToSubRing (I,cv);
 	  )
      else (
@@ -205,8 +206,8 @@ partialCharacter Ideal := Ideal => o -> I -> (
      -- zero lattice.       
      if ( II == 0 ) then (
 	  for i in gens ring II do vs = vs | { 0_ZZ };
-	  cl = {1};
-	  return (cellvars, transpose matrix {vs}, cl);
+	  cl = {1_ZZ};
+	  return (cv, transpose matrix {vs}, cl);
 	  );
      
      -- So, II is not zero:
@@ -248,7 +249,7 @@ partialCharacter Ideal := Ideal => o -> I -> (
      -- back to the old ring
      -- is this needed ?
      use R;
-     return (cellvars, transpose matrix vs , cl);
+     return (cv, transpose matrix vs , cl);
      )
 
 isBinomial = I -> (
@@ -976,10 +977,10 @@ CellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- I needs to be cellular. Cell variables can be given to speed up
      -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
      ap := {};
+     cv := null;
      if o#cellVariables === null then cv = cellVars I
      else cv = o#cellVariables;
      ap = CellularBinomialAssociatedPrimes (I, cellVariables => cv);
-     
      -- Projecting down the assoc. primes, removing monomials
      proj := (I) -> projectToSubRing (I,cv); 
      pap := ap / proj ;
