@@ -175,31 +175,29 @@ partialCharacter Ideal := Ideal => o -> I -> (
      vsmat := matrix "0"; -- Holds the matrix whose image is L 
      cl := {}; -- This will hold the coefficients
      R := ring I;
+     CoeffR := coefficientRing R; -- needed to form terms below
      scan (gens R, (v -> v = local v));
      II := ideal;
      
      -- print o.cellVariables;
      -- The input should be a cellular ideal 
-     cellvars := null; -- Getting a local name
+     cv := null; -- Getting a local name
      if o#cellVariables === null then (
 	  -- No cell variables are given -> compute them
-	  cellvars = cellVars(I);
+	  cv = cellVars I;
 	  )
-     else cellvars = o#cellVariables;
+     else cv = o#cellVariables;
      
      -- If there are no cellular variables, 
      -- the ideal is monomial and the partial character is zero:
-     if cellvars == {} then (
+     if cv == {} then (
 	  return ({}, matrix "0", {1});
 	  );
 
-     CoeffR := coefficientRing R;
-     
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
-     if #cellvars != #(gens R) then (
-     	  S := CoeffR[cellvars];
-     	  II = kernel map (R/I,S);
+     if #cv != #(gens R) then (
+     	  II = projectToSubRing (I,cv);
 	  )
      else (
 	  II = I;
@@ -209,8 +207,8 @@ partialCharacter Ideal := Ideal => o -> I -> (
      -- zero lattice.       
      if ( II == 0 ) then (
 	  for i in gens ring II do vs = vs | { 0_ZZ };
-	  cl = {1};
-	  return (cellvars, transpose matrix {vs}, cl);
+	  cl = {1_ZZ};
+	  return (cv, transpose matrix {vs}, cl);
 	  );
      
      -- So, II is not zero:
@@ -252,7 +250,7 @@ partialCharacter Ideal := Ideal => o -> I -> (
      -- back to the old ring
      -- is this needed ?
      use R;
-     return (cellvars, transpose matrix vs , cl);
+     return (cv, transpose matrix vs , cl);
      )
 
 isBinomial = I -> (
@@ -469,10 +467,8 @@ BinomialRadical = I -> (
      
           -- We intersect I with the ring k[E]
      	  -- In many cases this will be zero
-     	  CoeffR := coefficientRing R;
-     	  S := CoeffR[pc#0];
      	  -- The the radical missing the monomials:
-     	  prerad := kernel map (R/I,S);
+     	  prerad := projectToSubRing (I,pc#0);
      	  return sub (prerad ,R) + M;
 	  )
      else (
@@ -656,6 +652,8 @@ CellularBinomialAssociatedPrimes = method (Options => {cellVariables => null})
 CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> ( 
      -- Computes the associated primes of cellular binomial ideal
      
+     -- TODO: It could be faster by rearringing things in the m in ml
+     
      R := ring I;
      scan (gens R, (v -> v = local v));
      
@@ -671,21 +669,27 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      ml := nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
      -- Coercing to R:
      ml = ml / ( m -> sub (m,R) );
---     print "The list of standard monomials: ";
---     print ml;
-     -- The ring k[E]:
-     CoeffR := coefficientRing R;
-     S := CoeffR[cv];
-     prerad := kernel map (R/I,S);
-     M := sub (ideal (ncv),R); -- The monomial radical ideal
+     -- Mapping to the ring k[E]:
+     prerad := projectToSubRing (I,cv);
+     M := sub (ideal (ncv),R); 
+     -- The monomial radical ideal 
+     
+     -- Here is a nice shortcut: if prerad is zero, we are done since
+     -- all I:m will be zero after intesection with the cell ring, right?
+     if prerad == ideal (0_R) then return {M};
+     
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pC := {}; sat = {};
      for m in ml do (
 	  -- print m;
-	  Im = kernel map (R/(I:m),S);
-	  -- We already know the cell variables in the following computation
-	  pC = partialCharacter(Im, cellVariables=>cv);
+	  Im = projectToSubRing (I:m,cv);
+	  -- Do we already know the cell variables in the following computation?
+	  pC = partialCharacter(Im , cellVariables=>cv);
+	  if pC#1 == 0 then (
+	       primes = primes | {ideal(0_R)}; 
+	       continue;
+	       );
 	  sat = satIdeals(pC);
 	  primes = primes | sat;
 	  );
@@ -734,9 +738,7 @@ CellularAssociatedLattices = I -> (
      -- Coercing to R:
      ml = ml / ( m -> sub (m,R) );
      -- The ring k[E]:
-     CoeffR := coefficientRing R;
-     S := CoeffR[cv];
-     prerad := kernel map (R/I,S);
+     prerad := projectToSubRing (I,cv);
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pc := {};
@@ -744,7 +746,7 @@ CellularAssociatedLattices = I -> (
      -- For each monomial, check if I:m has a different lattice !
      for m in ml do (
 	  -- print m;
-	  Im = kernel map (R/(I:m),S);
+	  Im = projectToSubring ((I:m),cv);
 	  -- We already know the cell variables in the following computation
 	  pc = partialCharacter(Im, cellVariables=>cv);
 	  if #lats == 0 then (
@@ -976,10 +978,10 @@ CellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- I needs to be cellular. Cell variables can be given to speed up
      -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
      ap := {};
+     cv := null;
      if o#cellVariables === null then cv = cellVars I
      else cv = o#cellVariables;
      ap = CellularBinomialAssociatedPrimes (I, cellVariables => cv);
-     
      -- Projecting down the assoc. primes, removing monomials
      proj := (I) -> projectToSubRing (I,cv); 
      pap := ap / proj ;
