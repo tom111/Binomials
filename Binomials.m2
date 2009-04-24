@@ -263,6 +263,7 @@ isBinomial = I -> (
      )
      
 cellVars = I -> (
+     print "Warning, cellVars called, could be unessary"
      cv := {};
      for i in gens ring I do if saturate (I,i) != substitute(ideal(1), ring I) then cv=cv|{i};
      return cv;
@@ -872,15 +873,15 @@ BinomialQuotient = (I,b) -> (
      -- We will often need the image of bexp, so lets cache it
      bexpim := image transpose matrix {bexp};
      pc := {}; -- Will hold partial characters;
-     CoeffR := coefficientRing R;
-     S := CoeffR[cv]; -- k[\delta] in the paper
+     -- CoeffR := coefficientRing R;
+     -- S := CoeffR[cv]; -- k[\delta] in the paper
      
      for m in ncvm do(
 	  quot = I:m;
 	  	  
 	  -- Mapping to k[delta] and taking character
-	  quot = kernel map (R/quot, S);
-	  pc = partialCharacter quot;
+	  quot = projectToSubRing (quot, cv);
+	  pc = partialCharacter (quot, cellVariables=>cv);
 	  
 	  --determine whether the exponents of b are in the saturated lattice
 	  if isSubset (bexpim, image Lsat pc#1) then (
