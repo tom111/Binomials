@@ -192,13 +192,10 @@ partialCharacter Ideal := Ideal => o -> I -> (
 	  return ({}, matrix "0", {1});
 	  );
 
-     CoeffR := coefficientRing R;
-     
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
      if #cellvars != #(gens R) then (
-     	  S := CoeffR[cellvars];
-     	  II = kernel map (R/I,S);
+     	  II = projectToSubRing (I,cv);
 	  )
      else (
 	  II = I;
@@ -283,9 +280,7 @@ nonCellstdm = {cellVariables=>null} >> o -> I -> (
      -- Here go the non-cell variables
      ncv := toList (set gens R - cv);
      -- We map I to the subring: k[ncv]
-     CoeffR := coefficientRing R;
-     S := CoeffR[ncv];
-     J := kernel map (R/I,S); -- image of I in the subring S
+     J := projectToSubRing (I,ncv); -- image of I in the subring S
      Q = S/J; 
      slist = flatten entries flatten basis Q;
      use R;
@@ -468,10 +463,8 @@ BinomialRadical = I -> (
      
           -- We intersect I with the ring k[E]
      	  -- In many cases this will be zero
-     	  CoeffR := coefficientRing R;
-     	  S := CoeffR[pc#0];
      	  -- The the radical missing the monomials:
-     	  prerad := kernel map (R/I,S);
+     	  prerad := projectToSubRing (I,pc#0);
      	  return sub (prerad ,R) + M;
 	  )
      else (
@@ -672,17 +665,15 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      ml = ml / ( m -> sub (m,R) );
 --     print "The list of standard monomials: ";
 --     print ml;
-     -- The ring k[E]:
-     CoeffR := coefficientRing R;
-     S := CoeffR[cv];
-     prerad := kernel map (R/I,S);
+     -- Mapping to the ring k[E]:
+     prerad := projectToSubRing (I,cv);
      M := sub (ideal (ncv),R); -- The monomial radical ideal
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pC := {}; sat = {};
      for m in ml do (
 	  -- print m;
-	  Im = kernel map (R/(I:m),S);
+	  Im = projectToSubRing ((I:m),cv);
 	  -- We already know the cell variables in the following computation
 	  pC = partialCharacter(Im, cellVariables=>cv);
 	  sat = satIdeals(pC);
@@ -733,9 +724,7 @@ CellularAssociatedLattices = I -> (
      -- Coercing to R:
      ml = ml / ( m -> sub (m,R) );
      -- The ring k[E]:
-     CoeffR := coefficientRing R;
-     S := CoeffR[cv];
-     prerad := kernel map (R/I,S);
+     prerad := projectToSubRing (I,cv);
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pc := {};
@@ -743,7 +732,7 @@ CellularAssociatedLattices = I -> (
      -- For each monomial, check if I:m has a different lattice !
      for m in ml do (
 	  -- print m;
-	  Im = kernel map (R/(I:m),S);
+	  Im = projectToSubring ((I:m),cv);
 	  -- We already know the cell variables in the following computation
 	  pc = partialCharacter(Im, cellVariables=>cv);
 	  if #lats == 0 then (
