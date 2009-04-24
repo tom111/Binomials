@@ -766,11 +766,19 @@ BCDisPrimary = I -> (
      return cd;
      )
 
-minimalPrimaryComponent = I -> (
+minimalPrimaryComponent = method (Options => {cellVariables => null})
+minimalPrimaryComponent Ideal := Ideal => o -> I -> (
      -- Input a cellular binomial ideal whose radical is prime.
      -- Ouptut, generators for Hull(I)
-     
-     apc := testPrimary (I, returnPChars=>true);
+
+     cv := null;
+     if o#cellVariables === null then (
+	  -- No cell variables are given -> compute them
+	  cv = cellVars(I);
+	  )
+     else cv = o#cellVariables;
+
+     apc := testPrimary (I, returnPChars=>true, cellVariables => cv);
      if #apc == 1 then return I -- radical is only associated prime!
      else (
 	  R := ring I;
