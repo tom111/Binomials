@@ -813,7 +813,7 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 		    	 );
 	       	    );
 	       -- Take the quotient of I with respect to b, such that the result is binomial
-	       return minimalPrimaryComponent BinomialQuotient (I,b);
+	       return minimalPrimaryComponent (BinomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
 	       )
        	   else (
 		-- print "infinite index case !";
@@ -844,13 +844,12 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 		 b = makeBinomial(QQ[pc2#0], L2cols#i, pc2#2#i);		    
 		 -- print b;
 	    	 -- Take the quotient of I with respect to b, such that the result is binomial
-	    	 return minimalPrimaryComponent BinomialQuotient (I,b);
+	    	 return minimalPrimaryComponent (BinomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
 	    	 );
 	    ) -- else path of if not testPrimary
      ) -- minimalPrimaryComponent
 
-BinomialQuotient = method (Options => {cellVariables => null})
-BinomialQuotient Ideal,Binomial := Ideal => o -> (I,b) -> ( 
+BinomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
      -- Algorithm A.3 in Ojeda / Sanchez
      -- Input I - Cellular Binomial Ideal 
      -- b -- Binomial in the cell variables of I which is a zerodivisor mod I
@@ -970,13 +969,11 @@ CellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- Projecting down the assoc. primes, removing monomials
      proj := (I) -> projectToSubRing (I,cv); 
      pap := ap / proj ;
-     R := ring ap#0;
-     --
-     -- Where's the sense in that ?
-     -- pap = pap / ((P) -> sub(P,R));
-     J := sub (I,R);
-     -- Compute and return minimal primary Components:
-     return pap / ( (P) -> minimalPrimaryComponent (J + P));
+     R := ring ap#0; -- All associated primes live in a common ring
+     J := sub (I,R); -- get I over there to compute sums
+     -- Compute and return minimal primary Components. We can reuse
+     -- the cell Variables here by a Proposition in the writeup
+     return pap / ( (P) -> minimalPrimaryComponent (J + P, cellVariables=>cv));
      )
 
 removeRedundant = l -> (
