@@ -82,7 +82,7 @@ FindRootPower = R -> (
      r := 0;
      F := coefficientRing R;
      g := gens F;
-     if #g == 0 then return 0;
+     if #g == 0 then return 2;
      if #g > 1 then error "The coefficient field has more than one generator";
      g = value (g#0);
      gg := g; -- the generator
