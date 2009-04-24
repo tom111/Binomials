@@ -541,7 +541,7 @@ testPrimary Ideal := Ideal => o -> I -> (
 	  );
      
      -- The list of maximally standard monomials:
-     maxstdmon := maxNonCellstdm (I,cellVariables=cv) / (i -> sub (i,R));
+     maxstdmon := maxNonCellstdm (I,cellVariables=>cv) / (i -> sub (i,R));
      -- print "The maximally standard monomials are:";
      -- print maxstdmon;
      
@@ -667,7 +667,7 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      
      primes := {}; -- This will hold the list of primes
      ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
-     ml := nonCellstdm(I); -- List of std monomials in ncv
+     ml := nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
      -- Coercing to R:
      ml = ml / ( m -> sub (m,R) );
 --     print "The list of standard monomials: ";
@@ -729,7 +729,7 @@ CellularAssociatedLattices = I -> (
      lats := {}; -- This will hold the list of lattices
      ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
      -- print "Noncellvars"; print ncv;
-     ml := nonCellstdm(I); -- List of std monomials in ncv
+     ml := nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
      -- Coercing to R:
      ml = ml / ( m -> sub (m,R) );
      -- The ring k[E]:
@@ -885,7 +885,7 @@ BinomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
      if isBinomial quot then return quot;
           
      --Transporting the standardmonomials to R:
-     ncvm := (i -> sub (i,R) ) \ nonCellstdm I ;
+     ncvm := (i -> sub (i,R) ) \ nonCellstdm (I,cellVariables=>cv) ;
      -- print ncvm;
   
      U' := {}; -- U' as in the paper
