@@ -1,3 +1,4 @@
+load "Binomials.m2"
 R=QQ[	s0000, i0000, 
 	s0001, i0001, j0001, 
 	s0010, i0010, j0010, 
@@ -80,7 +81,7 @@ reactionsIdeal=ideal(	e*s0000-i0000, i0000*(s0000-e*s1000),
 	e*s1110-i1110, i1110*(s1110-e*s1111),
 	f*s1111-j1111, j1111*(s1111-f*s1110) );
 -- Try to decompose! 
-time cd = binomialCD (reactionsIdeal + ideal(e)); 
-time cd = binomialCD (reactionsIdeal + ideal(s0000); 
-time cd = binomialCD (reactionsIdeal + ideal(s1000); 
-time cd = binomialCD (reactionsIdeal + ideal(s1100); 
+time bpd1 = BCD (reactionsIdeal + ideal(e)); 
+time bpd2 = BCD (reactionsIdeal + ideal(s0000); 
+time bpd3 = BCD (reactionsIdeal + ideal(s1000); 
+time bpd4 = BCD (reactionsIdeal + ideal(s1100); 
