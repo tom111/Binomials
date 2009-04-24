@@ -700,6 +700,7 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
         
      l := lcm for p in primes list FindRootPower (ring p);
      v := gens R;
+     S := Ring;
      -- Down here we reuse the Symbol S...
      if l<3 then(
 	  -- Coefficients are in QQ !
@@ -716,6 +717,7 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      M = sub (ideal (ncv), S);
      primes = primes / (I -> I + M);
 
+     use R;
      return toList set primes;
      )
 
@@ -970,6 +972,7 @@ BPD = I -> (
     	  ); -- apply
      -- print bpd;
      print "Removing redundant components (fast)";
+     use ring I;
      return removeRedundant bpd;
      )
 
