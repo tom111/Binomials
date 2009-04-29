@@ -188,6 +188,9 @@ partialCharacter Ideal := Ideal => o -> I -> (
 	  )
      else cv = o#cellVariables;
      
+     -- The cell ring:
+     S := CoeffR[cv];
+         
      -- If there are no cellular variables, 
      -- the ideal is monomial and the partial character is zero:
      if cv == {} then (
@@ -197,7 +200,7 @@ partialCharacter Ideal := Ideal => o -> I -> (
      -- We intersect I with the ring k[E]
      -- In many cases this will be zero
      if #cv != #(gens R) then (
-     	  II = projectToSubRing (I,cv);
+     	  II = kernel map (R/I,S);
 	  )
      else (
 	  II = I;
@@ -206,7 +209,7 @@ partialCharacter Ideal := Ideal => o -> I -> (
      -- The partial Character of the zero ideal is the 
      -- zero lattice.       
      if ( II == 0 ) then (
-	  for i in gens ring II do vs = vs | { 0_ZZ };
+	  for i in cv do vs = vs | { 0_ZZ };
 	  cl = {1_ZZ};
 	  return (cv, transpose matrix {vs}, cl);
 	  );
@@ -438,14 +441,14 @@ satIdeals = (va, A, d) -> (
      -- Computes all the ideals belonging to saturations of 
      -- a given partial character.
      -- TODO: Construct the correct coefficient field
-     satpc = saturatePChar(va, A, d);
+     satpc := saturatePChar(va, A, d);
 --     print "The cyclotomic field is:";
 --     print ring satpc#2#0#0; -- The apropriate cyclotomic field
      scan (satpc#0, (v -> v = local v));     
      -- The following should be the smallest ring 
      -- containing all new coefficients
      F := ring satpc#2#0#0;
-     Q := F [satpc#0];
+     Q := F[satpc#0];
      satideals = apply (satpc#2 , (c) -> (
 	       -- print {Q, satpc#1, c};
 	       idealFromCharacter(Q,satpc#1,c)));
@@ -677,7 +680,6 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      -- Here is a nice shortcut: if prerad is zero, we are done since
      -- all I:m will be zero after intesection with the cell ring, right?
      if prerad == ideal (0_R) then return {M};
-     
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pC := {}; sat = {};
@@ -699,6 +701,7 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
         
      l := lcm for p in primes list FindRootPower (ring p);
      v := gens R;
+     S := Ring;
      -- Down here we reuse the Symbol S...
      if l<3 then(
 	  -- Coefficients are in QQ !
@@ -715,6 +718,7 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      M = sub (ideal (ncv), S);
      primes = primes / (I -> I + M);
 
+     use R;
      return toList set primes;
      )
 
@@ -969,6 +973,7 @@ BPD = I -> (
     	  ); -- apply
      -- print bpd;
      print "Removing redundant components (fast)";
+     use ring I;
      return removeRedundant bpd;
      )
 
@@ -1017,8 +1022,9 @@ removeRedundant = l -> (
      )
 
 projectToSubRing = (I , delta) -> (
-     -- projects an ideal down to the ring k[\delta]
-     -- where delta is a  the set of variables
+     -- projects an ideal down to the ring k[\delta] where delta is a
+     -- the set of variables. Return after substituting back to the
+     -- original ring !!
      R := ring I;
      scan (gens R, (v -> v = local v));
      CoeffR := coefficientRing R;
