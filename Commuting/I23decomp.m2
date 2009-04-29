@@ -1,3 +1,4 @@
+load "Binomials.m2"
 S = QQ[R00,U00,R01,D01,U01,R02,D02,U02,R03,D03,R10,L10,U10,R11,L11,D11,U11,R12,L12,D12,U12,R13,L13,D13,L20,U20,L21,D21,U21,L22,D22,U22,L23,D23];
 I = ideal (U00*R01-R00*U10,R01*D11-D01*R00,D11*L10-L11*D01,L10*U00-U10*L11,U01*R02-R01*U11,R02*D12-D02*R01,D12*L11-L12*D02,L11*U01-U11*L12,U02*R03-R02*U12,R03*D13-D03*R02,D13*L12-L13*D03,L12*U02-U12*L13,U10*R11-R10*U20,R11*D21-D11*R10,D21*L20-L21*D11,L20*U10-U20*L21,U11*R12-R11*U21,R12*D22-D12*R11,D22*L21-L22*D12,L21*U11-U21*L22,U12*R13-R12*U22,R13*D23-D13*R12,D23*L22-L23*D13,L22*U12-U22*L23);
 cd = {
@@ -2641,15 +2642,16 @@ ideal(D23,L23,L22,D21,L21,L13,U12,D12,L12,R12,R11,U10,R10,R03,R02,U01,R01,U00,R0
 ideal(D23,U22,L22,D21,L21,D13,L13,U12,D12,L12,R12,R11,U10,R10,R03,R02,U01,R01,U00,R00,D01*L11-L10*D11)
 }
 
-counter := 1;
-cdc := #cd;
-bpd := {};
+counter = 1;
+cdc = #cd;
+bpd = {cd#0}; -- First one is the toric component
+cd = drop(cd,1);
 scan (cd , ( (i) -> (
 	       print ("Decomposing cellular component: " | toString counter | " of " | toString cdc);
 	       counter = counter +1;
 --	     	    print i;
 --	     	    print CellularBinomialPrimaryDecomposition i;
-bpd = bpd | CellularBinomialPrimaryDecomposition (i#0);
+bpd = bpd | CellularBinomialPrimaryDecomposition (i);
 )
 )
 ); -- apply
