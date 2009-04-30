@@ -472,7 +472,7 @@ BinomialRadical = I -> (
      	  -- In many cases this will be zero
      	  -- The the radical missing the monomials:
      	  prerad := projectToSubRing (I,pc#0);
-     	  return sub (prerad ,R) + M;
+     	  return prerad + M;
 	  )
      else (
 	  -- In the general case
