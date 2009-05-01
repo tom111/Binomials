@@ -1,0 +1,14 @@
+Steps to check the disprove of Sturmfels's Conjecture
+
+bpd.m2 contains a 
+
+-) Check that the intersection actually equals I
+Time needed :
+-) Check that each component is in fact primary
+Can it be done with the classical "isPrimary", or do 
+we need "testPrimary" which could have bugs.
+-) Check that there are components that are not prime
+-) Check whether replacing the components with their associated primes
+does not give the same intersection 
+(This would indicate a problem in the computation of 
+the minimal primary component, right?)
