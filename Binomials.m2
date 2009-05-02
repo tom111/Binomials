@@ -53,6 +53,7 @@ export {binomialCD,
      testPrime,
      testRadical,
      BinomialRadical,
+     CellularBinomialRadical,
      makeBinomial,
      doExample,
      nonCellstdm,
@@ -158,11 +159,16 @@ binomialCD Ideal := Ideal => o -> I -> (
 -- the matrix A, whose image is the lattice. 
 Lsat = A -> syz transpose syz transpose A;
 
-testCellular = I -> (
+testCellular = method (Options => {returnCellVars => false})
+testCellular Ideal := Ideal => o -> I -> (
      R := ring I;
      cv := cellVars I;
      if cv == {} then prod := 1_R else prod = product cv;
-     if I == saturate (I, prod) then return true
+     if I == saturate (I, prod) then (
+	  -- Cellular Ideal
+	  if o#returnCellVars then return cv
+	  else return true;
+	  )
      else return false;
      )
 
@@ -456,31 +462,44 @@ satIdeals = (va, A, d) -> (
      )
 
 BinomialRadical = I -> (
-     -- Todo: CellVars are computed twice
-     if testCellular I then (
-	  print "Input cellular, fast method will be used";
-     	  -- Computes the radical of a cellular binomial ideal
-     	  R := ring I;
-     	  scan (gens R, (v -> v = local v));
-     	  -- Get the partial character of I
-     	  pc := partialCharacter(I);
-     	  noncellvars := toList(set (gens R) - pc#0);
-          
-     	  M := sub (ideal (noncellvars),R);
-     
-          -- We intersect I with the ring k[E]
-     	  -- In many cases this will be zero
-     	  -- The the radical missing the monomials:
-     	  prerad := projectToSubRing (I,pc#0);
-     	  return prerad + M;
-	  )
-     else (
+     	  cv := testCellular (I, returnCellVars=>true);
+     	  if not cv === false then (
+	       return CellularBinomialRadical (I,cellVariables=>cv)
+	       )
+      	  else (
 	  -- In the general case
 	  print "Input not cellular, computing minimial primes ...";
 	  mp := BinomialMinimalPrimes I;
 	  print mp;
 	  return ideal mingens intersect mp;
 	  )
+
+     )
+
+CellularBinomialRadical = method (Options => {cellVariables => null})
+CellularBinomialRadical Ideal := Ideal => o -> I -> (
+     
+     cv := {};
+     if o#cellVariables === null then (
+	  print "CellVariables not given, Please consider precomputing them";
+	  cv = cellVars I;
+	  )
+     else cv = o#cellVariables;
+     
+     -- Computes the radical of a cellular binomial ideal
+     R := ring I;
+     scan (gens R, (v -> v = local v));
+     -- Get the partial character of I
+     pc := partialCharacter(I, cellVariables=>cv);
+     noncellvars := toList(set (gens R) - pc#0);
+     	       
+     M := sub (ideal (noncellvars),R);
+     
+     -- We intersect I with the ring k[E]
+     -- In many cases this will be zero
+     -- The the radical missing the monomials:
+     prerad := projectToSubRing (I,pc#0);
+     return prerad + M;
      )
 
 testPrimary = method (Options => {returnPrimes => false , returnPChars => false, cellVariables=> null})
