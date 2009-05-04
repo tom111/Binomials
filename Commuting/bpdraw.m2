@@ -2927,6 +2927,8 @@ ideal(U22,L22,D21,L21,D13,L13,R13,D12,L12,R12,R11,U10,R10,R03,R02,U01,R01,U00,R0
 ideal(D23,L23,L22,D21,L21,L13,U12,D12,L12,R12,R11,U10,R10,R03,R02,U01,R01,U00,R00,D01*L11-L10*D11,D01*L11-L10*D11),
 ideal(D23,U22,L22,D21,L21,D13,L13,U12,D12,L12,R12,R11,U10,R10,R03,R02,U01,R01,U00,R00,D01*L11-L10*D11,D01*L11-L10*D11)}
 
+-- This code gently computes the intersection and removes redundant
+-- elements 
 Answer = bpd#0;
 result = {bpd#0};
 bpd = drop (bpd,1);
@@ -2937,9 +2939,10 @@ while #bpd > 0 do (
      if isect != Answer then (
 	  result = result | {bpd#0};
 	  Answer = isect;
-	  print bpd#0;
+--	  print bpd#0;
 	  counter = counter +1;
 	  print counter;
+	  gbRemove bpd#0; -- This saves memory
 	  )
      else print "redundant component found !";
      -- shorten the todolist
