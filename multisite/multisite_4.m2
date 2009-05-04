@@ -82,6 +82,10 @@ reactionsIdeal=ideal(	e*s0000-i0000, i0000*(s0000-e*s1000),
 	f*s1111-j1111, j1111*(s1111-f*s1110) );
 -- Try to decompose! 
 time bpd1 = BPD (reactionsIdeal + ideal(e)); 
+use R;
 time bpd2 = BPD (reactionsIdeal + ideal(s0000); 
+use R;
 time bpd3 = BPD (reactionsIdeal + ideal(s1000); 
+use R;
 time bpd4 = BPD (reactionsIdeal + ideal(s1100); 
+use R;

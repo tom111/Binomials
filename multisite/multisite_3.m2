@@ -33,6 +33,8 @@ reactionsIdeal=ideal(	e*s000-i000, i000*(s000-e*s100),
 	e*s110-i110, i110*(s110-e*s111),
 	f*s111-j111, j111*(s111-f*s110));
 -- Try to decompose! 
-time cd = binomialCD (reactionsIdeal + ideal(e)); 
--- time cd = binomialCD (reactionsIdeal + ideal(s000)); 
--- time cd = binomialCD (reactionsIdeal + ideal(s100)); 
+time bcd = BPD (reactionsIdeal + ideal(e)); 
+use R;
+time bcd2 = BPD (reactionsIdeal + ideal(s000)); 
+use R;
+time bcd3 = BPD (reactionsIdeal + ideal(s100)); 
