@@ -2642,7 +2642,11 @@ ideal(D23,L23,L22,D21,L21,L13,U12,D12,L12,R12,R11,U10,R10,R03,R02,U01,R01,U00,R0
 ideal(D23,U22,L22,D21,L21,D13,L13,U12,D12,L12,R12,R11,U10,R10,R03,R02,U01,R01,U00,R00,D01*L11-L10*D11,D01*L11-L10*D11)};
 
 -- Computing the intersection:
-time intersect primarydec == I;
+
+-- This will use A LOT of memory.
+-- time intersect primarydec == I;
+
+-- Use the 'gentle intersection' if it does not work
 
 -- Checking for primeness of the components
 counter = 0;
@@ -2652,7 +2656,7 @@ scan (primarydec, p -> (
 	  if not testPrimary p then (
 	       print "Error!";
 	       print p;
-	       print "is not prime !";
+	       print "is not primary !";
 	       break;
 	       );
 	  ));
