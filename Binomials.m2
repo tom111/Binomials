@@ -543,14 +543,12 @@ testPrimary Ideal := Ideal => o -> I -> (
      -- If the partial character is not saturated, the radical is not prime
      if image Lsat pc#1 != image pc#1 then (
 	  print "The radical is not prime, as the character is not saturated";
-	  satpc := null; -- Creating local name
+	  satpc := saturatePChar pc;
 	  if o#returnPChars then (
 	       -- This one is the fastest, so check it first
-	       satpc = saturatePChar pc;
 	       return {{satpc#0,satpc#1,satpc#2#0}, {satpc#0,satpc#1,satpc#2#1}}
 	       );
 	  if o#returnPrimes then (
-	       satpc = saturatePChar pc;
 	       ap1 := sub (idealFromCharacter (S,satpc#1,satpc#2#0), R) + M;
 	       ap2 := sub (idealFromCharacter (S,satpc#1,satpc#2#1), R) + M;
 	       -- Return two distinct associated primes:
