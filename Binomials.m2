@@ -574,15 +574,12 @@ testPrimary Ideal := Ideal => o -> I -> (
      	  -- I_+(sigma) was called prerad above:
 	  if not isSubset(q2, prerad) then (
 	       -- creating some local names:
-	       qchar := null; satqchar := null;
+	       qchar := partialCharacter (q,cellVariables=>cv);
+	       satqchar := saturatePChar qchar;
 	       if o#returnPChars then(
-		    qchar = partialCharacter (q,cellVariables=>cv);
-		    satqchar = saturatePChar qchar;
 		    return {pc, {satqchar#0,satqchar#1,satqchar#2#0}}
 		    );
 	       if o#returnPrimes then (
-		    qchar = partialCharacter (q,cellVariables=>cv);
-		    satqchar = saturatePChar qchar;
 		    ap2 := idealFromCharacter (S,satqchar#1,satqchar#2#0);
 		    return {rad, sub(ap2,R) + M};
      	       	    )  
