@@ -557,6 +557,11 @@ testPrimary Ideal := Ideal => o -> I -> (
 	  else return false;
 	  );
      
+     -- If the radical is prime, then there still might be embedded
+     -- primes that properly contain the radical. The remaining part
+     -- finds such primes by examining quotients w.r.t (maximal)
+     -- standard monomials. 
+     
      -- The list of maximally standard monomials:
      maxstdmon := maxNonCellstdm (I,cellVariables=>cv) / (i -> sub (i,R));
      -- print "The maximally standard monomials are:";
