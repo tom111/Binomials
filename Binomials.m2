@@ -977,6 +977,9 @@ binomialQuasiPower = (b,e) -> (
 BPD = I -> (
      -- The full binomial primary decomposition 
      -- starting from a not necessarily cellular binomial ideal
+     
+     if not isBinomial I error "Input was not binomial !";
+     
      cd := binomialCD (I, returnCellVars => true);
      counter := 1;
      cdc := #cd;
@@ -1049,4 +1052,12 @@ projectToSubRing = (I , delta) -> (
      CoeffR := coefficientRing R;
      S := CoeffR[delta];
      return sub(kernel map (R/I,S), R);
+     )
+
+
+SetSat = (I,E) -> (
+     -- Will compute the ideal I_E = I + M(E) : (\prod_{e\inE}
+     -- x_e)^\infty as defined on p.41 in ES96.
+     
+     -- Check that we have no coefficients 	  
      )
