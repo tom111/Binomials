@@ -1071,7 +1071,7 @@ projectToSubRing = (I , delta) -> (
 
 SetSat = (I,E) -> (
      
-     error "THIS IS BROKEN. Don't use it."
+     error "THIS IS BROKEN. Don't use it.";
      
      -- Will compute the ideal I_E = I + M(E) : (\prod_{e\inE}
      -- x_e)^\infty as defined on p.41 in ES96 using 4ti2.
