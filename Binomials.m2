@@ -60,6 +60,7 @@ export {binomialCD,
      maxNonCellstdm,
      BCDisPrimary,
      isBinomial,
+     isPureDifference,
      minimalPrimaryComponent,
      binomialQuasiPower,
      BinomialQuotient,
@@ -266,6 +267,18 @@ isBinomial = I -> (
      ge := flatten entries gens I;
      for g in ge do (
           if #(terms g) > 2 then return false;	  
+	  );
+     return true;
+     )
+
+isPureDifference = I -> (
+     ge := flatten entries gens I;
+     for g in ge do (
+	  coeffs := sort flatten entries (coefficients g)#1;
+     	  if coeffs == {1} then continue;
+	  if coeffs == { -1} then continue;
+	  if coeffs == { -1 , 1} then continue;
+	  return false;
 	  );
      return true;
      )
@@ -978,7 +991,7 @@ BPD = I -> (
      -- The full binomial primary decomposition 
      -- starting from a not necessarily cellular binomial ideal
      
-     if not isBinomial I error "Input was not binomial !";
+     if not isBinomial I then error "Input was not binomial !";
      
      cd := binomialCD (I, returnCellVars => true);
      counter := 1;
@@ -1059,5 +1072,8 @@ SetSat = (I,E) -> (
      -- Will compute the ideal I_E = I + M(E) : (\prod_{e\inE}
      -- x_e)^\infty as defined on p.41 in ES96.
      
-     -- Check that we have no coefficients 	  
+     -- Check for Binomiality
+     if not isBinomial I then error "Input is not binomial";
+     -- Check that we have no coefficients
+     
      )
