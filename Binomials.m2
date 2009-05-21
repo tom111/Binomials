@@ -1048,7 +1048,7 @@ removeRedundant = l -> (
 	  if isect != Answer then (
 	       result = result | {l#0};
 	       Answer = isect;
-	       print l#0;
+	       -- print l#0;
 	       )
 	  else print "redundant component found !";
 	  -- shorten the todolist
@@ -1103,3 +1103,32 @@ SetSat = (I,E) -> (
      Jsat := toricMarkov (transpose A, S, InputType => "lattice");
      return sub(ideal nilvars , R) + Jsat;
      )
+
+--- End of source code ---
+
+beginDocumentation()
+
+document { 
+        Key => Binomials,
+        Headline => "a package for binomial ideals",
+        EM "Binomials", " is a package for binomial ideals."
+        }
+   
+document {
+     Key => BPD,
+     Headline => "Binomial Primary Decomposition",
+     Usage => "BPD I",
+     Inputs => {
+          "I" => { "a binomial ideal"} },
+     Outputs => {
+          "l" => {"a list of binomial primary components of I"} },
+     "This routine returns a minimal primary decomposition of a binomial ideal into binomial ideals.",
+     EXAMPLE {
+          "R = QQ[x,y,z]",
+          "I = ideal (x*y-z, x*z-y^2)",
+          "bpd = BPD I",
+	  "intersect bpd == I"
+          },
+     Caveat => {"Note that if the coefficient field needs to be extended, strange things can happen"},
+--     SeeAlso => BCD
+     }
