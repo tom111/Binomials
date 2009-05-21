@@ -194,4 +194,39 @@ oldBCD = (I) -> (
      Answer	      
      )
 
+SetSat = (I,E) -> (
+     
+     error "THIS IS BROKEN. Don't use it.";
+     
+     -- Will compute the ideal I_E = I + M(E) : (\prod_{e\inE}
+     -- x_e)^\infty as defined on p.41 in ES96 using 4ti2.
+     
+     -- Check that we have no coefficients
+     if not isPureDifference I then error "Not implemented, sorry";
+          
+     R := ring I;
+     scan (gens R, (v -> v = local v));
+     CoeffR := coefficientRing R;
+     Ec := toList (set gens R - set E);
+     M := sub (ideal Ec, R);
+     I2 := I + M;
+     mgI2 := flatten entries mingens I2;     
+     -- Find the nilpotent variables mod I+M
+     mongens := for m in mgI2 list if (#terms m) == 1 then m else continue;
+     print mongens;
+     hugemon := 1_R;
+     if #mongens>0 then hugemon = product mongens;
+          
+     notnil := for v in gens R list if hugemon % v != 0_R then v else continue;
+     print notnil;
+     nilvars := toList (set gens R - set notnil);
+     print nilvars;
+     S := CoeffR[notnil];
+     J := kernel map (R/I2,S);
+     pc := partialCharacter(J, cellVariables => notnil);
+     A := pc#1;
+     Jsat := toricMarkov (transpose A, S, InputType => "lattice");
+     return sub(ideal nilvars , R) + Jsat;
+     )
+
 
