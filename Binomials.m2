@@ -42,6 +42,7 @@ export {
      -- tests
      binomialIsPrime,
      binomialIsPrimary,
+     isCellular,
      isBinomial,
      isPureDifference,
      -- input related
@@ -58,7 +59,6 @@ export {
      BCDisPrimary,
      -- auxillary functions, removed from interface for now
 --     partialCharacter,
---     isCellular,
 --     cellVars,
 --     Lsat,
 --     idealFromCharacter,
@@ -748,7 +748,7 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 
 binomialAssociatedPrimes = I -> (
      -- Todo: Compute the Associated Primes of any Binomial Ideal
-     if isCellular I then return cellularbinomialAssociatedPrimes I 
+     if isCellular I then return cellularBinomialAssociatedPrimes I 
      else error "Not implemented, sorry!";
      )
 

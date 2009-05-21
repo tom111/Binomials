@@ -24,13 +24,16 @@
 newPackage(
 	"PDBISolve",
     	Version => "0.1", 
-    	Date => "February, 2009",
+    	Date => "May, 2009",
     	Authors => {{Name => "Thomas Kahle", 
 		  Email => "kahle@mis.mpg.de", 
 		  HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
     	Headline => "a solver for pure difference binomial ideals",
     	DebuggingMode => true
     	)
+   
+-- TODO: We should extend it in the obvious way to a solver of ideals
+-- with coefficients 1 and -1
 
 export {BinomialSolve}
 
@@ -71,10 +74,6 @@ SolveMore = (binom,psol) -> (
      -- in the partial solutions is univariate
      -- OUTPUT: An extended partial solution
 
---      print "Entering function SolveMore";     
---      print psol;
---      print binom;
---      
      -- Since Lex is a global order the true monomial comes first, right ?
      mon := (terms binom)#0; -- The monomial in the new variable.
      
@@ -83,9 +82,11 @@ SolveMore = (binom,psol) -> (
      ind := index (flatten entries gens radical monomialIdeal mon)#0;
      var := (flatten entries gens radical monomialIdeal mon)#0;
      -- </incomprehensable hack>
-
+     
      rhs := (terms binom)#1; -- The right hand side which is a power
 			     -- of a root of unity
+			     
+     -- TODO: Here we should check the sign 			     
      erhs := flatten exponents rhs;
      
      newsols := {}; -- A list accumulating extended solutions
@@ -136,8 +137,7 @@ SolveMore = (binom,psol) -> (
 	   else (
 		if not zeroflag then q = sum q;
 		);
-	   -- print q;
-     	       
+
        	   -- now everthing is set for the Rooter:
        	   roots = roots | Rooter (n,q);
        	   extensions := for r in roots list (
@@ -145,10 +145,6 @@ SolveMore = (binom,psol) -> (
 	    	);
        	   newsols = newsols | extensions;
        	   );
-      
---       print "Leaving Function SolveMore";
---       print newsols;
---       
       
       return newsols;	  
       )
@@ -159,10 +155,9 @@ BinomialSolve = (I, varname) -> (
      -- used as the name of a root of unity which will be adjoined
      -- OUTPUT: The list of solutions in QQ(some root of unity)
      R := ring I;
-     cd := binomialCD I;
+     cd := binomialCellularDecomposition I;
      exponentsols := flatten for c in cd list CellularBinomialExponentSolve c;
      
-     -- print exponentsols;
      -- determine the least common denominator, ignoring nulls
      denoms := for i in flatten exponentsols list if i =!= null then denominator i else continue;
      -- print denoms;
@@ -170,7 +165,6 @@ BinomialSolve = (I, varname) -> (
      -- and we return only (0,0,...,0)
      if denoms === {} then return {for i in gens R list 0};
      lcd := lcm denoms;
-     print lcd;
 
      -- This is our standard. Coefficients are rational?
      C := QQ;     
@@ -219,8 +213,8 @@ CellularBinomialExponentSolve = I -> (
      -- First we need a Lex Groebner Basis of our ideal.     
      groeb := flatten entries gens gb sub(I,RLex);
      
-     print "This is the Groebner basis. Is it ordered correctly ??";
-     print groeb;
+--     print "This is the Groebner basis. Is it ordered correctly ??";
+--     print groeb;
           
      -- The data structure for a partial solution is as follows: It is
      -- a list of n-tuples where n is the number of variables. These
@@ -235,6 +229,7 @@ CellularBinomialExponentSolve = I -> (
 
      -- make it a proper list of solutions
      psols = {psols};
+--     print psols;
 
      -- We solve on a log-scale for the exponents
      while #groeb > 0 do (
