@@ -34,6 +34,7 @@ newPackage(
    
 export {
      -- 'Official' functions
+     binomialPrimaryDecomposition,
      binomialCellularDecomposition,
      testPrime,
      testPrimary,
@@ -975,8 +976,9 @@ binomialQuasiPower = (b,e) -> (
      )
 
 BCD = I -> binomialCellularDecomposition I 
+BPD = I -> binomialPrimaryDecomposition I
 
-BPD = I -> (
+binomialPrimaryDecomposition = I -> (
      -- The full binomial primary decomposition 
      -- starting from a not necessarily cellular binomial ideal
      
