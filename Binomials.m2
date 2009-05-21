@@ -1,4 +1,3 @@
-
 -- -*- coding: utf-8 -*-
 --  Binomials.m2
 --
@@ -28,51 +27,55 @@ newPackage(
     	Date => "May 2009",
     	Authors => {
 	     {Name => "Thomas Kahle", Email => "kahle@mis.mpg.de", HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
-    	Headline => "Spezialised routines for binomial Ideals",
+    	Headline => "Spezialized routines for binomial Ideals",
 	Configuration => { },
     	DebuggingMode => true
     	)
    
-export {binomialCD,
-     partialCharacter,
-     testCellular,
-     cellVars,
-     Lsat,
-     idealFromCharacter,
-     LatticeBasisIdeal,
-     saturatePChar,
-     BinSolveWrap,
-     satIdeals,
-     testPrimary,
-     BinomialMinimalPrimes,
-     BinomialAssociatedPrimes,
-     CellularBinomialAssociatedPrimes,
-     CellularAssociatedLattices,
-     CellularBinomialPrimaryDecomposition,
-     BPD,
+export {
+     -- 'Official' functions
+     binomialCellularDecomposition,
      testPrime,
+     testPrimary,
      testRadical,
-     BinomialRadical,
-     CellularBinomialRadical,
-     makeBinomial,
-     doExample,
-     nonCellstdm,
-     maxNonCellstdm,
-     BCDisPrimary,
      isBinomial,
      isPureDifference,
-     minimalPrimaryComponent,
-     binomialQuasiPower,
-     BinomialQuotient,
-     projectToSubRing,
-     removeRedundant,
-     SetSat,
+     binomialRadical,
+     makeBinomial,
+     latticeBasisIdeal,
+     binomialMinimalPrimes,
+     binomialAssociatedPrimes,
+     cellularBinomialAssociatedPrimes,
+     cellularAssociatedLattices,
+     cellularBinomialPrimaryDecomposition,
+     cellularBinomialRadical,
+     BPD,
+     BCD,
+     BCDisPrimary,
+     -- auxillary functions, removed from interface for now
+--     partialCharacter,
+--     testCellular,
+--     cellVars,
+--     Lsat,
+--     idealFromCharacter,
+--     saturatePChar,
+--     satIdeals,
+--     nonCellstdm,
+--     maxNonCellstdm,
+--     minimalPrimaryComponent,
+--     binomialQuasiPower,
+--     binomialQuotient,
+--     projectToSubRing,
+--     removeRedundant,
+
+     -- Removed as of M2 v1.2
 --     lcm,
+
      -- Options
      cellVariables, -- for partialCharacter
      returnPrimes, -- for testPrimary 
      returnPChars, -- for testPrimary
-     returnCellVars -- for binomialCD
+     returnCellVars -- for binomialCellularDecomposition
      }
 
 needsPackage "FourTiTwo";
@@ -99,8 +102,8 @@ axisSaturate = (I,i) -> (
 -- Cellular decomposition of binomial ideals:
 --
 
-binomialCD = method (Options => {returnCellVars => false})
-binomialCD Ideal := Ideal => o -> I -> (
+binomialCellularDecomposition = method (Options => {returnCellVars => false})
+binomialCellularDecomposition Ideal := Ideal => o -> I -> (
 -- By Ignacio Ojeda and Mike Stillman     
 -- Comments by TK
      R := ring I;
@@ -395,7 +398,7 @@ idealFromCharacter = (R,A,c) -> (
 	  );
      )
 
-LatticeBasisIdeal = (R,L) -> (
+latticeBasisIdeal = (R,L) -> (
      -- Constructs the lattice basis ideal (whose saturation is the toric ideal)
      -- Convention is that L's columns generate the lattice.
      use R;
@@ -442,21 +445,6 @@ saturatePChar = (va, A, c) -> (
      return (va, S, result);
      )
 
-BinSolveWrap = I ->(
-     -- Should find the solutions to the pure binomial system 
-     -- and construct a cyclotomic field in which all exist.
-     -- Currently it will set to zero everything that is not 
-     -- in QQ.
-     sols = BinomialSolve I;
-     for sol in sols do(
-	  for entry in sol do(
-	       entry = sub (entry, QQ);
-	       );
-	  );
-     return sols;
-     )
-     
-
 satIdeals = (va, A, d) -> (
      -- Computes all the ideals belonging to saturations of 
      -- a given partial character.
@@ -475,24 +463,23 @@ satIdeals = (va, A, d) -> (
      return satideals;
      )
 
-BinomialRadical = I -> (
+binomialRadical = I -> (
      	  cv := testCellular (I, returnCellVars=>true);
      	  if not cv === false then (
-	       return CellularBinomialRadical (I,cellVariables=>cv)
+	       return cellularBinomialRadical (I,cellVariables=>cv)
 	       )
       	  else (
 	  -- In the general case
 	  print "Input not cellular, computing minimial primes ...";
-	  mp := BinomialMinimalPrimes I;
+	  mp := binomialMinimalPrimes I;
 	  print mp;
 	  return ideal mingens intersect mp;
 	  )
 
      )
 
-CellularBinomialRadical = method (Options => {cellVariables => null})
-CellularBinomialRadical Ideal := Ideal => o -> I -> (
-     
+cellularBinomialRadical = method (Options => {cellVariables => null}) 
+cellularBinomialRadical Ideal := Ideal => o -> I -> (
      cv := {};
      if o#cellVariables === null then (
 	  print "CellVariables not given, Please consider precomputing them";
@@ -627,7 +614,7 @@ testPrime = I -> (
      return true;
      )
 
-BinomialMinimalPrimes = I -> (
+binomialMinimalPrimes = I -> (
      -- Computes the minimial Primes with Algorithm 9.2 in ES96
      -- TODO: This function typically fails due to large demand for memory
      -- TODO: Implement the shortcut mentioned below the Algorithm
@@ -683,9 +670,9 @@ removeEmbedded = l -> (
 	  );
      return l;
      )
-      
-CellularBinomialAssociatedPrimes = method (Options => {cellVariables => null})
-CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> ( 
+
+cellularBinomialAssociatedPrimes = method (Options => {cellVariables => null}) 
+cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> ( 
      -- Computes the associated primes of cellular binomial ideal
      
      -- TODO: It could be faster by rearringing things in the m in ml
@@ -755,13 +742,12 @@ CellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      return toList set primes;
      )
 
-BinomialAssociatedPrimes = I -> (
+binomialAssociatedPrimes = I -> (
      -- Todo: Compute the Associated Primes of any Binomial Ideal
-     if testCellular I then return CellularBinomialAssociatedPrimes I 
+     if testCellular I then return cellularbinomialAssociatedPrimes I 
      else error "Not implemented, sorry!";
      )
-
-CellularAssociatedLattices = I -> (
+ cellularAssociatedLattices = I -> (
      -- Computes the associated lattices of a cellular binomial ideal
      -- Todo: Can we get the multiplicities too ?
      
@@ -804,7 +790,7 @@ CellularAssociatedLattices = I -> (
 
 BCDisPrimary = I -> (
      print "Computing Cellular Decomposition";
-     cd := binomialCD I;
+     cd := binomialCellularDecomposition I;
      print "Testing for primaryness of components";
      i := 0;
      for c in cd do (
@@ -866,7 +852,7 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 		    	 );
 	       	    );
 	       -- Take the quotient of I with respect to b, such that the result is binomial
-	       return minimalPrimaryComponent (BinomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
+	       return minimalPrimaryComponent (binomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
 	       )
        	   else (
 		-- print "infinite index case !";
@@ -897,12 +883,12 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 		 b = makeBinomial(QQ[pc2#0], L2cols#i, pc2#2#i);		    
 		 -- print b;
 	    	 -- Take the quotient of I with respect to b, such that the result is binomial
-	    	 return minimalPrimaryComponent (BinomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
+	    	 return minimalPrimaryComponent (binomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
 	    	 );
 	    ) -- else path of if not testPrimary
      ) -- minimalPrimaryComponent
 
-BinomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
+binomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
      -- Algorithm A.3 in Ojeda / Sanchez
      -- Input I - Cellular Binomial Ideal 
      -- b -- Binomial in the cell variables of I which is a zerodivisor mod I
@@ -988,13 +974,15 @@ binomialQuasiPower = (b,e) -> (
      return ((terms b)#0)^e - (- (terms b)#1)^e;
      )
 
+BCD = I -> binomialCellularDecomposition I 
+
 BPD = I -> (
      -- The full binomial primary decomposition 
      -- starting from a not necessarily cellular binomial ideal
      
      if not isBinomial I then error "Input was not binomial !";
      
-     cd := binomialCD (I, returnCellVars => true);
+     cd := binomialCellularDecomposition (I, returnCellVars => true);
      counter := 1;
      cdc := #cd;
      bpd := {};
@@ -1003,7 +991,7 @@ BPD = I -> (
 		    counter = counter +1;
 --		    print i;
 --		    print CellularBinomialPrimaryDecomposition i;
-		    bpd = bpd | CellularBinomialPrimaryDecomposition (i#0, cellVariables => i#1);
+		    bpd = bpd | cellularBinomialPrimaryDecomposition (i#0, cellVariables => i#1);
 		    )
 	       )
     	  ); -- apply
@@ -1012,9 +1000,8 @@ BPD = I -> (
      use ring I;
      return removeRedundant bpd;
      )
-
-CellularBinomialPrimaryDecomposition = method (Options => {cellVariables => null})
-CellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> ( 
+cellularBinomialPrimaryDecomposition = method (Options => {cellVariables => null}) 
+cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> ( 
      -- computes the binomial primary decomposition of a cellular ideal
      -- I needs to be cellular. Cell variables can be given to speed up
      -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
@@ -1022,7 +1009,7 @@ CellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      cv := null;
      if o#cellVariables === null then cv = cellVars I
      else cv = o#cellVariables;
-     ap = CellularBinomialAssociatedPrimes (I, cellVariables => cv);
+     ap = cellularBinomialAssociatedPrimes (I, cellVariables => cv);
      -- Projecting down the assoc. primes, removing monomials
      proj := (I) -> projectToSubRing (I,cv); 
      pap := ap / proj ;
