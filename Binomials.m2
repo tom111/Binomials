@@ -36,26 +36,29 @@ export {
      -- 'Official' functions
      binomialPrimaryDecomposition,
      binomialCellularDecomposition,
-     testPrime,
-     testPrimary,
-     testRadical,
-     isBinomial,
-     isPureDifference,
      binomialRadical,
-     makeBinomial,
-     latticeBasisIdeal,
      binomialMinimalPrimes,
      binomialAssociatedPrimes,
+     -- tests
+     binomialIsPrime,
+     binomialIsPrimary,
+     isBinomial,
+     isPureDifference,
+     -- input related
+     makeBinomial,
+     latticeBasisIdeal,
+     -- cellular stuff:
      cellularBinomialAssociatedPrimes,
      cellularAssociatedLattices,
      cellularBinomialPrimaryDecomposition,
      cellularBinomialRadical,
+     -- simple wrappers:
      BPD,
      BCD,
      BCDisPrimary,
      -- auxillary functions, removed from interface for now
 --     partialCharacter,
---     testCellular,
+--     isCellular,
 --     cellVars,
 --     Lsat,
 --     idealFromCharacter,
@@ -74,8 +77,8 @@ export {
 
      -- Options
      cellVariables, -- for partialCharacter
-     returnPrimes, -- for testPrimary 
-     returnPChars, -- for testPrimary
+     returnPrimes, -- for binomialIsPrimary 
+     returnPChars, -- for binomialIsPrimary
      returnCellVars -- for binomialCellularDecomposition
      }
 
@@ -165,8 +168,8 @@ binomialCellularDecomposition Ideal := Ideal => o -> I -> (
 -- the matrix A, whose image is the lattice. 
 Lsat = A -> syz transpose syz transpose A;
 
-testCellular = method (Options => {returnCellVars => false})
-testCellular Ideal := Ideal => o -> I -> (
+isCellular = method (Options => {returnCellVars => false})
+isCellular Ideal := Ideal => o -> I -> (
      R := ring I;
      cv := cellVars I;
      if cv == {} then prod := 1_R else prod = product cv;
@@ -465,7 +468,7 @@ satIdeals = (va, A, d) -> (
      )
 
 binomialRadical = I -> (
-     	  cv := testCellular (I, returnCellVars=>true);
+     	  cv := isCellular (I, returnCellVars=>true);
      	  if not cv === false then (
 	       return cellularBinomialRadical (I,cellVariables=>cv)
 	       )
@@ -504,8 +507,8 @@ cellularBinomialRadical Ideal := Ideal => o -> I -> (
      return prerad + M;
      )
 
-testPrimary = method (Options => {returnPrimes => false , returnPChars => false, cellVariables=> null})
-testPrimary Ideal := Ideal => o -> I -> (
+binomialIsPrimary = method (Options => {returnPrimes => false , returnPChars => false, cellVariables=> null})
+binomialIsPrimary Ideal := Ideal => o -> I -> (
      -- Implements Alg. 9.4 in [ES96]
      -- I must be a cellular ideal, cellVariables can be given for speedup
      -- Returns the radical of I and whether I is primary
@@ -594,7 +597,7 @@ testPrimary Ideal := Ideal => o -> I -> (
      return true;	  
      )
 
-testPrime = I -> (
+binomialIsPrime = I -> (
      -- A binomial ideal is prime if all its 
      -- monomial generators have power one and the 
      -- associated partial character is saturated.
@@ -745,10 +748,11 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 
 binomialAssociatedPrimes = I -> (
      -- Todo: Compute the Associated Primes of any Binomial Ideal
-     if testCellular I then return cellularbinomialAssociatedPrimes I 
+     if isCellular I then return cellularbinomialAssociatedPrimes I 
      else error "Not implemented, sorry!";
      )
- cellularAssociatedLattices = I -> (
+
+cellularAssociatedLattices = I -> (
      -- Computes the associated lattices of a cellular binomial ideal
      -- Todo: Can we get the multiplicities too ?
      
@@ -797,7 +801,7 @@ BCDisPrimary = I -> (
      for c in cd do (
 	  i = i+1;
 	  print ("Component number " | i );
-	  if testPrimary c == true then continue;
+	  if binomialIsPrimary c == true then continue;
 	  print "Following component is not primary: ";
 	  print c;
 	  return false;
@@ -818,7 +822,7 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 	  )
      else cv = o#cellVariables;
 
-     apc := testPrimary (I, returnPChars=>true, cellVariables => cv);
+     apc := binomialIsPrimary (I, returnPChars=>true, cellVariables => cv);
      if #apc == 1 then return I -- radical is only associated prime!
      else (
 	  R := ring I;
@@ -886,7 +890,7 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 	    	 -- Take the quotient of I with respect to b, such that the result is binomial
 	    	 return minimalPrimaryComponent (binomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
 	    	 );
-	    ) -- else path of if not testPrimary
+	    ) -- else path of if not binomialIsPrimary
      ) -- minimalPrimaryComponent
 
 binomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
@@ -1068,9 +1072,9 @@ document {
         }
    
 document {
-     Key => BPD,
+     Key => binomialPrimaryDecomposition,
      Headline => "Binomial Primary Decomposition",
-     Usage => "BPD I",
+     Usage => "binomialPrimaryDecomposition I",
      Inputs => {
           "I" => { "a binomial ideal"} },
      Outputs => {
@@ -1079,9 +1083,16 @@ document {
      EXAMPLE {
           "R = QQ[x,y,z]",
           "I = ideal (x*y-z, x*z-y^2)",
-          "bpd = BPD I",
+          "bpd = binomialPrimaryDecomposition I",
 	  "intersect bpd == I"
           },
+     "A synonym for this function is 'BPD'.",
      Caveat => {"Note that if the coefficient field needs to be extended, strange things can happen"},
---     SeeAlso => BCD
+     SeeAlso => BPD
+     }
+
+document {
+     Key => BPD,
+     Headline => "Binomial Primary Decomposition",
+     "BPD is a synonym for binomialPrimaryDecomposition."
      }
