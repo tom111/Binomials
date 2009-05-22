@@ -1072,7 +1072,7 @@ document {
         }
    
 document {
-     Key => binomialPrimaryDecomposition,
+     Key => {binomialPrimaryDecomposition},
      Headline => "Binomial Primary Decomposition",
      Usage => "binomialPrimaryDecomposition I",
      Inputs => {
@@ -1096,3 +1096,50 @@ document {
      Headline => "Binomial Primary Decomposition",
      "BPD is a synonym for binomialPrimaryDecomposition."
      }
+
+document {
+     Key => {binomialCellularDecomposition,
+          (binomialCellularDecomposition,Ideal),
+	  [binomialCellularDecomposition,returnCellVars]},
+     Headline => "Binomial Cellular Decomposition",
+     Usage => "binomialCellularDecomposition I",
+     Inputs => {
+          "I" => { "a binomial ideal"} },
+     Outputs => {
+          "l" => {"a list of cellular ideals whose intersection is I or 
+	        a list of pairs of these ideals and their cellular variables 
+		if the option returnCellVars => true is used"} },
+     "A binomial ideal I is called cellular if modulo I every variable in 
+     the polynomial ring is either a non-zerodivisor or nilpotent. 
+     This routine returns a minimal cellular decomposition of a 
+     binomial ideal.",
+     EXAMPLE {
+          "R = QQ[x,y,z]",
+          "I = ideal (x*y-z, x*z-y^2)",
+          "bcd = binomialCellularDecomposition I",
+	  "intersect bcd == I",
+     	  "binomialCellularDecomposition (I, returnCellVars=>true)"
+          },
+     "A synonym for this function is 'BCD'.",
+     SeeAlso => BCD
+     }
+
+document {
+     Key => BCD,
+     Headline => "Binomial Cellular Decomposition",
+     "BCD is a synonym for binomialCellularDecomposition."
+     }
+
+document {
+     Key => returnCellVars,
+     Headline => "return the cellular variables",
+     "The cellular variables of a binomial ideal are the variables which are non-zerodivisors 
+     module that ideal. If this option is set to 'true' then binomialCellularDecomposition will
+     return the set of variables for each of its outputs",
+     EXAMPLE {
+	  "R = QQ[x,y,z]",
+          "I = ideal (x*y-z, x*z-y^2)",
+          "bcd = binomialCellularDecomposition (I,returnCellVars=>true)",
+          },
+     }
+
