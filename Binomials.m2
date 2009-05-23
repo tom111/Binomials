@@ -1130,6 +1130,30 @@ document {
      "BCD is a synonym for binomialCellularDecomposition."
      }
 
+
+-- Doctodolist:
+--     binomialRadical,
+--     binomialMinimalPrimes,
+--     binomialAssociatedPrimes,
+--     -- tests
+--     binomialIsPrime,
+--     binomialIsPrimary,
+--     isCellular,
+--     isBinomial,
+--     isPureDifference,
+--     -- input related
+--     makeBinomial,
+--     latticeBasisIdeal,
+--     -- cellular stuff:
+--     cellularBinomialAssociatedPrimes,
+--     cellularAssociatedLattices,
+--     cellularBinomialPrimaryDecomposition,
+--     cellularBinomialRadical,
+--     -- simple wrappers:
+--     BPD,
+--     BCD,
+--     BCDisPrimary,
+
 document {
      Key => returnCellVars,
      Headline => "return the cellular variables",
@@ -1141,5 +1165,33 @@ document {
           "I = ideal (x*y-z, x*z-y^2)",
           "bcd = binomialCellularDecomposition (I,returnCellVars=>true)",
           },
+     }
+
+document {
+     Key => returnPrimes,
+     Headline => "return two associated primes",
+     "If binomialIsPrimary does not return true it can either return 'false' or two associated primes.
+     If this option is set then two associated primes are returned. If returnPChars is set too, then partial
+     characters will be returned.",
+     EXAMPLE {
+	  "R = QQ[x,y,z]",
+          "I = ideal (x^2-1)",
+          "binomialIsPrimary (I,returnPrimes=>true)",
+          },
+     SeeAlso => {returnPChars, binomialIsPrimary}
+     }
+
+document {
+     Key => returnPChars,
+     Headline => "return two partial characters",
+     "If binomialIsPrimary does not return true it can either return 'false' or two associated primes.
+     If this option is set then two partial characters of distinct associated primes are returned. 
+     If returnPrimes is set too, then partial characters will be returned.",
+     EXAMPLE {
+	  "R = QQ[x]",
+          "I = ideal (x^2-1)",
+          "binomialIsPrimary (I,returnPchars=>true)",
+          },
+     SeeAlso => {returnPrimes, binomialIsPrimary}
      }
 
