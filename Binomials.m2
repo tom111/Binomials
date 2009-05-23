@@ -1199,7 +1199,7 @@ document {
      EXAMPLE {
 	  "R = QQ[x]",
           "I = ideal (x^2-1)",
-          "binomialIsPrimary (I,returnPchars=>true)",
+          "binomialIsPrimary (I,returnPChars=>true)",
           },
      SeeAlso => {returnPrimes, binomialIsPrimary}
      }
