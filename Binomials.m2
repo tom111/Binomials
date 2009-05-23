@@ -479,7 +479,6 @@ binomialRadical = I -> (
 	  print mp;
 	  return ideal mingens intersect mp;
 	  )
-
      )
 
 cellularBinomialRadical = method (Options => {cellVariables => null}) 
@@ -630,7 +629,7 @@ binomialIsPrime = I -> (
 binomialMinimalPrimes = I -> (
      -- Computes the minimial Primes with Algorithm 9.2 in ES96
      -- TODO: This function typically fails due to large demand for memory
-     -- TODO: Implement the shortcut mentioned below the Algorithm
+     -- TODO: Replace by completely new cool function with reduced celldecomp
      
      R := ring I;
      -- Compute all subsets of variables
@@ -660,7 +659,7 @@ removeEmbedded = l -> (
      -- Computes the minimal primes from a list of primes.  
      
      -- Algorithm: Copy the input list, then walk through the input
-     -- list and remove from the copy every element which contains the
+     -- list and remove from the copy of every element which contains the
      -- element at hand.
      
      ToDo := copy l;
@@ -1139,9 +1138,47 @@ document {
      "BCD is a synonym for binomialCellularDecomposition."
      }
 
+document {
+     Key => {binomialRadical},
+     Headline => "Radical of a binomial ideal",
+     Usage => "binomialRadical I",
+     Inputs => {
+          "I" => { "a binomial ideal"} },
+     Outputs => {
+          "l" => {"the radical of I"} },
+     "If the input is a cellular binomial ideal then a very fast algorithm is used. 
+     If one knows this and also the cellular variables then ", 
+     TO cellularBinomialRadical, " should be used.",
+     EXAMPLE {
+          "R = QQ[x,y]",
+	  "I = ideal (y^2, x*y-y, x^2-1)",
+	  "binomialRadical I",
+          },
+     SeeAlso => cellularBinomialRadical,
+     }
 
--- Doctodolist:
---     binomialRadical,
+document {
+     Key => {cellularBinomialRadical,
+	  (cellularBinomialRadical,Ideal),
+	  [cellularBinomialRadical,cellVariables]},
+     Headline => "Radical of a cellular binomial ideal",
+     Usage => "cellularBinomialRadical I",
+     Inputs => {
+          "I" => { "a cellular binomial ideal"} },
+     Outputs => {
+          "l" => {"the radical of I"} },
+     "The radical of a cellular binomial ideal can be determined very quickly. If the 
+     cellular variables are known they can be given as a list via the option ", TO cellVariables, ".",
+     EXAMPLE {
+	  "R = QQ[x,y,z]",
+	  "I = ideal(y^3,y^2*z^2-x^3,x*y^2*z,x^3*z-x*y)",
+	  "cv = isCellular (I,returnCellVars=>true)",
+	  "cellularBinomialRadical (I,cellVariables=>cv)"
+          },
+     SeeAlso => binomialRadical,
+     }
+
+     
 --     binomialMinimalPrimes,
 --     binomialAssociatedPrimes,
 --     -- tests
@@ -1157,11 +1194,11 @@ document {
 --     cellularBinomialAssociatedPrimes,
 --     cellularAssociatedLattices,
 --     cellularBinomialPrimaryDecomposition,
---     cellularBinomialRadical,
 --     -- simple wrappers:
---     BPD,
---     BCD,
 --     BCDisPrimary,
+--     -- options:
+--     cellVariables
+
 
 document {
      Key => returnCellVars,
