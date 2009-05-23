@@ -554,9 +554,13 @@ binomialIsPrimary Ideal := Ideal => o -> I -> (
 	       return {{satpc#0,satpc#1,satpc#2#0}, {satpc#0,satpc#1,satpc#2#1}}
 	       );
 	  if o#returnPrimes then (
-	       ap1 := sub (idealFromCharacter (S,satpc#1,satpc#2#0), R) + M;
-	       ap2 := sub (idealFromCharacter (S,satpc#1,satpc#2#1), R) + M;
+     	       F := ring satpc#2#0#0;
+     	       S := F[satpc#0];
+	       M = sub(M,S);
+	       ap1 := idealFromCharacter (S,satpc#1,satpc#2#0) + M;
+	       ap2 := idealFromCharacter (S,satpc#1,satpc#2#1) + M;
 	       -- Return two distinct associated primes:
+	       use R;
 	       return {ap1,ap2};
      	       )	   	       
 	  else return false;
@@ -585,13 +589,18 @@ binomialIsPrimary Ideal := Ideal => o -> I -> (
 		    return {pc, {satqchar#0,satqchar#1,satqchar#2#0}}
 		    );
 	       if o#returnPrimes then (
+		    F := ring satqchar#2#0#0;
+     	       	    S := F[satqchar#0];
+	       	    M = sub(M,S);
 		    ap2 := idealFromCharacter (S,satqchar#1,satqchar#2#0);
-		    return {rad, sub(ap2,R) + M};
+		    use R;
+		    return {rad, ap2 + M};
      	       	    )  
 	       else return false;
 	       );
 	  );
      -- print "Ideal is primary";
+     use R;
      if o#returnPChars then return {pc};
      if o#returnPrimes then return {rad};
      return true;	  
