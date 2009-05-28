@@ -154,16 +154,19 @@ BinomialSolve = (I, varname) -> (
      -- Ideals INPUT: I, the ideal, "varname", A free symbol to be
      -- used as the name of a root of unity which will be adjoined
      -- OUTPUT: The list of solutions in QQ(some root of unity)
+     -- Note: Solutions will be returned with multiplicities.
      R := ring I;
-     cd := binomialCellularDecomposition I;
-     exponentsols := flatten for c in cd list CellularBinomialExponentSolve c;
+     cd := binomialCellularDecomposition (I,returnCellVars=>true);
+     exponentsols := flatten for c in cd list CellularBinomialExponentSolve (c#0,c#1);
      
      -- determine the least common denominator, ignoring nulls
      denoms := for i in flatten exponentsols list if i =!= null then denominator i else continue;
-     -- print denoms;
      -- If there are no denominators, the ideal was monomial
-     -- and we return only (0,0,...,0)
-     if denoms === {} then return {for i in gens R list 0};
+     -- and we return only (0,0,...,0) many times:
+     if denoms === {} then (
+	  zerosol:={for i in gens R list 0};
+	  return for i in 1..#exponentsols list zerosol;
+	  );
      lcd := lcm denoms;
 
      -- This is our standard. Coefficients are rational?
@@ -201,9 +204,15 @@ BinomialSolve = (I, varname) -> (
      return sols; 
      )
 
-CellularBinomialExponentSolve = I -> (
+CellularBinomialExponentSolve = (I,cv) -> (
      -- Solves a zero dimensional cellular pure difference binomial
-     -- ideal by constructing the apropriate cyclotomic field
+     -- ideal by constructing the apropriate cyclotomic field 
+     
+     -- Input: a pure difference zero-dim'l binomial ideal and its list
+     -- of cell variables
+     
+     -- Output: A list of solutions of the ideal 
+     	  
      
      R := ring I;
      varlist := flatten entries vars R;
@@ -225,12 +234,33 @@ CellularBinomialExponentSolve = I -> (
 
      -- For each variable we check if it is a non-cell variable, ie 
      -- each solution of the ideal has coordinate zero there
-     psols := for v in varlist list if saturate(I,v) != I then null else "*"; 
-
+     -- We alse check how often we have to duplicate each solution in the
+     -- end to account for monomials of higher order 
+     dupnum := 1;     
+     psols = {};
+     for v in varlist do(
+	  if isSubset (set {v},set cv) then(
+	       -- Put side effects here:
+	       -- Filling the list
+	       psols = psols | {"*"};
+	       )
+	  else (
+	       -- Put side effects here:
+	       resu := axisSaturate(I, index v);
+	       dupnum = dupnum * resu#0;
+	       -- Filling the list
+	       psols = psols | {null};
+	       );
+	  );
+     
+     -- The old solution for reference:
+--     print "The following should coincide if no double sols";
+--     print for v in varlist list if saturate(I,v) != I then null else "*"; 
+--     print psols;
+     
      -- make it a proper list of solutions
      psols = {psols};
---     print psols;
-
+     
      -- We solve on a log-scale for the exponents
      while #groeb > 0 do (
 	  -- check if the current term is a binomial
@@ -240,6 +270,7 @@ CellularBinomialExponentSolve = I -> (
      	  groeb = drop(groeb, 1);
 	  );
      
-     return psols;
-     
+     -- Now we duplicate:
+     if dupnum > 1 then psols = for i in 1..dupnum list psols;
+     return flatten psols;
      )
