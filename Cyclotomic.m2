@@ -34,7 +34,7 @@ newPackage(
 
 export {cyclotomicField,
         cyclotomicPoly,
-	FindRootPower
+	findRootPower
        }
 
 cyclotomicField = (i,R) -> (
@@ -72,7 +72,7 @@ cyclotomicPoly = (i,v) -> (
      return(min);                        
 )
 
-FindRootPower = R -> (
+findRootPower = R -> (
      -- Finds the power of the adjoined root of unity in the
      -- coefficient ring of R by just exponentiating.
      -- Returns '2' if the input was a polynomial ring over QQ
@@ -95,14 +95,15 @@ FindRootPower = R -> (
 
 beginDocumentation()
 
+
 document { 
-        Key => Binomials,
-        Headline => "a package for binomial ideals",
-        EM "Binomials", " is a package for binomial ideals."
+        Key => Cyclotomic,
+        Headline => "a package for cyclotomic fields",
+        EM "Cyclotomic", " is a package for cyclotomic fields."
         }
-   
+
 document {
-     Key => {binomialPrimaryDecomposition},
+     Key => {cyclotomicField},
      Headline => "Binomial Primary Decomposition",
      Usage => "binomialPrimaryDecomposition I",
      Inputs => {

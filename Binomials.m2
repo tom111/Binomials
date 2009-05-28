@@ -731,7 +731,7 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      -- We coerce all associated primes to an apropriate
      -- new ring that contains all their coefficients
         
-     l := lcm for p in primes list FindRootPower (ring p);
+     l := lcm for p in primes list findRootPower (ring p);
      v := gens R;
      S := Ring;
      -- Down here we reuse the Symbol S...
