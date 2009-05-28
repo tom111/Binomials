@@ -104,20 +104,55 @@ document {
 
 document {
      Key => {cyclotomicField},
-     Headline => "Binomial Primary Decomposition",
-     Usage => "binomialPrimaryDecomposition I",
+     Headline => "Cyclotomic Field Construction",
+     Usage => "cyclotomicField (i,R)",
      Inputs => {
-          "I" => { "a binomial ideal"} },
+          "i" => { "an integer, the power of the root to be adjoined."},
+	  "R" => { "a polyomial ring in one variable, the name whose variable will be the name of the adjoined root."} },
      Outputs => {
-          "l" => {"a list of binomial primary components of I"} },
-     "This routine returns a minimal primary decomposition of a binomial ideal into binomial ideals.",
+          "S" => {"A cyclotomic field with $1^(1/s)$ adjoined"} },
      EXAMPLE {
-          "R = QQ[x,y,z]",
-          "I = ideal (x*y-z, x*z-y^2)",
-          "bpd = binomialPrimaryDecomposition I",
-	  "intersect bpd == I"
+          "R = QQ[ww]",
+          "S = cyclotomicField (5,R)",
+	  "isField S",
+	  "(ww^9, ww^10, ww^11)",
+          "T = S[x,y]",
+     	  "I = ideal (x-ww)",
+	  "dim I"
           },
-     "A synonym for this function is 'BPD'.",
-     Caveat => {"Note that if the coefficient field needs to be extended, strange things can happen"},
-     SeeAlso => BPD
+     Caveat => {"Strange things can happen with the reduction of the coefficients."},
+     SeeAlso => cyclotomicPoly
+     }
+
+document {
+     Key => {cyclotomicPoly},
+     Headline => "Cyclotomic Polynomial",
+     Usage => "cyclotomicPoly (i,v)",
+     Inputs => {
+          "i" => { "an integer, the power of a root of unity."},
+	  "v" => { "a variable name in which the polynomial is returned."} },
+     Outputs => {
+          "f" => {"The minimal polynomial of the i-th root of unity."} },
+     EXAMPLE {
+          "R = QQ[ww]",
+          "f = cyclotomicPoly (6,ww)",
+          },
+     SeeAlso => cyclotomicField
+     }
+
+document {
+     Key => {findRootPower},
+     Headline => "Find the order of the root in the coefficients of polynomial ring over a cyclotomic field",
+     Usage => "findRootPower R",
+     Inputs => {
+          "R" => { "a polynomial ring over a cyclotomic field"}},
+     Outputs => {
+          "i" => {"The order of the adjoined root of unity."} },
+     EXAMPLE {
+	  "R = QQ[ww]",
+          "S = cyclotomicField (5,R)",
+          "T = S[x,y]",
+     	  "findRootPower T"
+          },
+     SeeAlso => cyclotomicField
      }
