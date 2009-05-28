@@ -23,7 +23,7 @@
 
 newPackage(
 	"Binomials",
-    	Version => "0.3", 
+    	Version => "0.5", 
     	Date => "June 2009",
     	Authors => {
 	     {Name => "Thomas Kahle", Email => "kahle@mis.mpg.de", HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
