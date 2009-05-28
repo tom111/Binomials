@@ -22,7 +22,7 @@
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 newPackage(
-	"cyclotomic",
+	"Cyclotomic",
     	Version => "0.2", 
     	Date => "May 2009",
     	Authors => {{Name => "Thomas Kahle", 
@@ -41,9 +41,6 @@ cyclotomicField = (i,R) -> (
      -- Given a ring R, and a power i, the cyclotomic field is returned
      return toField (R / sub (ideal(cyclotomicPoly (i,R_0)) ,R));
      )
-
--- Inverting Roots manually
--- cycloInverse = ()    
 
 cyclotomicPoly = (i,v) -> (
      -- returns the i-th cyclotomic polynomial in variable v.
@@ -93,3 +90,33 @@ FindRootPower = R -> (
      if r<2 then return 2
      else return r+1;
      )
+
+-- End of source code ---
+
+beginDocumentation()
+
+document { 
+        Key => Binomials,
+        Headline => "a package for binomial ideals",
+        EM "Binomials", " is a package for binomial ideals."
+        }
+   
+document {
+     Key => {binomialPrimaryDecomposition},
+     Headline => "Binomial Primary Decomposition",
+     Usage => "binomialPrimaryDecomposition I",
+     Inputs => {
+          "I" => { "a binomial ideal"} },
+     Outputs => {
+          "l" => {"a list of binomial primary components of I"} },
+     "This routine returns a minimal primary decomposition of a binomial ideal into binomial ideals.",
+     EXAMPLE {
+          "R = QQ[x,y,z]",
+          "I = ideal (x*y-z, x*z-y^2)",
+          "bpd = binomialPrimaryDecomposition I",
+	  "intersect bpd == I"
+          },
+     "A synonym for this function is 'BPD'.",
+     Caveat => {"Note that if the coefficient field needs to be extended, strange things can happen"},
+     SeeAlso => BPD
+     }
