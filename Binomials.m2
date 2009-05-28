@@ -57,7 +57,9 @@ export {
      BPD,
      BCD,
      BCDisPrimary,
-     -- auxillary functions, removed from interface for now
+     -- auxillary functions:
+     axisSaturate,
+     -- Not in the interface:
 --     partialCharacter,
 --     cellVars,
 --     Lsat,
@@ -104,8 +106,6 @@ axisSaturate = (I,i) -> (
     )
 
 -- Cellular decomposition of binomial ideals:
---
-
 binomialCellularDecomposition = method (Options => {returnCellVars => false})
 binomialCellularDecomposition Ideal := Ideal => o -> I -> (
 -- By Ignacio Ojeda and Mike Stillman     
