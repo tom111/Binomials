@@ -86,7 +86,7 @@ export {
 
 needsPackage "FourTiTwo";
 needsPackage "PDBISolve";
-needsPackage "cyclotomic"
+needsPackage "Cyclotomic"
 
 axisSaturate = (I,i) -> (
 -- By Ignacio Ojeda and Mike Stillman
