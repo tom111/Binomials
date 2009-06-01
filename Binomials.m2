@@ -1435,6 +1435,32 @@ document {
 --     -- tests
 --     binomialIsPrime,
 --     binomialIsPrimary,
+
+document {
+     Key => {binomialSolve},
+     Headline => "solving zero-dimensional binomial Ideals",
+     Usage => "binomialSolve (I,ww)",
+     Inputs => {
+          "I" => { "a pure difference binomial ideal"},
+	  "ww" => { "name for a root of unity that might be adjoined to QQ"} },
+     Outputs => {
+          "l" => {"the list of solutions of I in QQ[ww]"} },
+     "The solutions of a pure difference binomial ideal exist in a cyclotomic field. This function
+     will solve the ideal and construct an apropriate cyclotomic field such that the solutions are contained.
+     If no extension is needed then the symbol that was given will remain untouched",
+     EXAMPLE {
+	  "R = QQ[x,y,z,w]",
+	  "I = ideal (x-y,y-z,z*w-1*w,w^2-x)",
+	  "dim I",
+	  "binomialSolve (I,qq)",
+	  "qq",
+	  "J = ideal (x^3-1,y-x,z-1,w-1)",
+	  "binomialSolve (J,qq)"
+          },
+     Caveat => {"The current implementation can only handle pure difference binomial ideals."},
+     SeeAlso => Cyclotomic
+     }
+
 --     isCellular,
 --     isBinomial,
 --     isPureDifference,
