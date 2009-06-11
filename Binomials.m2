@@ -638,33 +638,60 @@ binomialIsPrime Ideal := Ideal => o -> I -> (
      )
 
 binomialMinimalPrimes = I -> (
-     -- Computes the minimial Primes with Algorithm 9.2 in ES96
-     -- TODO: This function typically fails due to large demand for memory
-     -- TODO: Replace by completely new cool function with reduced celldecomp
-     
+     -- The new algorithm, based on reduced celldecomp
      R := ring I;
-     -- Compute all subsets of variables
-     everything := ideal (1_R);
-     g := set gens R;
-     ss := subsets g; 
-     mp := {}; -- will hold the minimial primes
-     Is := null; -- Will hold candidate ideals
-     ME := null;
-     for s in ss do (
-	  ME = sub (ideal toList (g - s) , R); -- The monomial ideal outside s
-	  Is = saturate ( I + ME, sub (ideal product toList s, R));
-	  if Is == everything then continue
-	  else (
-	       pc = partialCharacter Is;
-	       si := satIdeals pc;
-	       si = apply (si , i -> sub(i,R)); -- Coercing to R;
-	       si = si / (i -> (i + ME)); -- Adding monomials;
-	       mp = mp | si;
-	       );
+     n := numgens R;
+     Answer := {};
+     L := null;
+     IntersectAnswer := ideal(1_R);
+     ToDo := {{{1_R},toList(0..n-1),I}};
+     compo := 0;
+     next := () -> (
+	 if #ToDo === 0 then false
+	 else (
+	      L = ToDo#0;
+	      ToDo = drop(ToDo,1);
+	      if gens IntersectAnswer % L#2 == 0
+	      then (<< "redundant component" << endl;)
+	      else if #(L#1) === 0 then ( -- #(L#1) counts 'remaining variables to check'
+                   compo = compo + 1; 		
+		   newone := trim L#2;
+		   Answer = append(Answer,{newone, delete(1_R,L#0)});
+		   IntersectAnswer = intersect(IntersectAnswer,newone);
+		   if IntersectAnswer == I then ToDo = {})
+	      else ( -- So, there are remaining variables #(L#1) is not zero
+	           i := L#1#0; -- i is a variable under consideration
+		   newL1 = drop(L#1,1); -- gets removed from the list
+	           result = axisSaturate(L#2, i); -- compute saturation wrt i
+		   J := result#1; -- Ideal
+		   k := result#0; -- Saturation Exponent
+		   if k > 0 then ( -- If a division was needed:
+			J2 = L#2 + ideal(R_i); 
+			J2 = saturate(J2, product L#0);
+			if J2 != ideal(1_R) then
+			    ToDo = prepend({L#0, newL1, J2},ToDo));
+		   if J != ideal(1_R) then (
+			ToDo = prepend({L#0|{R_i}, newL1, J},ToDo);
+			);
+		   );
+	      true));
+     while next() do ();
+     print Answer;
+     
+     ncv := {};
+     ME :=ideal; pc = {}; si := ideal; mp := {};
+     for a in Answer do (
+	  ME := ideal(toList(set (gens R) - a#1));
+	  pc := partialCharacter (a#0, cellVariables=>a#1);
+	  si := satIdeals pc;
+	  ME = sub (ME, ring si#0);
+	  si = si / (i -> (i + ME)); -- Adding monomials;
+	  mp = mp | si;
 	  );
-     -- print mp;
-     return removeEmbedded mp;
-     )
+     print mp;
+     return mp;
+     use R;
+     );
 
 removeEmbedded = l -> (
      -- Computes the minimal primes from a list of primes.  
