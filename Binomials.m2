@@ -82,7 +82,8 @@ export {
      cellVariables, -- for partialCharacter
      returnPrimes, -- for binomialIsPrimary 
      returnPChars, -- for binomialIsPrimary
-     returnCellVars -- for binomialCellularDecomposition
+     returnCellVars, -- for binomialCellularDecomposition
+     verbose -- produce more output
      }
 
 needsPackage "FourTiTwo";
@@ -106,7 +107,7 @@ axisSaturate = (I,i) -> (
     )
 
 -- Cellular decomposition of binomial ideals:
-binomialCellularDecomposition = method (Options => {returnCellVars => false})
+binomialCellularDecomposition = method (Options => {returnCellVars => false, verbose=>true})
 binomialCellularDecomposition Ideal := Ideal => o -> I -> (
 -- By Ignacio Ojeda and Mike Stillman     
 -- Comments by TK
@@ -126,16 +127,19 @@ binomialCellularDecomposition Ideal := Ideal => o -> I -> (
 	 else (
 	      L = ToDo#0;
 	      ToDo = drop(ToDo,1);
-	      if gens IntersectAnswer % L#2 == 0
-	      -- This reduces the result so far modulo the ideal under consideration
-	      then (<< "redundant component" << endl;)
+	      if gens IntersectAnswer % L#2 == 0 then (
+		   if o#verbose then (
+			<< "redundant component" << endl;
+			)
+		   )
 	      -- if its not redundant:
 	      else if #(L#1) === 0 then ( -- #(L#1) counts 'remaining variables to check'
 		   -- no variables remain to check :
 		   -- We have an answer
                    compo = compo + 1; 
 		   newone := trim L#2;
-		   << "cellular components found: " << compo << endl;
+		   if o#verbose then (
+			<< "cellular components found: " << compo << endl;);
 		   if o#returnCellVars then Answer = append(Answer,{newone, delete(1_R,L#0)})
 		   else Answer = append (Answer,newone);
 		   IntersectAnswer = intersect(IntersectAnswer,newone);
@@ -1052,6 +1056,7 @@ binomialPrimaryDecomposition = I -> (
      
      if not isBinomial I then error "Input was not binomial !";
      
+     print "Running cellular decomposition:";
      cd := binomialCellularDecomposition (I, returnCellVars => true);
      counter := 1;
      cdc := #cd;
@@ -1246,7 +1251,7 @@ binomialSolve = (I, varname) -> (
 	  );
 	  
      R := ring I;
-     cd := binomialCellularDecomposition (I,returnCellVars=>true);
+     cd := binomialCellularDecomposition (I,returnCellVars=>true,verbose=>false);
      exponentsols := flatten for c in cd list cellularBinomialExponentSolve (c#0,c#1);
      
      -- determine the least common denominator, ignoring nulls
@@ -1404,7 +1409,8 @@ document {
 document {
      Key => {binomialCellularDecomposition,
           (binomialCellularDecomposition,Ideal),
-	  [binomialCellularDecomposition,returnCellVars]},
+	  [binomialCellularDecomposition,returnCellVars],
+	  [binomialCellularDecomposition,verbose]},
      Headline => "Binomial Cellular Decomposition",
      Usage => "binomialCellularDecomposition I",
      Inputs => {
@@ -1422,9 +1428,10 @@ document {
           "I = ideal (x*y-z, x*z-y^2)",
           "bcd = binomialCellularDecomposition I",
 	  "intersect bcd == I",
-     	  "binomialCellularDecomposition (I, returnCellVars=>true)"
+     	  "binomialCellularDecomposition (I, returnCellVars=>true, verbose=>false)"
           },
      "A synonym for this function is 'BCD'.",
+     "If the option ", TO verbose, " is set (default), then output about the number of components found so far will be generated.",
      SeeAlso => BCD
      }
 
@@ -1576,5 +1583,11 @@ document {
           "binomialIsPrimary (I,returnPChars=>true)",
           },
      SeeAlso => {returnPrimes, binomialIsPrimary}
+     }
+
+document {
+     Key => verbose,
+     Headline => "generate informative output",
+     "if this option is set, functions will generate additional output. Defaults to true"
      }
 
