@@ -457,9 +457,10 @@ satIdeals = (va, A, d) -> (
 --     print "The cyclotomic field is:";
 --     print ring satpc#2#0#0; -- The apropriate cyclotomic field
      scan (satpc#0, (v -> v = local v));     
-     -- The following should be the smallest ring 
-     -- containing all new coefficients
+     -- The following should be the smallest ring containing all new
+     -- coefficients but not smaller than QQ
      F := ring satpc#2#0#0;
+     if F === ZZ then F = QQ;
      Q := F[satpc#0];
      satideals = apply (satpc#2 , (c) -> (
 	       -- print {Q, satpc#1, c};
@@ -640,6 +641,7 @@ binomialIsPrime Ideal := Ideal => o -> I -> (
 binomialMinimalPrimes = I -> (
      -- The new algorithm, based on reduced celldecomp
      R := ring I;
+     ge := gens R;
      n := numgens R;
      Answer := {};
      L := null;
@@ -679,18 +681,34 @@ binomialMinimalPrimes = I -> (
      print Answer;
      
      ncv := {};
-     ME :=ideal; pc = {}; si := ideal; mp := {};
+     ME :=ideal; pc = {}; si := ideal; mp := {}; F := null; S:= null;
      for a in Answer do (
 	  ME := ideal(toList(set (gens R) - a#1));
 	  pc := partialCharacter (a#0, cellVariables=>a#1);
 	  si := satIdeals pc;
-	  ME = sub (ME, ring si#0);
-	  si = si / (i -> (i + ME)); -- Adding monomials;
+	  F = coefficientRing ring si#0;
+	  S = F[ge];
+	  ME = sub (ME, S);
+	  si = for i in si list sub(i,S);
+	  si = si / (i -> trim (i + ME)); -- Adding monomials;
 	  mp = mp | si;
 	  );
-     print mp;
-     return mp;
+
+     -- Finally coerce all minimal primes to a common ring:
+     l := lcm for p in mp list findRootPower (ring p);
+     if l<3 then(
+	  S = R;
+	  )
+     else (
+	  -- Construct a new cylcotomic field which contains all
+	  -- necessary coefficients
+	  F = cyclotomicField(l,QQ[ww]);
+	  S = F[ge];
+	  );
+     mp = mp / ( I -> sub (I,S));
+
      use R;
+     return mp;
      );
 
 removeEmbedded = l -> (
@@ -1236,7 +1254,7 @@ binomialSolve = (I, varname) -> (
      -- If there are no denominators, the ideal was monomial
      -- and we return only (0,0,...,0) many times:
      if denoms === {} then (
-	  zerosol:={for i in gens R list 0};
+	  zerosol:={for i in gens R list 0_R};
 	  return for i in 1..#exponentsols list zerosol;
 	  );
      lcd := lcm denoms;
@@ -1456,8 +1474,23 @@ document {
      SeeAlso => binomialRadical,
      }
 
-     
---     binomialMinimalPrimes,
+document {
+     Key => {binomialMinimalPrimes},
+     Headline => "minimal primes of a binomial Ideal",
+     Usage => "binomialMinimalPrimes I",
+     Inputs => {
+          "I" => { "a binomial ideal"} },
+     Outputs => {
+          "l" => {"the list of minimal primes of I"} },
+     "The binomial minimal primes of a binomial ideal over QQ exist only in extension fields.",
+     EXAMPLE {
+	  "R = QQ[x,y,z]",
+	  "I = ideal(y^3,y^2*z^2-x^3,x*y^2*z,x^3*z-x*y)",
+	  "binomialMinimalPrimes I",
+          },
+     SeeAlso => binomialRadical,
+     }    
+
 --     binomialAssociatedPrimes,
 --     -- tests
 --     binomialIsPrime,
