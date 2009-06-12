@@ -657,8 +657,8 @@ binomialMinimalPrimes = I -> (
 	 else (
 	      L = ToDo#0;
 	      ToDo = drop(ToDo,1);
-	      if gens IntersectAnswer % L#2 == 0
-	      then (<< "redundant component" << endl;)
+	      if gens IntersectAnswer % L#2 == 0 then null
+	      -- (<< "redundant component" << endl;)
 	      else if #(L#1) === 0 then ( -- #(L#1) counts 'remaining variables to check'
                    compo = compo + 1; 		
 		   newone := trim L#2;
@@ -682,7 +682,7 @@ binomialMinimalPrimes = I -> (
 		   );
 	      true));
      while next() do ();
-     print Answer;
+     -- print Answer;
      
      ncv := {};
      ME :=ideal; pc = {}; si := ideal; mp := {}; F := null; S:= null;
@@ -1588,6 +1588,6 @@ document {
 document {
      Key => verbose,
      Headline => "generate informative output",
-     "if this option is set, functions will generate additional output. Defaults to true"
+     "If this option is set, functions will generate additional output. Defaults to true"
      }
 
