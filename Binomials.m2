@@ -642,7 +642,8 @@ binomialIsPrime Ideal := Ideal => o -> I -> (
      return true;
      )
 
-binomialMinimalPrimes = I -> (
+binomialMinimalPrimes = method (Options => {verbose=>true})
+binomialMinimalPrimes Ideal := Ideal => o -> I -> (
      -- The new algorithm, based on reduced celldecomp
      R := ring I;
      ge := gens R;
@@ -657,11 +658,16 @@ binomialMinimalPrimes = I -> (
 	 else (
 	      L = ToDo#0;
 	      ToDo = drop(ToDo,1);
-	      if gens IntersectAnswer % L#2 == 0 then null
-	      -- (<< "redundant component" << endl;)
+	      if gens IntersectAnswer % L#2 == 0 then (
+		   if o#verbose then (
+			<< "redundant component" << endl;
+			);
+		   )
 	      else if #(L#1) === 0 then ( -- #(L#1) counts 'remaining variables to check'
                    compo = compo + 1; 		
 		   newone := trim L#2;
+		   if o#verbose then (
+			<< "components found so far: " << compo << endl;);
 		   Answer = append(Answer,{newone, delete(1_R,L#0)});
 		   IntersectAnswer = intersect(IntersectAnswer,newone);
 		   if IntersectAnswer == I then ToDo = {})
@@ -815,9 +821,39 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      )
 
 binomialAssociatedPrimes = I -> (
-     -- Todo: Compute the Associated Primes of any Binomial Ideal
-     if isCellular I then return cellularBinomialAssociatedPrimes I 
-     else error "Not implemented, sorry!";
+     if not isBinomial I then error "Input not binomial";
+     ap := {};
+     if isCellular I then return cellularBinomialAssociatedPrimes I
+     else (
+	  cd := binomialCellularDecomposition (I, returnCellVars => true);
+     	  counter := 1;
+     	  cdc := #cd;
+     	  scan (cd , ( (i) -> (
+	   	    print ("Computing associated primes of cellular component: " | toString counter | " of " | toString cdc);
+		    counter = counter +1;
+		    ap = ap | cellularBinomialAssociatedPrimes (i#0, cellVariables => i#1);
+		    )
+	       )
+    	  ); -- apply
+	  );
+     
+     -- Finally coerce all minimal primes to a common ring:
+     R := ring I;
+     S := null; -- Symbol for a new ring
+     ge := gens R;
+     l := lcm for p in ap list findRootPower (ring p);
+     if l<3 then(
+	  S = R;
+	  )
+     else (
+	  -- Construct a new cylcotomic field which contains all
+	  -- necessary coefficients
+	  F := cyclotomicField(l,QQ[ww]);
+	  S = F[ge];
+	  );
+     ap = ap / ( I -> sub (I,S));
+     use R;
+     return ap;
      )
 
 cellularAssociatedLattices = I -> (
@@ -1482,7 +1518,9 @@ document {
      }
 
 document {
-     Key => {binomialMinimalPrimes},
+     Key => {binomialMinimalPrimes,
+	  (binomialMinimalPrimes,Ideal),
+	  [binomialMinimalPrimes,verbose]},
      Headline => "minimal primes of a binomial Ideal",
      Usage => "binomialMinimalPrimes I",
      Inputs => {
@@ -1495,10 +1533,27 @@ document {
 	  "I = ideal(y^3,y^2*z^2-x^3,x*y^2*z,x^3*z-x*y)",
 	  "binomialMinimalPrimes I",
           },
+     "If the option ", TO verbose, " is set (default), then output about the number of components found so far will be generated.",
      SeeAlso => binomialRadical,
      }    
 
---     binomialAssociatedPrimes,
+document {
+     Key => {binomialAssociatedPrimes},
+     Headline => "Associated primes of a binomial ideal",
+     Usage => "binomialAssociatedPrimes I",
+     Inputs => {
+          "I" => { "a binomial ideal"} },
+     Outputs => {
+          "l" => {"the list of associated primes of I"} },
+     "First a cellular decomposition is run, then the associated primes of each cellular component are determined.",
+     EXAMPLE {
+	  "R = QQ[x,y,z]",
+	  "I = ideal(y^3,y^2*z^2-x^3,x*y^2*z,x^3*z-x*y)",
+	  "binomialAssociatedPrimes I",
+          },
+     SeeAlso => binomialMinimalPrimes,
+     }    
+
 --     -- tests
 --     binomialIsPrime,
 --     binomialIsPrimary,
