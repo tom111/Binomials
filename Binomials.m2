@@ -59,8 +59,8 @@ export {
      BCD,
      BCDisPrimary,
      -- auxillary functions:
-     axisSaturate,
      -- Not in the interface:
+--     axisSaturate,
 --     partialCharacter,
 --     cellVars,
 --     Lsat,
@@ -618,7 +618,6 @@ binomialIsPrime Ideal := Ideal => o -> I -> (
 
      -- Input: A Binomial Ideal and the cell variables if the ideal is cellular.
      -- Output: true if the ideal is a prime ideal, false otherwise
-     
      cv := {};
      if o#cellVariables === null then (
 	  cv = isCellular (I, returnCellVars=>true);
@@ -1547,16 +1546,52 @@ document {
           "l" => {"the list of associated primes of I"} },
      "First a cellular decomposition is run, then the associated primes of each cellular component are determined.",
      EXAMPLE {
-	  "R = QQ[x,y,z]",
-	  "I = ideal(y^3,y^2*z^2-x^3,x*y^2*z,x^3*z-x*y)",
+	  "R = QQ[x,y]",
+	  "I = ideal(x^2-y,y^2-x)",
 	  "binomialAssociatedPrimes I",
           },
      SeeAlso => binomialMinimalPrimes,
      }    
 
 --     -- tests
---     binomialIsPrime,
---     binomialIsPrimary,
+
+document {
+     Key => {binomialIsPrime},
+     Headline => "test for primeness of a binomial ideal",
+     Usage => "binomialIsPrime I",
+     Inputs => {
+          "I" => { "a binomial ideal"} },
+     Outputs => {
+          "f" => {"true or false, depending on whether I is a binomial prime ideal"} },
+     "A binomial ideal is prime only if it is cellular. If the cellular variables",
+     "are known they can be given via the ", TO cellVariables, " option.",
+     EXAMPLE {
+	  "R = QQ[x,y]",
+	  "I = ideal(x^2-y,y^2-x)",
+	  "binomialIsPrime I",
+          },
+     SeeAlso => {binomialIsPrimary, cellVariables},
+     }    
+
+document {
+     Key => {binomialIsPrimary},
+     Headline => "test for primaryness of a binomial ideal",
+     Usage => "binomialIsPrimary I",
+     Inputs => {
+          "I" => { "a binomial ideal"} },
+     Outputs => {
+          "f" => {"true or false, depending on whether I is a binomial primary ideal"} },
+     "A binomial ideal is primary only if it is cellular. If the cellular variables",
+     "are known they can be given via the ", TO cellVariables, " option.", "If the ideal is not primary, ",
+     "either 'false' or two distinct associated primes can be returned. The behaviour can be changed using the options ",
+     TO returnPrimes, " and ", TO returnPChars, ".",
+     EXAMPLE {
+	  "R = QQ[x,y]",
+	  "I = ideal(x^2-1)",
+	  "binomialIsPrimary (I,returnPrimes=>true)",
+          },
+     SeeAlso => {binomialIsPrimary, cellVariables, returnPrimes, returnPChars},
+     }    
 
 document {
      Key => {binomialSolve},
