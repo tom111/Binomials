@@ -1103,6 +1103,7 @@ binomialPrimaryDecomposition = I -> (
 	   	    print ("Decomposing cellular component: " | toString counter | " of " | toString cdc);
 		    counter = counter +1;
 		    bpd = bpd | cellularBinomialPrimaryDecomposition (i#0, cellVariables => i#1);
+		    print "done";
 		    )
 	       )
     	  ); -- apply
@@ -1322,9 +1323,8 @@ binomialSolve = (I, varname) -> (
      -- This is our standard. Coefficients are rational?
      C := QQ;     
      if lcd > 2 then (
-	  print "Adjoining roots of unity is needed";
+	  -- print "Adjoining roots of unity is needed";
      	  S := QQ[varname];
-	  print value varname;
 	  ww := value varname;
      	  Mon := monoid flatten entries vars R;
      	  C = cyclotomicField(lcd,S);
