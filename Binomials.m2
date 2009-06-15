@@ -1162,7 +1162,7 @@ removeRedundant = l -> (
      isect := ideal; -- dummy 
      while #l > 0 do (
 	  isect = intersect (Answer , l#0); -- intersect with next
-	  -- if something was happened, add l#0 to the result
+	  -- if something was happenening, add l#0 to the result
 	  if isect != Answer then (
 	       result = result | {l#0};
 	       Answer = isect;
