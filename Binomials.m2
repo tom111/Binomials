@@ -693,8 +693,12 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
      -- print Answer;
      
      ncv := {};
+     i := 0;
+     j := #Answer;
      ME :=ideal; pc = {}; si := ideal; mp := {}; F := null; S:= null;
      for a in Answer do (
+	  i = i+1;
+	  print ("Finding minimal primes of cellular component: " | toString i | " of " | toString j);
 	  ME := ideal(toList(set (gens R) - a#1));
 	  pc := partialCharacter (a#0, cellVariables=>a#1);
 	  si := satIdeals pc;
