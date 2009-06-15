@@ -1111,7 +1111,8 @@ binomialPrimaryDecomposition = I -> (
      
      -- Coercing to common ring:
      R := ring I;
-     S := null; -- Symbol for a new ring
+     S := null; -- local Symbols
+     F := null;
      ge := gens R;
      l := lcm for p in bpd list findRootPower (ring p);
      if l<3 then(
