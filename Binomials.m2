@@ -26,7 +26,7 @@ newPackage(
     	Version => "0.5", 
     	Date => "June 2009",
     	Authors => {
-	     {Name => "Thomas Kahle", Email => "kahle@mis.mpg.de", HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
+	     {Name => "Thomas Kahle", Email => "kahle@mis.mpg.de", HomePage => "http://personal-homepages.mis.mpg.de/kahle/bpd"}},
     	Headline => "Spezialized routines for binomial Ideals",
 	Configuration => { },
     	DebuggingMode => true
@@ -190,6 +190,7 @@ partialCharacter Ideal := Ideal => o -> I -> (
      -- Will compute the partial character associated to a cellular binomial Ideal.
      -- If the cell variables are known they can be given as an optional argument,
      -- to save cpu cycles.
+     
      vs := {}; -- This will hold the lattice generators
      vsmat := matrix "0"; -- Holds the matrix whose image is L 
      cl := {}; -- This will hold the coefficients
@@ -263,7 +264,9 @@ partialCharacter Ideal := Ideal => o -> I -> (
 	  else (
 	       -- So we have a new generator : update coefficient list
 	       coeffs := entries ((coefficients(t))#1);
-               cl = cl | { sub (-coeffs#1#0 / coeffs#0#0, CoeffR) }
+	       F := coefficientRing ring coeffs#1#0;
+	       coe := for c in coeffs list sub(c#0,F);
+               cl = cl | { sub ( -coe#1 / coe#0, CoeffR) };
 	       );
 	  );
 --    print coeffs;
@@ -1104,8 +1107,25 @@ binomialPrimaryDecomposition = I -> (
 	       )
     	  ); -- apply
      -- print bpd;
+     
+     -- Coercing to common ring:
+     R := ring I;
+     S := null; -- Symbol for a new ring
+     ge := gens R;
+     l := lcm for p in bpd list findRootPower (ring p);
+     if l<3 then(
+	  S = R;
+	  )
+     else (
+	  -- Construct a new cylcotomic field which contains all
+	  -- necessary coefficients
+	  F = cyclotomicField(l,QQ[ww]);
+	  S = F[ge];
+	  );
+     bpd = bpd / ( I -> sub (I,S));
+
+     use R;
      print "Removing redundant components (fast)";
-     use ring I;
      return removeRedundant bpd;
      )
 
