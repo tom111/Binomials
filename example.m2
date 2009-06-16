@@ -18,11 +18,13 @@ gens gb J
 -- Example from Eisenbud/Sturmfels
 R = QQ[x1,x2,x3,x4,x5]
 I = ideal( x1*x4^2 - x2*x5^2,  x1^3*x3^3 - x4^2*x2^4, x2*x4^8 - x3^3*x5^6)
--- Here is a cellular decomp  of I:
--- This is also a primary decomposition
-J1 = ideal({x1^2 , x1*x4^2 - x2*x5^2, x2^5, x5^6, x2^4 * x4^2,x4^8})
-J2 = ideal({x1*x4^2 - x2*x5^2, x1^3*x3^3 - x4^2*x2^4, x2^3*x4^4 - x1^2*x3^3*x5^2, x2^2*x4^6 - x1*x3^3*x5^4, x2*x4^8 - x3^3 *x5^6 })
-intersect (J1,J2) == I
+BCD I
+cd = binomialCellularDecomposition(I,returnCellVars=>true)
+ap = binomialAssociatedPrimes I
+intersect (ap#0,ap#1) == I 
+rad = binomialRadical I
+rad == intersect (ap#0,ap#1)
+bpd = BPD I
 
 Q = QQ[x,y,z]
 J = ideal(x^4*y^2-z^6,x^3*y^2-z^5,x^2-y*z)

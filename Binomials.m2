@@ -484,7 +484,7 @@ binomialRadical = I -> (
 	  -- In the general case
 	  print "Input not cellular, computing minimial primes ...";
 	  mp := binomialMinimalPrimes I;
-	  print mp;
+	  -- print mp;
 	  return ideal mingens intersect mp;
 	  )
      )
@@ -1352,8 +1352,8 @@ binomialSolve = (I, varname) -> (
      sols = pack (#(gens ring I),sols);
 
      if lcd > 2 then ( 
-	  print ("BinomialSolve created a cyclotomic field by adjoining a " | toString lcd | "th root of unity"); 
-          print ("This root is called " | toString ww ); 
+	  print ("BinomialSolve created a cyclotomic field."); 
+          print ("This root is called " | toString ww | " and of order : " | toString lcd ); 
 	  );
     
      return sols; 
