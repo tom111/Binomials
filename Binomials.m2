@@ -1280,6 +1280,7 @@ SolveMore = (binom,psol) -> (
 		     break 
 		     )
 		-- otherwise exponent times old exponent
+		
 		else erhs#v * onesol#v
 		);
 	   
@@ -1314,7 +1315,7 @@ binomialSolve = (I, varname) -> (
      R := ring I;
      cd := binomialCellularDecomposition (I,returnCellVars=>true,verbose=>false);
      exponentsols := flatten for c in cd list cellularBinomialExponentSolve (c#0,c#1);
-     
+
      -- determine the least common denominator, ignoring nulls
      denoms := for i in flatten exponentsols list if i =!= null then denominator i else continue;
      -- If there are no denominators, the ideal was monomial
@@ -1407,6 +1408,9 @@ cellularBinomialExponentSolve = (I,cv) -> (
 	       );
 	  );
      
+     -- If there are no cell variables: We are done
+     if delete(null,psols) === {} then return for i in 0..(degree I)-1 list psols;
+          
      -- The old solution for reference:
 --     print "The following should coincide if no double sols";
 --     print for v in varlist list if saturate(I,v) != I then null else "*"; 
