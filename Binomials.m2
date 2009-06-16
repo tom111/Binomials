@@ -713,20 +713,19 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
 	  );
 
      -- Finally coerce all minimal primes to a common ring:
-     m := 0;
-     l := lcm for p in mp list (
-	  m = findRootPower (ring p);
-	  if m>2 then m else 1;
+     m := {1}; 
+     for p in mp do (
+	  s := findRootPower (ring p);
+	  if s>2 then (m = m | {s});
 	  );
+     l := lcm m;
      if l<3 then(
 	  S = R;
 	  )
      else (
 	  -- Construct a new cylcotomic field which contains all
 	  -- necessary coefficients
-	  print l;
 	  F = cyclotomicField(l,QQ[ww]);
-	  print F;
 	  S = F[ge];
 	  );
      mp = mp / ( I -> sub (I,S));
@@ -811,11 +810,12 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      -- We coerce all associated primes to an apropriate
      -- new ring that contains all their coefficients
         
-     m := 0;
-     l := lcm for p in primes list (
-	  m = findRootPower (ring p);
-	  if m>2 then m else 1;
+     m := {1}; 
+     for p in primes do (
+	  s := findRootPower (ring p);
+	  if s>2 then m = m | {s};
 	  );
+     l := lcm m;
      v := gens R;
      S := Ring;
      -- Down here we reuse the Symbol S...
@@ -859,11 +859,12 @@ binomialAssociatedPrimes = I -> (
      R := ring I;
      S := null; -- Symbol for a new ring
      ge := gens R;
-     m := 0;
-     l := lcm for p in ap list (
-	  m = findRootPower (ring p);
-	  if m>2 then m else 1;
+     m := {1}; 
+     for p in ap do (
+	  s := findRootPower (ring p);
+	  if s>2 then (m = m | {s});
 	  );
+     l := lcm m;
      if l<3 then(
 	  S = R;
 	  )
@@ -1134,11 +1135,12 @@ binomialPrimaryDecomposition = I -> (
      S := null; -- local Symbols
      F := null;
      ge := gens R;
-     m := 0;
-     l := lcm for p in bpd list (
-	  m = findRootPower (ring p);
-	  if m>2 then m else 1;
+     m := {1}; 
+     for p in bpd do (
+	  s := findRootPower (ring p);
+	  if s>2 then (m = m | {s});
 	  );
+     l := lcm m;
      if l<3 then(
 	  S = R;
 	  )
