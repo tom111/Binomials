@@ -703,7 +703,13 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
 	  print ("Finding minimal primes of cellular component: " | toString i | " of " | toString j);
 	  ME := ideal(toList(set (gens R) - a#1));
 	  pc := partialCharacter (a#0, cellVariables=>a#1);
-	  si := satIdeals pc;
+	  -- Check whether we have a radical ideal already:
+	  if image Lsat pc#1 == image pc#1 then (
+	       si = {a#0};
+	       )
+	  else (
+	       si = satIdeals pc
+	       );
 	  F = coefficientRing ring si#0;
 	  S = F[ge];
 	  ME = sub (ME, S);
@@ -840,6 +846,7 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 
 binomialAssociatedPrimes = I -> (
      if not isBinomial I then error "Input not binomial";
+
      ap := {};
      if isCellular I then return cellularBinomialAssociatedPrimes I
      else (
