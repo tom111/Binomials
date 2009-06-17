@@ -809,7 +809,12 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	       primes = primes | {ideal(0_R)}; 
 	       continue;
 	       );
-	  sat = satIdeals(pC);
+	  if image Lsat pC#1 == image pC#1 then (
+	       sat = {Im};
+	       )
+	  else (
+	       sat = satIdeals pC
+	       );
 	  primes = primes | sat;
 	  );
      -- We need to remove redundant elements
