@@ -265,7 +265,7 @@ partialCharacter Ideal := Ideal => o -> I -> (
 	       -- So we have a new generator : update coefficient list
 	       coeffs := entries ((coefficients(t))#1);
 	       F := coefficientRing ring coeffs#1#0;
-	       coe := for c in coeffs list sub(c#0,F);
+	       coe := for c in coeffs list lift(c#0,F);
                cl = cl | { sub ( -coe#1 / coe#0, CoeffR) };
 	       );
 	  );
