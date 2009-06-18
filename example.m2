@@ -16,14 +16,17 @@ gens gb J
 -- Here are some more examples
 
 -- Example from Eisenbud/Sturmfels
-R = QQ[x1,x2,x3,x4,x5]
-I = ideal( x1*x4^2 - x2*x5^2,  x1^3*x3^3 - x4^2*x2^4, x2*x4^8 - x3^3*x5^6)
-BCD I
-cd = binomialCellularDecomposition(I,returnCellVars=>true)
-ap = binomialAssociatedPrimes I
-intersect (ap#0,ap#1) == I 
-rad = binomialRadical I
-rad == intersect (ap#0,ap#1)
+restart
+R = QQ[x1,x2,x3,x4,x5];
+I = ideal( x1*x4^2 - x2*x5^2,  x1^3*x3^3 - x4^2*x2^4, x2*x4^8 - x3^3*x5^6);
+toString BCD I
+cd = binomialCellularDecomposition(I,returnCellVars=>true); toString cd
+ap = binomialAssociatedPrimes I; toString ap;
+intersect (ap#0,ap#1) == I
+binomialRadical I == intersect (ap#0,ap#1)
+isCellular (ap#0, returnCellVars=>true)
+isCellular (ap#1, returnCellVars=>true)
+
 bpd = BPD I
 
 Q = QQ[x,y,z]

@@ -4,8 +4,6 @@
 * To make the cellular decomposition faster
 ** Can we guess a priori some monomial primes ?
 ** The first component is toric -> implement special handling
-** Fast algorithm for minimal primes
-*** Could be based on 'removal technique'
 * Dividing out monomials that are units:
   > | c-1 ad-1 b^2-1 a^2-1 abe-a |
     c-1  d-a b^2-1 a^2-1  e-b
@@ -14,8 +12,6 @@ Here I have used that, modulo the ideal in question, a = a^{-1}
 is a unit, and b = b^{-1} is, too.  This ideal is precisely the 
 first ideal
 * Compute all "associated lattices"
-* Make a clear naming convention
-for functions acting only on cellular components and others
 * Use thm 8.3:
 If the radical of a binomial ideal is prime and does not contain any
 of the variables, then the cellular decomposition is primary
@@ -74,6 +70,6 @@ monitor = () -> (
 		   files#i = newguy(i, random
 		   1000000);
 		   )))))
-* Compute the associated primes of a non-cellular binomial ideal
 * For Imn compute the monomials, clarify the combinatorial structure !
 * We should have a function which coerces to a common field
+** Here we should use memoize 
