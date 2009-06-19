@@ -71,5 +71,4 @@ monitor = () -> (
 		   1000000);
 		   )))))
 * For Imn compute the monomials, clarify the combinatorial structure !
-* We should have a function which coerces to a common field
-** Here we should use memoize 
+* The toric component should be treated seperately.
