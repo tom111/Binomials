@@ -450,19 +450,16 @@ saturatePChar = (va, A, c) -> (
      -- print eqs;
      -- print ring eqs;
      
-     result = binomialSolve (eqs,ww);
+     result = binomialSolve eqs;
 --     print "In saturatePChar the result is";
 --     print result;
      return (va, S, result);
      )
 
 satIdeals = (va, A, d) -> (
-     -- Computes all the ideals belonging to saturations of 
+     -- Computes all the ideals belonging to saturations of  
      -- a given partial character.
-     -- TODO: Construct the correct coefficient field
      satpc := saturatePChar(va, A, d);
---     print "The cyclotomic field is:";
---     print ring satpc#2#0#0; -- The apropriate cyclotomic field
      scan (satpc#0, (v -> v = local v));     
      -- The following should be the smallest ring containing all new
      -- coefficients but not smaller than QQ
@@ -718,24 +715,7 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
 	  mp = mp | si;
 	  );
 
-     -- Finally coerce all minimal primes to a common ring:
-     m := {1}; 
-     for p in mp do (
-	  s := findRootPower (ring p);
-	  if s>2 then (m = m | {s});
-	  );
-     l := lcm m;
-     if l<3 then(
-	  S = R;
-	  )
-     else (
-	  -- Construct a new cylcotomic field which contains all
-	  -- necessary coefficients
-	  F = cyclotomicField(l,QQ[ww]);
-	  S = F[ge];
-	  );
-     mp = mp / ( I -> sub (I,S));
-
+     mp = joinCyclotomic mp;
      use R;
      return mp;
      );
@@ -817,32 +797,11 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	       );
 	  primes = primes | sat;
 	  );
-     -- We need to remove redundant elements
-     -- We coerce all associated primes to an apropriate
-     -- new ring that contains all their coefficients
+     -- We need to remove redundant elements and join all associated primes in an apropriate new ring that contains all
+     -- their coefficients.
         
-     m := {1}; 
-     for p in primes do (
-	  s := findRootPower (ring p);
-	  if s>2 then m = m | {s};
-	  );
-     l := lcm m;
-     v := gens R;
-     S := Ring;
-     -- Down here we reuse the Symbol S...
-     if l<3 then(
-	  -- Coefficients are in QQ !
-	  -- Assumed to be the original ring
-	  S = R;
-	  )
-     else (
-	  -- Construct a new cylcotomic field which contains all
-	  -- necessary coefficients
-	  F := cyclotomicField(l,QQ[ww]);
-	  S = F[v];
-	  );
-     primes = primes / ( I -> sub (I,S));
-     M = sub (ideal (ncv), S);
+     primes = joinCyclotomic(primes);
+     M = sub (ideal ncv, ring primes#0);
      primes = primes / (I -> I + M);
 
      use R;
@@ -867,28 +826,7 @@ binomialAssociatedPrimes = I -> (
     	  ); -- apply
 	  );
      
-     -- Finally coerce all minimal primes to a common ring:
-     R := ring I;
-     S := null; -- Symbol for a new ring
-     ge := gens R;
-     m := {1}; 
-     for p in ap do (
-	  s := findRootPower (ring p);
-	  if s>2 then (m = m | {s});
-	  );
-     l := lcm m;
-     if l<3 then(
-	  S = R;
-	  )
-     else (
-	  -- Construct a new cylcotomic field which contains all
-	  -- necessary coefficients
-	  F := cyclotomicField(l,QQ[ww]);
-	  S = F[ge];
-	  );
-     ap = ap / ( I -> sub (I,S));
-     use R;
-     return ap;
+     return joinCyclotomic ap;
      )
 
 cellularAssociatedLattices = I -> (
@@ -1142,30 +1080,8 @@ binomialPrimaryDecomposition = I -> (
     	  ); -- apply
      -- print bpd;
      
-     -- Coercing to common ring:
-     R := ring I;
-     S := null; -- local Symbols
-     F := null;
-     ge := gens R;
-     m := {1}; 
-     for p in bpd do (
-	  s := findRootPower (ring p);
-	  if s>2 then (m = m | {s});
-	  );
-     l := lcm m;
-     if l<3 then(
-	  S = R;
-	  )
-     else (
-	  -- Construct a new cylcotomic field which contains all
-	  -- necessary coefficients
-	  F = cyclotomicField(l,QQ[ww]);
-	  S = F[ge];
-	  );
-     bpd = bpd / ( I -> sub (I,S));
-
-     use R;
-     print "Removing redundant components (fast)";
+     bpd = joinCyclotomic bpd;
+     print "Removing redundant components...";
      return removeRedundant bpd;
      )
 
@@ -1336,10 +1252,9 @@ SolveMore = (binom,psol) -> (
       return newsols;	  
       )
 
-binomialSolve = (I, varname) -> (
+binomialSolve = I -> (
      -- A ready to use solver for zero-dim'l pure difference Binomial
-     -- Ideals INPUT: I, the ideal, "varname", A free symbol to be
-     -- used as the name of a root of unity which will be adjoined
+     -- Ideals INPUT: I, the ideal    
      -- OUTPUT: The list of solutions in QQ(some root of unity)
      -- Note: Solutions will be returned with multiplicities.
      if not isPureDifference I then (
@@ -1364,10 +1279,7 @@ binomialSolve = (I, varname) -> (
      C := QQ;     
      if lcd > 2 then (
 	  -- print "Adjoining roots of unity is needed";
-     	  S := QQ[varname];
-	  ww := value varname;
-     	  Mon := monoid flatten entries vars R;
-     	  C = cyclotomicField(lcd,S);
+     	  C = cyclotomicField lcd;
 	  );
      
      expo := q -> (
@@ -1379,7 +1291,7 @@ binomialSolve = (I, varname) -> (
      k := numerator sub(q,QQ);
      m := denominator sub(q,QQ);
      if m != lcd then k = k * sub(lcd / m,ZZ);
-     return sub(ww^k,C);
+     return sub((C_0)^k,C);
      );
      
      sols := flatten exponentsols;
@@ -1387,8 +1299,7 @@ binomialSolve = (I, varname) -> (
      sols = pack (#(gens ring I),sols);
 
      if lcd > 2 then ( 
-	  print ("BinomialSolve created a cyclotomic field."); 
-          print ("This root is called " | toString ww | " and of order : " | toString lcd ); 
+	  print ("BinomialSolve created a cyclotomic field of order " | toString lcd ); 
 	  );
     
      return sols; 
@@ -1659,10 +1570,9 @@ document {
 document {
      Key => {binomialSolve},
      Headline => "solving zero-dimensional binomial Ideals",
-     Usage => "binomialSolve (I,ww)",
+     Usage => "binomialSolve I",
      Inputs => {
-          "I" => { "a pure difference binomial ideal"},
-	  "ww" => { "name for a root of unity that might be adjoined to QQ"} },
+          "I" => { "a pure difference binomial ideal"}},
      Outputs => {
           "l" => {"the list of solutions of I in QQ[ww]"} },
      "The solutions of a pure difference binomial ideal exist in a cyclotomic field. This function
@@ -1672,10 +1582,9 @@ document {
 	  "R = QQ[x,y,z,w]",
 	  "I = ideal (x-y,y-z,z*w-1*w,w^2-x)",
 	  "dim I",
-	  "binomialSolve (I,qq)",
-	  "qq",
+	  "binomialSolve I",
 	  "J = ideal (x^3-1,y-x,z-1,w-1)",
-	  "binomialSolve (J,qq)"
+	  "binomialSolve J"
           },
      Caveat => {"The current implementation can only handle pure difference binomial ideals."},
      SeeAlso => Cyclotomic

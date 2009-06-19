@@ -23,8 +23,8 @@
 
 newPackage(
 	"Cyclotomic",
-    	Version => "0.2", 
-    	Date => "May 2009",
+    	Version => "0.3", 
+    	Date => "June 2009",
     	Authors => {{Name => "Thomas Kahle", 
 		  Email => "kahle@mis.mpg.de", 
 		  HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
@@ -34,12 +34,70 @@ newPackage(
 
 export {cyclotomicField,
         cyclotomicPoly,
-	findRootPower
+	findRootPower,
+	joinCyclotomic
        }
+  
+-- We use memoize to get physically the same cyclotomic field again and again!
+cf = (i) -> (
+     -- Todo: How to do this properly ??
+     nam := ("ww" | toString(i));
+     Q := QQ[value nam];
+     return toField ((Q) / cyclotomicPoly (i, Q_0));
+     )
 
-cyclotomicField = (i,R) -> (
-     -- Given a ring R, and a power i, the cyclotomic field is returned
-     return toField (R / sub (ideal(cyclotomicPoly (i,R_0)) ,R));
+cyclotomicField = memoize cf
+
+--- Here is an example of how to map coefficient rings to not forget it 
+-- restart
+-- F = frac (QQ[a,b]/ideal(a^2-b))
+-- G = frac (QQ[x,y]/ideal(x^2-y))
+-- 
+-- R = F[t]
+-- S = G[t]
+-- 
+-- use R
+-- I = ideal (t-a-b)
+-- use S
+-- J = ideal (t+x)
+-- 
+-- use S
+-- f = map (S,R,{t,x,y^2})
+-- f(I)
+
+-- We apply this to join cyclotomic fields
+
+joinCyclotomic = li -> (
+     -- This function joins a list of ideals in a polynomial ring over a smallest common cf.
+     -- Input should consist of ideals in polynomial rings over the same variables, but with possible different cyclotomic coefficient field
+
+     -- Find root powers:
+     lc := for l in li list findRootPower ring l;
+     leastcm := lcm for l in lc list if l>2 then l else 1;
+     
+     --Check for QQ
+     if leastcm < 3 then return li;
+     
+     --Check for nothing to do
+     if delete (leastcm, lc) == {} then return li;
+     
+     F := cyclotomicField leastcm;
+     -- Here we use the assumptions that all rings have the same generators
+     ge := gens ring li#0;    
+     
+     S := F[ge];
+     li2 := {}; ww:=F_0; local f;
+     for i in 0..#li-1 do (
+	  -- rational coefficients:
+	  if lc#i == 2 then (
+	       li2 = li2 | {sub (li#i,S)};
+	       )
+	  else (
+	       f = map (S, ring li#i , (gens S) |{ww^(leastcm/lc#i)});
+	       li2 = li2 | { f li#i };
+	       );
+	  );
+     return li2;
      )
 
 cyclotomicPoly = (i,v) -> (
@@ -105,19 +163,18 @@ document {
 document {
      Key => {cyclotomicField},
      Headline => "Cyclotomic Field Construction",
-     Usage => "cyclotomicField (i,R)",
+     Usage => "cyclotomicField (i)",
      Inputs => {
-          "i" => { "an integer, the power of the root to be adjoined."},
-	  "R" => { "a polyomial ring in one variable, the name whose variable will be the name of the adjoined root."} },
+          "i" => { "an integer, the power of the root to be adjoined."}},
      Outputs => {
-          "S" => {"A cyclotomic field with $1^(1/s)$ adjoined"} },
+          "S" => {"A cyclotomic field with $1^(1/i)$ adjoined"} },
      EXAMPLE {
           "R = QQ[ww]",
-          "S = cyclotomicField (5,R)",
+          "S = cyclotomicField (5)",
 	  "isField S",
-	  "(ww^9, ww^10, ww^11)",
+	  "(ww5^9, ww5^10, ww5^11)",
           "T = S[x,y]",
-     	  "I = ideal (x-ww)",
+     	  "I = ideal (x-ww5)",
 	  "dim I"
           },
      Caveat => {"Strange things can happen with the reduction of the coefficients."},
@@ -153,6 +210,23 @@ document {
           "S = cyclotomicField (5,R)",
           "T = S[x,y]",
      	  "findRootPower T"
+          },
+     SeeAlso => cyclotomicField
+     }
+
+document {
+     Key => {joinCyclotomic},
+     Headline => "join ideals in polynomial rings over different cyclotomic fields.",
+     Usage => "joinCyclotomic l",
+     Inputs => {
+          "li" => { "a list of ideals in polynomial rings over cyclotomic fields"}},
+     Outputs => {
+          "li2" => {"The list of ideals in common ring."} },
+     EXAMPLE {
+	  "F = cyclotomicField 3; G = cyclotomicField 4;",
+          "R = F[t]; I = ideal (t-ww3^2)",
+          "S = G[t]; J = ideal (t^2-ww4)",
+     	  "joinCyclotomic {I,J}"
           },
      SeeAlso => cyclotomicField
      }
