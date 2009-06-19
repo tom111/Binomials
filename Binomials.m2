@@ -59,9 +59,9 @@ export {
      BCD,
      BCDisPrimary,
      -- auxillary functions:
+     partialCharacter,
      -- Not in the interface:
 --     axisSaturate,
---     partialCharacter,
 --     cellVars,
 --     Lsat,
 --     idealFromCharacter,
