@@ -708,7 +708,7 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
 	       si = satIdeals pc
 	       );
 	  F = coefficientRing ring si#0;
-	  S = F[ge];
+	  if F === QQ then S = R else S = F[ge];
 	  ME = sub (ME, S);
 	  si = for i in si list sub(i,S);
 	  si = si / (i -> trim (i + ME)); -- Adding monomials;
