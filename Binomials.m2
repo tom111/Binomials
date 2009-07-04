@@ -235,8 +235,8 @@ partialCharacter Ideal := Ideal => o -> I -> (
 	  );
      
      -- So, II is not zero:
-     -- Let ts be the list of generators
-     ts := entries gens II;
+     -- Let ts be the list of minimal generators
+     ts := entries mingens II;
      -- print ts;
      -- for each term, find the exponent vector
      oldmat := matrix "0";
@@ -541,10 +541,8 @@ binomialIsPrimary Ideal := Ideal => o -> I -> (
      noncellvars := toList(set (gens R) - cv);
      
      M := sub (ideal (noncellvars),R);
-     -- print ("The monomial ideal M: " | toString M);
      
-     -- We intersect I with the ring k[E]
-     -- The the radical missing the monomials:
+     -- We intersect I with the ring k[E] to get the associated lattice ideal
      prerad := projectToSubRing (I,cv);
      
      rad := prerad + M;
