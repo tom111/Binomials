@@ -23,8 +23,8 @@
 
 newPackage(
 	"Cyclotomic",
-    	Version => "0.3", 
-    	Date => "June 2009",
+    	Version => "0.3.1", 
+    	Date => "July 2009",
     	Authors => {{Name => "Thomas Kahle", 
 		  Email => "kahle@mis.mpg.de", 
 		  HomePage => "http://personal-homepages.mis.mpg.de/kahle/"}},
