@@ -76,7 +76,7 @@ export {
 --     removeRedundant,
 
      -- Removed as of M2 v1.2
---     lcm,
+     if version#"VERSION" < "1.2" then "lcm," else "",
 
      -- Options
      cellVariables, -- for partialCharacter
@@ -1047,11 +1047,13 @@ binomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
      return I + J;
      )     
 
---lcm = l -> (
---     if #l == 0 then return 1;
---     sublcm := lcm delete (l#0,l);
---     return l#0 * sublcm / gcd (l#0, sublcm);
---     )
+if version#"VERSION" < "1.2" then ( 
+lcm = l -> (
+     if #l == 0 then return 1;
+     sublcm := lcm delete (l#0,l);
+     return l#0 * sublcm / gcd (l#0, sublcm);
+     )
+)
 
 binomialQuasiPower = (b,e) -> (
      -- returns the e-th quasipower of the binomial b
