@@ -35,8 +35,7 @@ newPackage(
 export {cyclotomicField,
         cyclotomicPoly,
 	findRootPower,
-	joinCyclotomic,
-	ww
+	joinCyclotomic
        }
   
 -- We use memoize to get physically the same cyclotomic field again and again!
