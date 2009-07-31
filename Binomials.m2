@@ -76,7 +76,7 @@ export {
 --     removeRedundant,
 
      -- Removed as of M2 v1.2
-     if version#"VERSION" < "1.2" then "lcm," else "",
+     if version#"VERSION" < "1.2" then lcm else "",
 
      -- Options
      cellVariables, -- for partialCharacter
