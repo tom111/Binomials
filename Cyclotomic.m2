@@ -67,8 +67,8 @@ cyclotomicField = memoize cf
 -- We apply this to join cyclotomic fields
 
 joinCyclotomic = li -> (
-     -- This function joins a list of ideals in a polynomial ring over a smallest common cf.
-     -- Input should consist of ideals in polynomial rings over the same variables, but with possible different cyclotomic coefficient field
+     -- This function joins a list of ideals in a polynomial ring over a smallest common cf.  Input should consist of
+     -- ideals in polynomial rings over the same variables, but with possible different cyclotomic coefficient field
 
      -- Find root powers:
      lc := for l in li list findRootPower ring l;

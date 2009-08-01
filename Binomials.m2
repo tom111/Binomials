@@ -796,7 +796,10 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	       sat = {Im};
 	       )
 	  else (
-	       sat = satIdeals pC
+	       sat = satIdeals pC;
+	       if coefficientRing ring sat#0 === QQ then (
+		    sat = sat / ((p) -> sub(p,R));
+		    );
 	       );
 	  primes = primes | sat;
 	  );

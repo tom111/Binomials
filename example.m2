@@ -49,11 +49,9 @@ intersect bp == I
 -- nasty features
 Q = QQ[x,y,z,w];
 J = ideal(x^3*y^2-z^2,x^5*y^2-w^7,w^3-z^8);
-cd = BCD J; 
+cd = BPD J; 
 I = cd#0;
--- partial character is now an internal function
--- pc = partialCharacter cd#0;
-print ( testPrimary \ cd);
+-- The toric component has an embedded prime!
 
 -- Is the following a bug or does it only take very long ????
 -- Appearently it has to do with the SY Strategy for Primdec Failing
