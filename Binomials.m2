@@ -777,14 +777,10 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      M := sub (ideal (ncv),R); 
      -- The monomial radical ideal 
      
-     -- Here is a nice shortcut: if prerad is zero, we are done since
-     -- all I:m will be zero after intesection with the cell ring, right?
-     if prerad == ideal (0_R) then return {M};
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pC := {}; sat = {};
      for m in ml do (
-	  -- print m;
 	  Im = projectToSubRing (I:m,cv);
 	  -- Do we already know the cell variables in the following computation?
 	  pC = partialCharacter(Im , cellVariables=>cv);
