@@ -26,9 +26,10 @@ intersect (ap#0,ap#1) == I
 binomialRadical I == intersect (ap#0,ap#1)
 isCellular (ap#0, returnCellVars=>true)
 isCellular (ap#1, returnCellVars=>true)
-
 bpd = BPD I
 
+
+-----
 Q = QQ[x,y,z]
 J = ideal(x^4*y^2-z^6,x^3*y^2-z^5,x^2-y*z)
 -- The cellular decomposition is also a primary decomposition.
@@ -37,33 +38,29 @@ cd = BCD J
 bpd = BPD J
 
 -- Here is a constructed example
--- This does not work as of May 2009
 R = QQ[a,b,c,d];
 I = ideal (a^2-b^2, b^3-c^3);
 isCellular I
 bp = binomialPrimaryDecomposition I
-testPrimary \ bp
-intersect bp == I
+intersect bp == sub(I,ring bp#0)
+mingens intersect bp
 
 --A fun example, not to small, not too big, but with some
--- nasty features
+-- nasty features. BPD is competetive here.
 Q = QQ[x,y,z,w];
 J = ideal(x^3*y^2-z^2,x^5*y^2-w^7,w^3-z^8);
-cd = BPD J; 
+time bpd = BPD J; 
+time primaryDecomposition J;
 I = cd#0;
 -- The toric component has an embedded prime!
 
--- Is the following a bug or does it only take very long ????
--- Appearently it has to do with the SY Strategy for Primdec Failing
-Q = QQ[x,y,z,w]
-I = ideal (x^3*y^2-z^2, w^7-x^2*z^2, x*y^2*z^4*w^4-1); 
-time isPrime I;
-
--- In the following example cd#1 is not primary, but the radical is prime.
--- This functionality is not yet implemented !
+-- Another example where BPD is too slow
+restart
 Q = QQ[c,d,x,y,z,w];
 I = ideal(x^3*d^2*w-c*z^2,x^5*y^2-w^7,w^3-z^8,z^2-d*w*x^7)
-cd = BCD I
-bpd = BPD I
+time cd = BCD I;
+time bpd = BPD I;
+time primaryDecomposition I;
 intersect cd == I
 intersect bpd == I
+
