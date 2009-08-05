@@ -24,5 +24,6 @@ I = ideal (U00*R01-R00*U10,R01*D11-D01*R00,D11*L10-L11*D01,L10*U00-U10*L11,U01*R
 time bpd = binomialPrimaryDecomposition (I,verbose=>false);
 if intersect bpd != I then error "Computation wrong!"; 
 
-quit;
+quit();
+
 
