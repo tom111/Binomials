@@ -27,7 +27,7 @@ binomialRadical I == intersect (ap#0,ap#1)
 isCellular (ap#0, returnCellVars=>true)
 isCellular (ap#1, returnCellVars=>true)
 bpd = BPD I
-
+intersect bpd == I
 
 -----
 Q = QQ[x,y,z]
@@ -36,6 +36,7 @@ J = ideal(x^4*y^2-z^6,x^3*y^2-z^5,x^2-y*z)
 -- No lattice needs to be saturated, only roots of monomials
 cd = BCD J
 bpd = BPD J
+intersect bpd == J
 
 -- Here is a constructed example
 R = QQ[a,b,c,d];
@@ -50,6 +51,7 @@ mingens intersect bp
 Q = QQ[x,y,z,w];
 J = ideal(x^3*y^2-z^2,x^5*y^2-w^7,w^3-z^8);
 time bpd = BPD J; 
+intersect bpd == J
 time primaryDecomposition J;
 I = cd#0;
 -- The toric component has an embedded prime!
@@ -63,4 +65,3 @@ time bpd = BPD I;
 time primaryDecomposition I;
 intersect cd == I
 intersect bpd == I
-

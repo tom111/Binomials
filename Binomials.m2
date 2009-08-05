@@ -72,7 +72,6 @@ export {
 --     minimalPrimaryComponent,
 --     binomialQuasiPower,
 --     binomialQuotient,
---     projectToSubRing,
 --     removeRedundant,
 
      -- Removed as of M2 v1.2
@@ -509,10 +508,9 @@ cellularBinomialRadical Ideal := Ideal => o -> I -> (
      	       
      M := sub (ideal (noncellvars),R);
      
-     -- We intersect I with the ring k[E]
-     -- In many cases this will be zero
      -- The the radical missing the monomials:
-     prerad := projectToSubRing (I,pc#0);
+     prerad := eliminate (noncellvars,I);
+
      return prerad + M;
      )
 
@@ -543,12 +541,12 @@ binomialIsPrimary Ideal := Ideal => o -> I -> (
      
      -- Get the partial character of I
      pc := partialCharacter(I, cellVariables=>cv);
-     noncellvars := toList(set (gens R) - cv);
+     noncellvars := toList(set gens R - cv);
      
      M := sub (ideal (noncellvars),R);
      
      -- We intersect I with the ring k[E] to get the associated lattice ideal
-     prerad := projectToSubRing (I,cv);
+     prerad := eliminate (noncellvars,I);
           
      rad := prerad + M;
      
@@ -586,7 +584,7 @@ binomialIsPrimary Ideal := Ideal => o -> I -> (
      for m in maxstdmon do (
 	  q := quotient (I, m);
 	  -- Mapping down to cellvars:
-	  q2 := projectToSubRing (q,cv);
+	  q2 := eliminate (noncellvars,q);
      	  -- I_+(sigma) was called prerad above:
 	  if not isSubset(q2, prerad) then (
 	       -- creating some local names:
@@ -781,7 +779,7 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      Im := ideal;
      pC := {}; sat = {};
      for m in ml do (
-	  Im = projectToSubRing (I:m,cv);
+	  Im = eliminate (ncv,I:m);
 	  -- Do we already know the cell variables in the following computation?
 	  pC = partialCharacter(Im , cellVariables=>cv);
 	  if pC#1 == 0 then (
@@ -855,7 +853,7 @@ cellularAssociatedLattices = I -> (
      -- For each monomial, check if I:m has a different lattice !
      for m in ml do (
 	  -- print m;
-	  Im = projectToSubring ((I:m),cv);
+	  Im = eliminate (ncv,I:m);
 	  -- We already know the cell variables in the following computation
 	  pc = partialCharacter(Im, cellVariables=>cv);
 	  if #lats == 0 then (
@@ -1014,7 +1012,7 @@ binomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
 	  quot = I:m;
 	  	  
 	  -- Mapping to k[delta] and taking character
-	  quot = projectToSubRing (quot, cv);
+	  quot = eliminate (ncv,quot);
 	  pc = partialCharacter (quot, cellVariables=>cv);
 	  
 	  --determine whether the exponents of b are in the saturated lattice
@@ -1109,9 +1107,10 @@ cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      vbopt := o#verbose;
      if o#cellVariables === null then cv = cellVars I
      else cv = o#cellVariables;
+     ncv := toList (set gens ring I - cv);
      ap = cellularBinomialAssociatedPrimes (I, cellVariables => cv,verbose=>vbopt);
      -- Projecting down the assoc. primes, removing monomials
-     proj := (I) -> projectToSubRing (I,cv); 
+     proj := (I) -> eliminate (ncv,I); 
      pap := ap / proj ;
      R := ring ap#0; -- All associated primes live in a common ring
      J := sub (I,R); -- get I over there to compute sums
@@ -1145,18 +1144,6 @@ removeRedundant List := List => o -> l -> (
 	  );
      return ideal \ mingens \ result;
      )
-
-projectToSubRing = (I , delta) -> (
-     -- projects an ideal down to the ring k[\delta] where delta is a
-     -- the set of variables. Return after substituting back to the
-     -- original ring !!
-     R := ring I;
-     scan (gens R, (v -> v = local v));
-     CoeffR := coefficientRing R;
-     S := CoeffR[delta];
-     return sub(kernel map (R/I,S), R);
-     )
-
 
 -- The remaining code implements the solver for zero-dim'l pure
 -- difference binomial ideals . We solve pure difference binomial
