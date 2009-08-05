@@ -1072,25 +1072,30 @@ removeRedundant List := List => o -> l -> (
      -- Removes redundant components from a list of ideals to be intersected
      -- TODO: The ideals given might live in different rings, which are 
      -- mathematically the same. We should handle this in a nice way.
+     
+     -- Algorithm: For each ideal in the list, remove all ideals above it.
      if #l == 0 then error "empty list given !";
-     Answer := l#0; -- Will hold Intersection of everything in the end
-     result := {l#0};
-     l = drop (l,1); -- Drop l#0;
-     isect := ideal; -- dummy 
-     while #l > 0 do (
-	  isect = intersect (Answer , l#0); -- intersect with next
-	  -- if something was happenening, add l#0 to the result
-	  if isect != Answer then (
-	       result = result | {l#0};
-	       Answer = isect;
-	       -- print l#0;
-	       )
-	  else if o#verbose then print "redundant component found !";
-	  -- shorten the todolist
-	  l = drop (l,1);
+     
+     result = for i in l list {i,false};
+     flist = for i in result list if i#1===false then i else continue;
+     
+     p:= Ideal;
+     -- While we have not considered elements:	  
+     while #(flist) > 0 do (
+     	  p = flist#0;
+     	  result = for f in result list (
+	       if isSubset (p#0,f#0) then continue
+	       else f
+     	  );
+          -- inserting p, but flagged
+     	  result = insert (0,(p#0,true),result);
+	  -- Updating the todolist
+	  flist = for i in result list if i#1===false then i else continue;
 	  );
-     return ideal \ mingens \ result;
-     )
+     if o#verbose then << #l-#result << " redundant ideals removed. Computing mingens of result.";
+     result = for i in result list ideal mingens i#0;
+     return result;
+)
 
 -- The remaining code implements the solver for zero-dim'l pure
 -- difference binomial ideals . We solve pure difference binomial
