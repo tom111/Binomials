@@ -751,7 +751,7 @@ removeEmbedded = l -> (
      return l;
      )
 
-cellularBinomialAssociatedPrimes = method (Options => {cellVariables => null}) 
+cellularBinomialAssociatedPrimes = method (Options => {cellVariables => null, verbose=>true}) 
 cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> ( 
      -- Computes the associated primes of cellular binomial ideal
      
@@ -772,10 +772,10 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      ml := nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
      -- Coercing to R:
      ml = ml / ( m -> sub (m,R) );
-     -- Mapping to the ring k[E]:
-     prerad := projectToSubRing (I,cv);
-     M := sub (ideal (ncv),R); 
-     -- The monomial radical ideal 
+     
+     if o#verbose then(
+     	  <<  #ml << " monomials to consider for this cellular component" << endl;
+	  );
      
      -- A dummy ideal and partial Characters:
      Im := ideal;
@@ -803,7 +803,7 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      -- their coefficients.
         
      primes = joinCyclotomic(primes);
-     M = sub (ideal ncv, ring primes#0);
+     M := sub (ideal ncv, ring primes#0);
      primes = primes / (I -> I + M);
 
      use R;
@@ -811,6 +811,10 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      )
 
 binomialAssociatedPrimes = I -> (
+     -- TODO: This function computes only a superset of the associated primes
+     print "OOPS, Not yet implemented";
+     print "I will give you a list which contains the associated primes of I.";
+     print "Consider computing the radicals of a primary decomposition";
      if not isBinomial I then error "Input not binomial";
 
      ap := {};
@@ -844,8 +848,6 @@ cellularAssociatedLattices = I -> (
      ml := nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
      -- Coercing to R:
      ml = ml / ( m -> sub (m,R) );
-     -- The ring k[E]:
-     prerad := projectToSubRing (I,cv);
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pc := {};
@@ -1063,24 +1065,30 @@ binomialQuasiPower = (b,e) -> (
 BCD = I -> binomialCellularDecomposition I 
 BPD = I -> binomialPrimaryDecomposition I
 
-binomialPrimaryDecomposition = I -> (
+binomialPrimaryDecomposition = method (Options => {verbose=>true})
+binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- The full binomial primary decomposition 
      -- starting from a not necessarily cellular binomial ideal
      
      -- TODO: Improve this! The first cellular component should always be prime. Are other too ??
      
      if not isBinomial I then error "Input was not binomial !";
+     vbopt := o#verbose;
      
      print "Running cellular decomposition:";
-     cd := binomialCellularDecomposition (I, returnCellVars => true);
+     cd := binomialCellularDecomposition (I, returnCellVars => true, verbose=>vbopt);
      counter := 1;
      cdc := #cd;
      bpd := {};
+     print "Decomposing cellular components:";
      scan (cd , ( (i) -> (
-	   	    print ("Decomposing cellular component: " | toString counter | " of " | toString cdc);
-		    counter = counter +1;
-		    bpd = bpd | cellularBinomialPrimaryDecomposition (i#0, cellVariables => i#1);
-		    print "done";
+		    if vbopt then (
+	   	    	 print ("Decomposing cellular component: " | toString counter | " of " | toString cdc);
+		    	 counter = counter +1;);
+		    bpd = bpd | cellularBinomialPrimaryDecomposition (i#0, cellVariables => i#1,verbose=>vbopt);
+		    if vbopt then (
+			 print "done";
+			 );
 		    )
 	       )
     	  ); -- apply
@@ -1088,19 +1096,20 @@ binomialPrimaryDecomposition = I -> (
      
      bpd = joinCyclotomic bpd;
      print "Removing redundant components...";
-     return removeRedundant bpd;
+     return removeRedundant (bpd, verbose=>vbopt );
      )
 
-cellularBinomialPrimaryDecomposition = method (Options => {cellVariables => null}) 
+cellularBinomialPrimaryDecomposition = method (Options => {cellVariables => null, verbose=>true}) 
 cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> ( 
      -- computes the binomial primary decomposition of a cellular ideal
      -- I needs to be cellular. Cell variables can be given to speed up
      -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
      ap := {};
      cv := null;
+     vbopt := o#verbose;
      if o#cellVariables === null then cv = cellVars I
      else cv = o#cellVariables;
-     ap = cellularBinomialAssociatedPrimes (I, cellVariables => cv);
+     ap = cellularBinomialAssociatedPrimes (I, cellVariables => cv,verbose=>vbopt);
      -- Projecting down the assoc. primes, removing monomials
      proj := (I) -> projectToSubRing (I,cv); 
      pap := ap / proj ;
@@ -1111,10 +1120,12 @@ cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      return pap / ( (P) -> minimalPrimaryComponent (J + P, cellVariables=>cv));
      )
 
-removeRedundant = l -> (
+removeRedundant = method (Options => {verbose => true})
+removeRedundant List := List => o -> l -> (
      -- Removes redundant components from a list of ideals to be intersected
      -- TODO: The ideals given might live in different rings, which are 
      -- mathematically the same. We should handle this in a nice way.
+     -- TODO: The algorithm is not complete and depens on the order.
      if #l == 0 then error "empty list given !";
      Answer := l#0; -- Will hold Intersection of everything in the end
      result := {l#0};
@@ -1128,7 +1139,7 @@ removeRedundant = l -> (
 	       Answer = isect;
 	       -- print l#0;
 	       )
-	  else print "redundant component found !";
+	  else if o#verbose then print "redundant component found !";
 	  -- shorten the todolist
 	  l = drop (l,1);
 	  );
@@ -1396,7 +1407,9 @@ document {
         }
    
 document {
-     Key => {binomialPrimaryDecomposition},
+     Key => {binomialPrimaryDecomposition,
+	  (binomialPrimaryDecomposition, Ideal),
+	  [binomialPrimaryDecomposition, verbose] },
      Headline => "Binomial Primary Decomposition",
      Usage => "binomialPrimaryDecomposition I",
      Inputs => {
@@ -1683,7 +1696,8 @@ document {
 document {
      Key => {cellularBinomialAssociatedPrimes,
 	  (cellularBinomialAssociatedPrimes,Ideal),
-	  [cellularBinomialAssociatedPrimes,cellVariables]},
+	  [cellularBinomialAssociatedPrimes,cellVariables],
+	  [cellularBinomialAssociatedPrimes,verbose]},
      Headline => "Associated primes of a cellular binomial ideal",
      Usage => "cellularBinomialAssociatedPrimes I",
      Inputs => {
