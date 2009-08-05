@@ -211,12 +211,16 @@ partialCharacter Ideal := Ideal => o -> I -> (
      if cv == {} then (
 	  return ({}, matrix "0", {1});
 	  );
-
-     -- We intersect I with the ring k[E]
+     
+     -- We need to construct this ring to properly extract coefficients below
+     S := CoeffR[cv];
+     
+     -- We intersect I with the ring k[E] and map to S
      if #ncv != 0 then (
-     	  II = eliminate (ncv, I);
+     	  II = sub(eliminate (ncv, I),S);
 	  )
      else (
+	  -- S = R, stick with original def!
 	  II = I;
 	  );
 
@@ -228,7 +232,7 @@ partialCharacter Ideal := Ideal => o -> I -> (
 	  );
      
      -- So, II is not zero:
-     -- Let ts be the list of minimal generators
+     -- Let ts be the list of minimal generators, this uses that II\subset S !
      ts := entries mingens II;
      -- for each term, find the exponent vector
      oldmat := matrix "0";
@@ -259,6 +263,7 @@ partialCharacter Ideal := Ideal => o -> I -> (
 	       );
 	  );
      
+     use R;
      return (cv, transpose matrix vs , cl);
      )
 
