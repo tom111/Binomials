@@ -1087,6 +1087,7 @@ removeRedundant List := List => o -> l -> (
      p:= Ideal;
      -- While we have not considered elements:	  
      while #(flist) > 0 do (
+	  if o#verbose then << #flist << " Ideals to check" << endl;
      	  p = flist#0;
      	  result = for f in result list (
 	       if isSubset (p#0,f#0) then continue
