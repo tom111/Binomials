@@ -1,6 +1,7 @@
 * Handling the git-beast:
 ** The experimental branch is the one we are working on
 ** The master branch is kind of a release branch that tracks public versions
+* Do a real competition against Singular
 * To make the cellular decomposition faster
 ** Can we guess a priori some monomial primes ?
 ** The first component is toric -> implement special handling
