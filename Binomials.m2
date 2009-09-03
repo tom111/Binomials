@@ -279,7 +279,6 @@ randomBinomialIdeal = (R,numge,maxdeg) -> (
      va := {}; m := {};
      for i in 0..numge do (
      	  m = for i in Rge list random (2*maxdeg) - maxdeg;
-	  print m;
      	  ge = ge | {makeBinomial (R,m,1)};
   	  );
      return ideal (mingens ideal(ge))
