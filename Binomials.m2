@@ -170,7 +170,7 @@ binomialCellularDecomposition Ideal := Ideal => o -> I -> (
 
 -- This function saturates an integer lattice. It expects 
 -- the matrix A, whose image is the lattice. 
-Lsat = A -> syz transpose syz transpose A;
+Lsat = A -> LLL syz transpose LLL syz transpose A;
 
 isCellular = method (Options => {returnCellVars => false})
 isCellular Ideal := Ideal => o -> I -> (
