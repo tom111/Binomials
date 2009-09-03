@@ -60,6 +60,7 @@ export {
 --     BCDisPrimary,
      -- auxillary functions:
      partialCharacter,
+     randomBinomialIdeal,
      -- Not in the interface:
 --     axisSaturate,
 --     cellVars,
@@ -265,6 +266,22 @@ partialCharacter Ideal := Ideal => o -> I -> (
      
      use R;
      return (cv, transpose matrix vs , cl);
+     )
+
+randomBinomialIdeal = (R,numge,maxdeg) -> (
+     -- Generate 'random' ideals for testing purposes. The distribution is completely heuristic and designed to serve
+     -- internal purposes Input: a ring R, the number of generators; Output: a 'random' binomial ideal.
+     Rge := gens R;
+     ng := #Rge;
+     ge := {};
+     ra := 0; split := 0;
+     va := {}; m := {};
+     for i in 0..numge do (
+     	  m = for i in Rge list random (2*maxdeg) - maxdeg;
+	  print m;
+     	  ge = ge | {makeBinomial (R,m,1)};
+  	  );
+     return ideal (mingens ideal(ge))
      )
 
 isBinomial = I -> (
@@ -1421,7 +1438,7 @@ document {
 	  "I = ideal (y^2, x*y-y, x^2-1)",
 	  "binomialRadical I",
           },
-     SeeAlso => cellularBinomialRadical,
+     SeeAlso => cellularBinomialRadical
      }
 
 document {
@@ -1442,7 +1459,7 @@ document {
 	  "cv = isCellular (I,returnCellVars=>true)",
 	  "cellularBinomialRadical (I,cellVariables=>cv)"
           },
-     SeeAlso => binomialRadical,
+     SeeAlso => binomialRadical
      }
 
 document {
@@ -1462,7 +1479,7 @@ document {
 	  "binomialMinimalPrimes I",
           },
      "If the option ", TO verbose, " is set (default), then output about the number of components found so far will be generated.",
-     SeeAlso => binomialRadical,
+     SeeAlso => binomialRadical
      }    
 
 document {
@@ -1479,7 +1496,7 @@ document {
 	  "I = ideal(x^2-y,y^2-x)",
 	  "binomialAssociatedPrimes I",
           },
-     SeeAlso => {binomialMinimalPrimes,cellularBinomialAssociatedPrimes},
+     SeeAlso => {binomialMinimalPrimes,cellularBinomialAssociatedPrimes}
      }    
 
 --     -- tests
@@ -1501,7 +1518,7 @@ document {
 	  "I = ideal(x^2-y,y^2-x)",
 	  "binomialIsPrime I",
           },
-     SeeAlso => {binomialIsPrimary, cellVariables},
+     SeeAlso => {binomialIsPrimary, cellVariables}
      }    
 
 document {
@@ -1525,7 +1542,7 @@ document {
 	  "I = ideal(x^2-1)",
 	  "binomialIsPrimary (I,returnPrimes=>true)",
           },
-     SeeAlso => {binomialIsPrimary, cellVariables, returnPrimes, returnPChars},
+     SeeAlso => {binomialIsPrimary, cellVariables, returnPrimes, returnPChars}
      }    
 
 document {
@@ -1647,7 +1664,7 @@ document {
 	  "cv = isCellular (I,returnCellVars=>true)",
 	  "cellularBinomialAssociatedPrimes (I,cellVariables=>cv)"
           },
-     SeeAlso => binomialAssociatedPrimes,
+     SeeAlso => binomialAssociatedPrimes
      }    
 
 --     cellularAssociatedLattices,
@@ -1671,7 +1688,7 @@ document {
 	  "mingens \\ pd"
           },
      Caveat => {"This function will not return minimal generators for performance reasons."},
-     SeeAlso => binomialAssociatedPrimes,
+     SeeAlso => binomialAssociatedPrimes
      }    
 
 document {
@@ -1692,8 +1709,26 @@ document {
 	  "I = ideal(x^3-1,y-x)",
 	  "cv = isCellular (I,returnCellVars=>true)",
 	  "pc = partialCharacter (I,cellVariables=>cv)",
-          },
+          }
      }    
+
+document {
+     Key => {randomBinomialIdeal},
+     Headline => "Random Binomial Ideals",
+     Usage => "randomBinomialIdeal (R,n,d)",
+     Inputs => {
+          "I" => { "a ring for the output"},
+	  "n" => { "number of generators of the output "},
+	  "d" => { "maximum degree of each generator" } },
+     Outputs => {
+          "I" => {"a random ideal"} },
+     "The exponents are drawn at random from {-d,...,d}. All coefficients are set to 1.",
+     EXAMPLE {
+	  "R = QQ[a..f]",
+	  "I = randomBinomialIdeal (R,5,4)",
+          }
+     }    
+
 
 document {
      Key => cellVariables,
@@ -1714,7 +1749,7 @@ document {
 	  "R = QQ[x,y,z]",
           "I = ideal (x*y-z, x*z-y^2)",
           "bcd = binomialCellularDecomposition (I,returnCellVars=>true)",
-          },
+          }
      }
 
 document {
@@ -1751,3 +1786,6 @@ document {
      "If this option is set, functions will generate additional output. Defaults to true"
      }
 
+--TEST ///
+--    assert (  == "D'oh!" )
+--///
