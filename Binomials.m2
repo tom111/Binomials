@@ -933,18 +933,18 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 	  -- The index of L inside L2 is finite if and only if their dimensions coincide
 	  if rank L == rank L2 then (
 	       print "finite index case !";
+	       print "Only very few examples reach this part of the code";
+	       print "PLEASE, send a copy of your input to kahle@mis.mpg.de";
+	       print "Thank you!"
 	       -- The finite index case :  
 	       
 	       -- Compute a binomial in J2 which is not in J1.
 	       -- i.e. find a generator on which pc1 and pc2 take different values.
-	       print pc1;
-	       print pc2;
 	       for i in 0..#(pc2#2)-1 do (
 	       	    if pc1#2#i == pc2#2#i then continue
 	       	    else (
 		    	 -- Character differs. Form binomial:
 		    	 b := makeBinomial (QQ[pc2#0], (entries transpose pc2#1)#i, pc2#2#i );
-		    	 print b;
 		    	 break;
 		    	 );
 	       	    );
