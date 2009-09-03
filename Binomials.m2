@@ -278,7 +278,7 @@ randomBinomialIdeal = (R,numge,maxdeg) -> (
      ra := 0; split := 0;
      va := {}; m := {};
      for i in 0..numge do (
-     	  m = for i in Rge list random (2*maxdeg) - maxdeg;
+     	  m = for i in Rge list (random (2*maxdeg + 1) - maxdeg);
      	  ge = ge | {makeBinomial (R,m,1)};
   	  );
      return ideal (mingens ideal(ge))
@@ -762,7 +762,8 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      ml = ml / ( m -> sub (m,R) );
      
      if o#verbose then(
-     	  <<  #ml << " monomials to consider for this cellular component" << endl;
+	  if #ml == 1 then << "1 monomial to consider for this cellular component " << endl
+     	  else <<  #ml << " monomials to consider for this cellular component" << endl;
 	  );
      
      -- A dummy ideal and partial Characters:
@@ -1725,7 +1726,8 @@ document {
      EXAMPLE {
 	  "R = QQ[a..f]",
 	  "I = randomBinomialIdeal (R,5,4)",
-          }
+          },
+     Caveat => "Minimal generators are produced. These can be less than n and of higher degree."
      }    
 
 
@@ -1785,6 +1787,25 @@ document {
      "If this option is set, functions will generate additional output. Defaults to true"
      }
 
---TEST ///
---    assert (  == "D'oh!" )
---///
+TEST ///
+R = QQ[a..f]
+I = ideal(b*c-d*e,b*e*f-a*c,a*d*f-d*e,a*b*f-c*d,d^2*e-e,a*d*e-d*e,a*c*e-d*f) 
+time bpd = BPD I;
+assert (intersect bpd == sub(I,ring bpd#0))
+///
+
+TEST ///
+R = QQ[c,d,x,y,z,w];
+I = ideal(x^3*d^2*w-c*z^2,x^5*y^2-w^7,w^3-z^8,z^2-d*w*x^7)
+time bpd = binomialPrimaryDecomposition (I,verbose=>false);
+assert (intersect bpd == I)
+///
+
+TEST ///
+S = QQ[R00,U00,R01,D01,U01,R02,D02,L10,U10,L11,D11,U11,L12,D12];
+I = ideal (U00*R01-R00*U10,R01*D11-D01*R00,D11*L10-L11*D01,
+           L10*U00-U10*L11,U01*R02-R01*U11,R02*D12-D02*R01,
+	   D12*L11-L12*D02,L11*U01-U11*L12);
+bpd = BPD I;
+assert (intersect bpd == I)
+///
