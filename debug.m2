@@ -1,5 +1,16 @@
 restart
 
+
+-- Lsat improvement
+ --R = QQ[a..h]
+ --M = matrix {{2,0,-1,0,0}, { -1, 1,  -2, -1, 0 }, { -1, 2,  2,  -1, -2}, {0 , 0,  2,  0,  0 }, { 0,  0,  0,  1,  2 }, 
+ --     { 0,  1,  0,  2,  0}, { 0,  -1, 0,  0,  2}, { 0,  0,  0,  2,  2}  }
+ ---- is this a bug?
+ --Lsat = A -> LLL syz transpose LLL syz transpose A;
+ --image LLL syz transpose M == image syz transpose M
+ --Lsat M
+ --isSubset (image M ,image Lsat M)
+ --
 -- -- Original stuff:
 -- S = QQ[R00,U00,R01,D01,U01,R02,D02,R10,L10,U10,R11,L11,D11,U11,R12,L12,D12,L20,U20,L21,D21,U21,L22,D22];
 -- I = ideal (U00*R01-R00*U10,R01*D11-D01*R00,D11*L10-L11*D01,L10*U00-U10*L11,U01*R02-R01*U11,R02*D12-D02*R01,D12*L11-L12*D02,L11*U01-U11*L12,U10*R11-R10*U20,R11*D21-D11*R10,D21*L20-L21*D11,L20*U10-U20*L21,U11*R12-R11*U21,R12*D22-D12*R11,D22*L21-L22*D12,L21*U11-U21*L22);
