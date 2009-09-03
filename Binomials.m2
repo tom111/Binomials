@@ -269,18 +269,55 @@ partialCharacter Ideal := Ideal => o -> I -> (
      return (cv, transpose matrix vs , cl);
      )
 
-randomBinomialIdeal = (R,numge,maxdeg) -> (
+randomBinomialIdeal = (R,numge,maxdeg, maxwidth, homog) -> (
      -- Generate 'random' ideals for testing purposes. The distribution is completely heuristic and designed to serve
-     -- internal purposes Input: a ring R, the number of generators; Output: a 'random' binomial ideal.
+     -- internal purposes 
+     -- Inputs: a ring R, the number of generators numgen, the maximal degree of each variable maxded,
+     -- the maximal number of variables appearing in binomial, wether the output should be homogeneous
+     
+     -- Caveat: The result might simply be not homogeneous or of the given degree 
+     -- due to deps between the random generators     
+     
+     -- Output: a 'random' binomial ideal.
+     
      Rge := gens R;
      ng := #Rge;
      ge := {};
      ra := 0; split := 0;
      va := {}; m := {};
-     for i in 0..numge do (
-     	  m = for i in Rge list (random (2*maxdeg + 1) - maxdeg);
-     	  ge = ge | {makeBinomial (R,m,1)};
-  	  );
+     z := for i in 0..ng-maxwidth-1 list 0;
+     if homog then (
+	  if odd maxwidth then maxwidth = maxwidth + 1;
+	  for i in 0..numge do (
+	       -- m will be a list of nonzero random exponents
+     	       m = for j in 0..(maxwidth//2)-1 list (
+	       	    ra = (random (2*maxdeg)) +1 ;
+	       	    if ra > maxdeg then ra = -ra // 2;
+	       	    ra
+	       	    );
+	       m = m | for j in 0..(maxwidth//2)-1 list (
+		    ra = (random (2*maxdeg)) +1 ;
+	       	    if ra > maxdeg then ra = -ra // 2;
+	       	    -ra
+		    );
+     	       -- filling with zeros
+	       m = random (m |z);
+     	       ge = ge | {makeBinomial (R,m,1)};
+  	       );  
+	  )
+     else (
+     	  for i in 0..numge do (
+	       -- m will be a list of nonzero random exponents
+     	       m = for j in 0..maxwidth-1 list (
+	       	    ra = (random (2*maxdeg)) +1 ;
+	       	    if ra > maxdeg then ra = -ra // 2;
+	       	    ra
+	       	    );
+     	       -- filling with zeros
+	       m = random (m |z);
+     	       ge = ge | {makeBinomial (R,m,1)};
+  	       );
+	  );
      return ideal (mingens ideal(ge))
      )
 
@@ -789,7 +826,7 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	  );
      -- We need to remove duplicate elements and join all associated primes in an apropriate new ring that contains all
      -- their coefficients.
-        
+
      primes = joinCyclotomic(primes);
      M := sub (ideal ncv, ring primes#0);
      primes = primes / (I -> I + M);
