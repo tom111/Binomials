@@ -558,14 +558,13 @@ binomialIsPrimary Ideal := Ideal => o -> I -> (
      maxstdmon := maxNonCellstdm (I,cellVariables=>cv) / (i -> sub (i,R));
      
      for m in maxstdmon do (
-	  q := quotient (I, m);
+	  q := I:m;
 	  -- Mapping down to k[E]:
 	  q2 := eliminate (noncellvars,q);
      	  -- I_+(sigma) was called prerad above:
 	  if not isSubset(q2, prerad) then (
 	       -- creating some local names:
-	       qchar := partialCharacter (q,cellVariables=>cv);
-	       satqchar := saturatePChar qchar;
+	       satqchar := saturatePChar partialCharacter (q,cellVariables=>cv);
 	       if o#returnPChars then(
 		    return {pc, {satqchar#0,satqchar#1,satqchar#2#0}}
 		    );
@@ -753,8 +752,8 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      Im := ideal;
      pC := {}; sat = {};
      for m in ml do (
-	  Im = eliminate (ncv,I:m);
-	  pC = partialCharacter(Im , cellVariables=>cv);
+	  Im = I:m;
+	  pC = partialCharacter(Im, cellVariables=>cv);
 	  if pC#1 == 0 then (
 	       primes = primes | {ideal(0_R)}; 
 	       continue;
@@ -812,7 +811,7 @@ cellularAssociatedLattices = I -> (
      -- For each monomial, check if I:m has a different lattice !
      for m in ml do (
 	  -- print m;
-	  Im = eliminate (ncv,I:m);
+	  Im = I:m;
 	  -- We already know the cell variables in the following computation
 	  pc = partialCharacter(Im, cellVariables=>cv);
 	  if #lats == 0 then (
@@ -933,23 +932,23 @@ binomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
      -- b -- Binomial in the cell variables of I which is a zerodivisor mod I
      -- Output : The quotient (I : b^[e]) for a suitably choosen e, such that the
      -- result is binomial
-     -- TODO: This is not well tested at all, too often the colon ideal is binomial!
      
      R := ring I;
-     scan (gens R, (v -> v = local v));
+
+     --First check if we can save a lot of time if already I:b is binomial,
+     -- and no quasipowers have to be taken.
+     quot :=  quotient (I , sub(ideal(b),R));
+     if isBinomial quot then return quot;
      
+     scan (gens R, (v -> v = local v));
      cv := null;
      if o#cellVariables === null then (
 	  -- No cell variables are given -> compute them
 	  cv = cellVars(I);
 	  )
      else cv = o#cellVariables;
-     
-     --First check if we can save a lot of time if already I:b is binomial,
-     -- and no quasipowers have to be taken.
-     quot :=  quotient (I , sub(ideal(b),R));
-     if isBinomial quot then return quot;
-          
+     ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
+ 
      --Transporting the standardmonomials to R:
      ncvm := (i -> sub (i,R) ) \ nonCellstdm (I,cellVariables=>cv) ;
      -- print ncvm;
@@ -957,18 +956,20 @@ binomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
      U' := {}; -- U' as in the paper
      D  := {};
      J := ideal (0_R); -- initialize with zero ideal
-     bexp := (exponents b)#0 - (exponents b)#1; -- exponent vector of b
+     -- We map b to the correct ring to extract exponents:
+     CoeffR := coefficientRing R;
+     S := CoeffR[cv]; -- k[\delta] in the paper
+     bexp := (exponents sub(b,S))#0 - (exponents sub(b,S))#1; -- exponent vector of b
      -- We will often need the image of bexp, so lets cache it
      bexpim := image transpose matrix {bexp};
      pc := {}; -- Will hold partial characters;
-     -- CoeffR := coefficientRing R;
-     -- S := CoeffR[cv]; -- k[\delta] in the paper
-     
+     -- Will hold the quotients compututed on the way:
+     quotlist = {};
+              
      for m in ncvm do(
 	  quot = I:m;
-	  	  
-	  -- Mapping to k[delta] and taking character
-	  quot = eliminate (ncv,quot);
+	  quotlist = quotlist | {(m,quot)};
+	  -- taking character
 	  pc = partialCharacter (quot, cellVariables=>cv);
 	  
 	  --determine whether the exponents of b are in the saturated lattice
@@ -983,22 +984,19 @@ binomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
 			 )
 		    else i = i+1;
 		    );
-	       print ("The order of " | toString bexp | "in " | toString image pc#1 | "is " | toString i);
+	       -- print ("The order of " | toString bexp | "in " | toString image pc#1 | "is " | toString i);
 	       -- print D;
 	       );
 	  ); -- loop over monomials
      -- Compute the least common multiple of the orders
      e := lcm D; -- e' in paper, but we dont need e later.
-     print ("binomialQuasiPower" | toString (b,e));
      bqp := sub (binomialQuasiPower (b,e) , R); -- e'th quasipower
-     print bqp;
-     print ring bqp;
-     print ( "Least common multiple : " | toString e);
+     -- print ( "Least common multiple : " | toString e);
+     -- print U';
+     quothash := hashTable(quotlist);
      for m in U' do(
-	  quot = quotient (I,m);
-	  if bqp % quot == 0 then J = J + ideal(m);		
+	  if bqp % quothash#m == 0 then J = J + ideal(m);		
      	  );
-     print J;
      return I + J;
      )     
 
