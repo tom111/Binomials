@@ -974,7 +974,7 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 		      i = i+1;
 		      );
      	         -- now i has the suitable index !
-		 b = makeBinomial(QQ[pc2#0], L2cols#i, pc2#2#i);		    
+		 b := makeBinomial(QQ[pc2#0], L2cols#i, pc2#2#i);		    
 	    	 -- Take the quotient of I with respect to b, such that the result is binomial
 	    	 return minimalPrimaryComponent (binomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
 	    	 );
