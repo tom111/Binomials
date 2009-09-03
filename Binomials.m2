@@ -935,7 +935,7 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 	       print "finite index case !";
 	       print "Only very few examples reach this part of the code";
 	       print "PLEASE, send a copy of your input to kahle@mis.mpg.de";
-	       print "Thank you!"
+	       print "Thank you!";
 	       -- The finite index case :  
 	       
 	       -- Compute a binomial in J2 which is not in J1.
