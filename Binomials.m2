@@ -1752,19 +1752,23 @@ document {
 document {
      Key => {randomBinomialIdeal},
      Headline => "Random Binomial Ideals",
-     Usage => "randomBinomialIdeal (R,n,d)",
+     Usage => "randomBinomialIdeal (R,n,d,w,h)",
      Inputs => {
           "I" => { "a ring for the output"},
 	  "n" => { "number of generators of the output "},
-	  "d" => { "maximum degree of each generator" } },
+	  "d" => { "maximum degree of each variable" },
+	  "w" => { "number of variables in each generator "},
+	  "h" => { "should the generators be 'as homogeneous as possible'"} },
      Outputs => {
           "I" => {"a random ideal"} },
      "The exponents are drawn at random from {-d,...,d}. All coefficients are set to 1.",
      EXAMPLE {
-	  "R = QQ[a..f]",
-	  "I = randomBinomialIdeal (R,5,4)",
+	  "R = QQ[a..x]",
+	  "randomBinomialIdeal (R,6,2,4,true)",
+     	  "randomBinomialIdeal (R,3,4,10,false)"
           },
-     Caveat => "Minimal generators are produced. These can be less than n and of higher degree."
+     "This function is mostly for internal testing purposes. Don't expect anything from it.",
+     Caveat => "Minimal generators are produced. These can be less than n and of higher degree. They also need not be homogeneous"
      }    
 
 
