@@ -354,7 +354,7 @@ nonCellstdm = {cellVariables=>null} >> o -> I -> (
      cv2 := {};
      if o#cellVariables === null then (
 	  print "CellVariables not given, Please consider precomputing them";
-	  cv2 = cellVars I;
+	  cv2 = baseName \ (cellVars I);
 	  )
      else (
 	  cv2 = baseName \ o#cellVariables;
