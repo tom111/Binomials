@@ -354,17 +354,20 @@ nonCellstdm = {cellVariables=>null} >> o -> I -> (
      cv2 := {};
      if o#cellVariables === null then (
 	  print "CellVariables not given, Please consider precomputing them";
-	  cv2 = baseName \ (cellVars I);
+	  cv2 = cellVars I;
 	  )
      else (
-	  cv2 = baseName \ o#cellVariables;
+	  cv2 = o#cellVariables;
 	  -- if the cell variables changed their identities by field extension:
 	  );
      
      -- Extracts the monomials in the non-Cell variables.
      cv := set cv2; 
      -- Here go the non-cell variables
-     ncv := toList (set (baseName \ (gens R)) - cv);
+     -- This use of baseName is intended to fix a problem where the variables in cv 
+     -- are actual variables of a ring over a field extension. TODO Item: Understand this
+     ncv := value \ toList (set (baseName \ (gens R)) - baseName \ cv);
+     
      -- We map I to the subring: k[ncv]
      CoeffR := coefficientRing R;
      S := CoeffR[ncv];
@@ -906,11 +909,13 @@ minimalPrimaryComponent = method (Options => {cellVariables => null})
 minimalPrimaryComponent Ideal := Ideal => o -> I -> (
      -- Input a cellular binomial ideal whose radical is prime.
      -- Ouptut, generators for Hull(I)
-
+     
      cv := null;
      if o#cellVariables === null then (
 	  -- No cell variables are given -> compute them
-	  cv = cellVars(I);
+	  cv = isCellular (I,returnCellVars=>true);
+	  -- This is no real check. If CellVariables are given we dont check for speed reasons
+	  if cv === false then error "Input to minimalPrimaryComponent was not cellular!"
 	  )
      else cv = o#cellVariables;
 
@@ -967,7 +972,6 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 		      imc := image transpose matrix {c};
 		      if rank intersect {imc , L} < 1 then (
 			   -- We have winner 
-			   m := c;
 			   break;
 			   );
 		      -- Lets try the next vector.
