@@ -1125,7 +1125,10 @@ cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      pap := ap / proj ;
      R := ring ap#0; -- All associated primes live in a common ring
      J := sub (I,R); -- get I over there to compute sums
-     return pap / ( (P) -> minimalPrimaryComponent (J + P, cellVariables=>cv));
+     -- Here, contrary to what is stated in ES'96, we can not assume that J+P is cellular.
+     -- However, since Hull only wants the minimal primary component we can cellularize!
+     -- TODO: Can this be skipped in some cases to be predetermined?
+     return pap / ( (P) -> minimalPrimaryComponent ( saturate (P + J , sub (ideal product cv, R)), cellVariables=>cv));
      )
 
 removeRedundant = method (Options => {verbose => true})
