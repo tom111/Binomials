@@ -1,8 +1,0 @@
-Study the Cellularity of binomial Quotients.  Currently, discovered in the BPD of component #20 of the ideal of 2x2
-adjacent minors of a 5x5 matrix, it seems as if the operation binomial Quotient that is applied in the course of
-computing the minimal primary component may not preserve being cellular. Then Algorithm 9.6 is not well defined as it
-calls itself recursively while not preserving the necessary condition of the input being cellular.
-
--- Remove redundant does not work properly as it does not check partial intersections for being contained in other stuff :(
-
--- Prove: Every cellular ideal has one minimal associated lattice
