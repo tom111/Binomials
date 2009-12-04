@@ -61,6 +61,7 @@ export {
      -- auxillary functions:
      partialCharacter,
      randomBinomialIdeal,
+     removeRedundant,
      -- Not in the interface:
 --     axisSaturate,
 --     cellVars,
@@ -73,8 +74,6 @@ export {
 --     minimalPrimaryComponent,
 --     binomialQuasiPower,
 --     binomialQuotient,
---     removeRedundant,
-
      -- Removed as of M2 v1.2
      -- Uncomment this if you are using <= 1.1
      -- lcm
@@ -1778,6 +1777,24 @@ document {
      Caveat => "Minimal generators are produced. These can be less than n and of higher degree. They also need not be homogeneous"
      }    
 
+document {
+     Key => {removeRedundant,
+	  (removeRedundant,List),	  
+	  [removeRedundant,verbose]},
+     Headline => "Remove redundant ideals from a decomposition",
+     Usage => "removeRedundant L",
+     Inputs => {
+          "L" => { "A list of ideals"} },
+     Outputs => {
+          "l" => {"A list with some redundant ideals removed"} },
+     EXAMPLE {
+	  "R = QQ[a,b]",
+	  "L = {ideal(a^4),ideal(a^3),ideal(a^5),ideal(b^2*a) }",
+	  "removeRedundant L",
+          },
+     "This function is mostly for internal purposes.",
+     Caveat => "The resulting list is NOT irredundant, because I_1 \\subset I_2 \\cap I_3 is not checked."
+     }
 
 document {
      Key => cellVariables,
