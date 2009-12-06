@@ -1152,7 +1152,7 @@ removeRedundant List := List => o -> l -> (
 	       else f
      	  );
           -- inserting p, but flagged
-     	  result = insert (0,(p#0,true),result);
+     	  result = append (result,(p#0,true));
 	  -- Updating the todolist
 	  flist = for i in result list if i#1===false then i else continue;
 	  );
