@@ -1,5 +1,9 @@
-restart
+-- restart
 
+R = QQ[x,y,z]
+I = ideal(x^2-y,y^2-z^2,z^2-x)
+bpd = BPD I
+intersect bpd == sub (I, ring bpd#0)
 
 -- Lsat improvement
  --R = QQ[a..h]
