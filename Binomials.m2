@@ -850,15 +850,22 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      )
 
 binomialAssociatedPrimes = I -> (
-     -- TODO: This function is stupid. Can it be done better ? 
-     -- TODO: Even the stupid algorithm can be improved by carrying on the cell Variables!
-     print "OOPS, Not yet implemented";
-     print "I will compute a primary decomposition and take radicals!";
      if not isBinomial I then error "Input not binomial";
-     bpd := BPD I;
-     print "Primary Decomposition found, taking radicals now:"; 
-     return binomialRadical \ bpd;
+     -- TODO: Even the stupid algorithm can be improved by carrying on the cell Variables!
+     cv := isCellular (I,returnCellVars=>true);
+     -- This is no real check. If CellVariables are given we dont check for speed reasons
+     if cv === false then (
+	  print "Not yet implemented";
+	  print "I will compute a primary decomposition and take radicals!";
+	  bpd := BPD I;
+	  print "Primary Decomposition found, taking radicals now:";
+	  return binomialRadical \ bpd;
+	  )
+     else (
+	  return cellularBinomialAssociatedPrimes (I, cellVariables=>cv);
+	  );
      )
+
 
 cellularAssociatedLattices = I -> (
      -- Computes the associated lattices of a cellular binomial ideal
