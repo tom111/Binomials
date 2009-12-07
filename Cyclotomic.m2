@@ -86,7 +86,6 @@ joinCyclotomic = li -> (
      -- Here we use the assumptions that all rings have the same generators
      -- This should contain the variables of polynomials
      ge := gens ring li#0;    
-     print ge;
 
      S := F[ge];
      li2 := {}; ww:=F_0; local f;
@@ -110,13 +109,12 @@ cyclotomicPoly = (i,v) -> (
      v = value v;
      if i <= 0 then error "the input should be > 0.";
      if i==1 then return v-1 ;
-     min := v^i -1;
+     mini := v^i -1;
      -- dividing out the first cylcotomic polynomial
      -- (with result a polynomial)
-     min = (flatten entries syz matrix {{min ,(v-1)}})#1; 
-
+     mini = (flatten entries syz matrix {{mini ,(v-1)}})#1;
      -- i is prime:
-     if isPrime i then return min / (leadCoefficient min);
+     if isPrime i then return mini / (leadCoefficient mini);
      
      -- i is not prime:
      -- find the divisors:
@@ -126,13 +124,14 @@ cyclotomicPoly = (i,v) -> (
 	       fac := cyclotomicPoly (f,v);
 	       -- print fac;
 	       -- division with result in polynomial ring:
-	       min = (flatten entries syz matrix {{min,fac}})#1;
+	       mini = (flatten entries syz matrix {{mini,fac}})#1;
 	       )
 	  );
      --make sure the leading coefficient is one.
-     min=min / leadCoefficient(min);            
-     return(min);                        
-)
+     mini=mini / leadCoefficient(mini);
+     return mini;
+     
+     )
 
 findRootPower = R -> (
      -- Finds the power of the adjoined root of unity in the
