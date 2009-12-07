@@ -1103,12 +1103,12 @@ binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      if not isBinomial I then error "Input was not binomial !";
      vbopt := o#verbose;
      
-     print "Running cellular decomposition:";
+     if vbopt then print "Running cellular decomposition:";
      cd := binomialCellularDecomposition (I, returnCellVars => true, verbose=>vbopt);
      counter := 1;
      cdc := #cd;
      bpd := {};
-     print "Decomposing cellular components:";
+     if vbopt then print "Decomposing cellular components:";
      scan (cd , ( (i) -> (
 		    if vbopt then (
 	   	    	 print ("Decomposing cellular component: " | toString counter | " of " | toString cdc);
@@ -1122,7 +1122,7 @@ binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
     	  );
       
      bpd = joinCyclotomic bpd;
-     print "Removing redundant components...";
+     if vbopt then print "Removing redundant components...";
      return removeRedundant (bpd, verbose=>vbopt );
      )
 
