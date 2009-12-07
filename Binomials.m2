@@ -782,7 +782,11 @@ removeEmbedded = l -> (
 cellularBinomialAssociatedPrimes = method (Options => {cellVariables => null, verbose=>true}) 
 cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> ( 
      -- Computes the associated primes of cellular binomial ideal
+     -- It returns them in a polynomial ring with the same variables as ring I,
+     -- but potentially extended coefficient ring !
+
      -- TODO: It could be faster by rearringing things in the m in ml
+     -- TODO: Pruning of list of monomials which are to search!
      
      R := ring I;
      scan (gens R, (v -> v = local v));
@@ -820,16 +824,24 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	       )
 	  else (
 	       sat = satIdeals pC;
-	       if coefficientRing ring sat#0 === QQ then (
+	       -- If the coefficientRing is QQ, we map back to R
+	       F := coefficientRing ring sat#0;
+	       if F === QQ then (
 		    sat = sat / ((p) -> sub(p,R));
+		    )
+	       else (
+		    -- otherwise to the extended ring
+		    -- this is necessary since satIdeals does not know about the non-cell variables
+		    ge := gens R;
+		    S := F[ge];
+		    sat = sat / ((p) -> sub(p,S));
 		    );
 	       );
 	  primes = primes | sat;
 	  );
      -- We need to remove duplicate elements and join all associated primes in an apropriate new ring that contains all
      -- their coefficients.
-
-     primes = joinCyclotomic(primes);
+     primes = joinCyclotomic primes;
      M := sub (ideal ncv, ring primes#0);
      primes = primes / (I -> I + M);
 
@@ -1120,7 +1132,7 @@ cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      ncv := toList (set gens ring I - cv);
      ap = cellularBinomialAssociatedPrimes (I, cellVariables => cv,verbose=>vbopt);
      -- Projecting down the assoc. primes, removing monomials
-     proj := (I) -> eliminate (ncv,I); 
+     proj := (II) -> eliminate (ncv,II); 
      pap := ap / proj ;
      R := ring ap#0; -- All associated primes live in a common ring
      J := sub (I,R); -- get I over there to compute sums

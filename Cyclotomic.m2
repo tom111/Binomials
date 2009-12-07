@@ -78,20 +78,25 @@ joinCyclotomic = li -> (
      if leastcm < 3 then return li;
      
      --Check for nothing to do
-     if delete (leastcm, lc) == {} then return li;
+     -- As of M2 1.3 this check does not work anymore.
+     -- Joining has to be run in any case.
+     -- if delete (leastcm, lc) == {} then return li;
      
      F := cyclotomicField leastcm;
      -- Here we use the assumptions that all rings have the same generators
+     -- This should contain the variables of polynomials
      ge := gens ring li#0;    
-     
+     print ge;
+
      S := F[ge];
      li2 := {}; ww:=F_0; local f;
      for i in 0..#li-1 do (
-	  -- rational coefficients:
 	  if lc#i == 2 then (
+	       -- rational coefficients: just map
 	       li2 = li2 | {sub (li#i,S)};
 	       )
 	  else (
+	       -- Was cyclotomic: need to find image of ww in new ring!
 	       f = map (S, ring li#i , (gens S) |{ww^(leastcm/lc#i)});
 	       li2 = li2 | { f li#i };
 	       );
@@ -135,7 +140,8 @@ findRootPower = R -> (
      -- Returns '2' if the input was a polynomial ring over QQ
      r := 0;
      F := coefficientRing R;
-     g := gens F;
+     fieldgens := (K,F) -> if K === F then {} else for x in gens last F.baseRings list promote(x,F);
+     g := fieldgens (QQ,F);
      if #g == 0 then return 2;
      if #g > 1 then error "The coefficient field has more than one generator";
      g = value (g#0);
