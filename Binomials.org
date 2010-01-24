@@ -73,7 +73,7 @@ monitor = () -> (
 		   )))))
 * For Imn compute the monomials, clarify the combinatorial structure !
 * The toric component should be treated seperately.
-* TODO TODOLIST [1/4]
+* TODO TODOLIST [1/6]
 ** TODO Study the Cellularity of binomial Quotients.  
 Currently, discovered in the BPD of component #20 of the ideal of 2x2 adjacent minors of a 5x5 matrix, it seems as if
 the operation binomial Quotient that is applied in the course of computing the minimal primary component may not
@@ -83,4 +83,7 @@ necessary condition of the input being cellular.
 ** DONE Make "removeRedundant" public
    CLOSED: [2009-12-07 Mon 12:23]   
 ** TODO Improve associated Primes to prune the list of monomials ! It is a poset !!
-** Maybe we should also use memoize when creating new instances of polynomial rings to avoid xcessive garbage collections
+** TODO Maybe we should also use memoize when creating new instances of polynomial rings to avoid xcessive garbage collections
+** TODO Improve binomialRadical of a general I
+We should simply run the cellular decomposition of the radical. Then take radicals of these cellular ideals and do
+something with them 
