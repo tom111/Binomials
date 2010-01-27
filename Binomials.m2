@@ -788,7 +788,8 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      -- but potentially extended coefficient ring !
 
      -- TODO: It could be faster by rearringing things in the m in ml
-     -- TODO: Pruning of list of monomials which are to search!
+
+     -- Innovation: Use memoize to speed up determination of the associated primes:
      
      R := ring I;
      scan (gens R, (v -> v = local v));
@@ -810,13 +811,18 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	  if #ml == 1 then << "1 monomial to consider for this cellular component " << endl
      	  else <<  #ml << " monomials to consider for this cellular component" << endl;
 	  );
-     
+
+     seenpc := new MutableHashTable;
+
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pC := {}; sat = {};
      for m in ml do (
 	  Im = I:m;
 	  pC = partialCharacter(Im, cellVariables=>cv);
+	  -- Skip if we already had this character
+	  if seenpc#?pC then continue
+	  else seenpc#pC = true;
 	  if pC#1 == 0 then (
 	       primes = primes | {ideal(0_R)}; 
 	       continue;

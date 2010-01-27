@@ -84,6 +84,7 @@ necessary condition of the input being cellular.
    CLOSED: [2009-12-07 Mon 12:23]   
 ** TODO Improve associated Primes to prune the list of monomials ! It is a poset !!
 In particular it should construct the partial order on the list and do some magic with Posets.m2
+Partial solution: Use a Hash to avoid repeating computations.
 ** TODO Maybe we should also use memoize when creating new instances of polynomial rings to avoid xcessive garbage collections
 ** TODO Improve binomialRadical of a general I
 We should simply run the cellular decomposition of the radical. Then take radicals of these cellular ideals and do
