@@ -848,7 +848,8 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      primes = primes / (I -> I + M);
 
      use R;
-     return toList set primes;
+     -- Computation of mingens is necessary as unique or toList + set combi won't do without
+     return unique (ideal \ mingens \ primes);
      )
 
 binomialAssociatedPrimes = I -> (
