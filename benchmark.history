@@ -1,4 +1,4 @@
---- 5.08.'09----
+6~--- 5.08.'09----
 309.705 seconds
 6.51301 seconds
 182.196 seconds
@@ -25,4 +25,8 @@
 3.19251 seconds
 93.4448 seconds
 2.14567 seconds
-
+-- 27.01.10 - Small improvement for associated Primes 
+192.487 seconds
+2.6676 seconds
+91.841 seconds
+2.04769 seconds
