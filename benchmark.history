@@ -1,4 +1,4 @@
-6~--- 5.08.'09----
+--- 5.08.'09----
 309.705 seconds
 6.51301 seconds
 182.196 seconds
@@ -30,3 +30,8 @@
 2.6676 seconds
 91.841 seconds
 2.04769 seconds
+-- 20.05.10 - MPIR vs. 2.0 and gcc-4.4.3
+193.57 seconds
+2.59561 seconds
+93.0529 seconds
+2.15967 seconds
