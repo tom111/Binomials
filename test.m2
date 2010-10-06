@@ -1,6 +1,6 @@
 -- Testsuite for Binomials
-load "Binomials.m2";
-load "Markov.m2";
+needsPackage "Binomials";
+needsPackage "Markov";
 
 -- nonradical CI
 R = markovRing(2,2,2,2); S = {{{1},{3},{2,4}},{{2},{4},{1,3}},{{3},{4},{1,2}}}; I = markovIdeal (R,S);

@@ -1,6 +1,6 @@
 -- Benchmark and Test Suite for Binomials.m2
-load "Binomials.m2"
-load "Markov.m2"
+needsPackage "Binomials"
+needsPackage "Markov"
 
 -- non-radical CI - ideal:
 R = markovRing(2,2,2,2);
