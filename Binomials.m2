@@ -1584,7 +1584,7 @@ document {
           "I" => { "a binomial ideal"} },
      Outputs => {
           "f" => {"true or false, depending on whether I is a binomial prime ideal"} },
-     "A binomial ideal is prime only if it is cellular. If the cellular variables",
+     "A binomial ideal is prime only if it is cellular. If the cellular variables ",
      "are known they can be given via the ", TO cellVariables, " option.",
      EXAMPLE {
 	  "R = QQ[x,y]",
@@ -1606,8 +1606,8 @@ document {
           "I" => { "a binomial ideal"} },
      Outputs => {
           "f" => {"true or false, depending on whether I is a binomial primary ideal"} },
-     "A binomial ideal is primary only if it is cellular. If the cellular variables",
-     "are known they can be given via the ", TO cellVariables, " option.", "If the ideal is not primary, ",
+     "A binomial ideal is primary only if it is cellular. If the cellular variables ",
+     "are known they can be given via the ", TO cellVariables, " option. ", "If the ideal is not primary, ",
      "either 'false' or two distinct associated primes can be returned. The behaviour can be changed using the options ",
      TO returnPrimes, " and ", TO returnPChars, ".",
      EXAMPLE {
