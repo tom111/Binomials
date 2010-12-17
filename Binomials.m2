@@ -399,8 +399,8 @@ makeBinomial = (R,m,c) -> (
      -- constructs the binomial associated to 
      -- exponent vector m and coefficient c in R
      var := gens R;
-     posmon :=1;
-     negmon :=1;
+     posmon :=1_R;
+     negmon :=1_R;
      for i in 0..#m-1 do (
      	  if m#i > 0 then (
 		    posmon = posmon * var#i^(m#i)
@@ -408,7 +408,7 @@ makeBinomial = (R,m,c) -> (
 	       else (
 		    negmon = negmon * var#i^(-m#i)
 		    );
-	       );	  
+	       );
      return posmon - c*negmon;
      )
 
@@ -614,14 +614,14 @@ binomialIsPrimary Ideal := Ideal => o -> I -> (
 		    ap2 := idealFromCharacter (S,satqchar#1,satqchar#2#0);
 		    use R;
 		    return {rad, ap2 + M};
-     	       	    )  
+     	       	    )
 	       else return false;
 	       );
 	  );
      use R;
      if o#returnPChars then return {pc};
      if o#returnPrimes then return {rad};
-     return true;	  
+     return true;
      )
 
 binomialIsPrime = method (Options => {cellVariables=>null})
@@ -914,6 +914,7 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
      if #apc == 1 then return I -- radical is only associated prime!
      else (
 	  R := ring I;
+	  CoeffR := coefficientRing R;
 	  -- A trick to not clobber the global variables
 	  scan (gens R, (v -> v = local v));
 	  
@@ -941,7 +942,7 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 	       	    if pc1#2#i == pc2#2#i then continue
 	       	    else (
 		    	 -- Character differs. Form binomial:
-		    	 b = makeBinomial (QQ[pc2#0], (entries transpose pc2#1)#i, pc2#2#i );
+		    	 b = makeBinomial (CoeffR[pc2#0], (entries transpose pc2#1)#i, pc2#2#i );
 		    	 break;
 		    	 );
 	       	    );
@@ -970,7 +971,7 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 		      i = i+1;
 		      );
      	         -- now i has the suitable index !
-		 b = makeBinomial(QQ[pc2#0], L2cols#i, pc2#2#i);		    
+		 b = makeBinomial(CoeffR[pc2#0], L2cols#i, pc2#2#i);
 	    	 -- Take the quotient of I with respect to b, such that the result is binomial
 	    	 return minimalPrimaryComponent (binomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
 	    	 );
@@ -1118,6 +1119,7 @@ cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- Here, contrary to what is stated in ES'96, we can not assume that J+P is cellular.
      -- However, since Hull only wants the minimal primary component we can cellularize!
      -- TODO: Can this be skipped in some cases to be predetermined?
+     use ring I;
      return pap / ( (P) -> minimalPrimaryComponent ( saturate (P + J , sub (ideal product cv, R)), cellVariables=>cv));
      )
 
