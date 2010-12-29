@@ -849,7 +849,8 @@ binomialAssociatedPrimes = I -> (
 
 
 cellularAssociatedLattices = I -> (
-     -- Computes the associated lattices of a cellular binomial ideal
+     -- Computes the some associated lattices of a cellular binomial ideal
+     -- WARNING: The definition might differ from that in the paper with Ezra Miller
      -- Todo: Can we get the multiplicities too ?
      
      R := ring I;
