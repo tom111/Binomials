@@ -38,6 +38,7 @@ export {
      -- 'Official' functions
      binomialPrimaryDecomposition,
      binomialCellularDecomposition,
+     binomialUnmixedDecomposition,
      binomialRadical,
      binomialMinimalPrimes,
      binomialAssociatedPrimes,
@@ -53,12 +54,14 @@ export {
      latticeBasisIdeal,
      -- cellular stuff:
      cellularBinomialAssociatedPrimes,
+     cellularBinomialUnmixedDecomposition,
      -- cellularAssociatedLattices,
      cellularBinomialPrimaryDecomposition,
      cellularBinomialRadical,
      -- simple wrappers:
      BPD,
      BCD,
+     BUD,
 --     BCDisPrimary,
      -- auxillary functions:
      partialCharacter,
@@ -477,7 +480,7 @@ saturatePChar = (va, A, c) -> (
      K := A // S;
      
      -- print K;
-     -- Now we find the (binomal) equations for the saturated character:
+     -- Now we find the (binomial) equations for the saturated character:
      numvars := numrows K;
      varlist := for i in 0..numvars-1 list value ("m"|i);
      scan (varlist, (v -> v = local v));
@@ -847,15 +850,15 @@ binomialAssociatedPrimes = I -> (
 	  );
      )
 
-
-cellularAssociatedLattices = I -> (
+cellularAssociatedLattices = method (Options => {cellVariables => null})
+cellularAssociatedLattices Ideal := Ideal => o -> I -> (
      -- Computes the some associated lattices of a cellular binomial ideal
      -- WARNING: The definition might differ from that in the paper with Ezra Miller
      -- Todo: Can we get the multiplicities too ?
      
      R := ring I;
      scan (gens R, (v -> v = local v));
-     cv := cellVars I; -- cell variables E
+     cv := cellVars(I, cellVariables=>o#cellVariables);
      lats := {}; -- This will hold the list of lattices
      ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
      -- print "Noncellvars"; print ncv;
@@ -1066,6 +1069,33 @@ binomialQuasiPower = (b,e) -> (
 
 BCD = I -> binomialCellularDecomposition I 
 BPD = I -> binomialPrimaryDecomposition I
+BUD = I -> binomialUnmixedDecomposition I
+
+binomialUnmixedDecomposition = method (Options => {verbose=>true})
+binomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
+     if not isBinomial I then error "Input was not binomial !";
+     vbopt := o#verbose;
+
+     if vbopt then print "Running cellular decomposition:";
+     cd := binomialCellularDecomposition (I, returnCellVars => true, verbose=>vbopt);
+     counter := 1;
+     cdc := #cd;
+     bud := {};
+     if vbopt then print "Decomposing cellular components:";
+     scan (cd , ( (i) -> (
+		    if vbopt then (
+	   	    	 print ("Decomposing cellular component: " | toString counter | " of " | toString cdc);
+		    	 counter = counter +1;);
+		    bud = bud | cellularBinomialUnmixedDecomposition (i#0, cellVariables => i#1,verbose=>vbopt);
+		    if vbopt then (
+			 print "done";
+			 );
+		    ) -- right hand side of lambda term
+	       ) -- lambda term
+    	  ); -- scan
+     if vbopt then print "Removing redundant components...";
+     return removeRedundant (bud, verbose=>vbopt );
+     )
 
 binomialPrimaryDecomposition = method (Options => {verbose=>true})
 binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
@@ -1099,6 +1129,32 @@ binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      if vbopt then print "Removing redundant components...";
      use ring I;
      return removeRedundant (bpd, verbose=>vbopt );
+     )
+
+cellularBinomialUnmixedDecomposition = method (Options => {cellVariables => null, verbose=>true}) 
+cellularBinomialUnmixedDecomposition Ideal := Ideal => o -> I -> ( 
+     -- computes the unmixed decomposition of a cellular ideal
+     -- I needs to be cellular. Cell variables can be given to speed up
+     -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
+     cv := null;
+     vbopt := o#verbose;
+     if o#cellVariables === null then cv = cellVars I
+     else cv = o#cellVariables;
+     ncv := toList (set gens ring I - cv);
+     al := cellularAssociatedLattices (I, cellVariables=>cv)
+     
+     ap = cellularBinomialAssociatedPrimes (I, cellVariables => cv,verbose=>vbopt);
+     -- Projecting down the assoc. primes, removing monomials
+     sub2apring := (v) -> (sub (v, ring ap#0));
+     proj := (II) -> eliminate (sub2apring \ ncv,II); 
+     pap := ap / proj ;
+     R := ring ap#0; -- All associated primes live in a common ring
+     J := sub (I,R); -- get I over there to compute sums
+     -- Here, contrary to what is stated in ES'96, we can not assume that J+P is cellular.
+     -- However, since Hull only wants the minimal primary component we can cellularize!
+     -- TODO: Can this be skipped in some cases to be predetermined?
+     use ring I;
+     return pap / ( (P) -> minimalPrimaryComponent ( saturate (P + J , sub (ideal product cv, R)), cellVariables=>cv));
      )
 
 cellularBinomialPrimaryDecomposition = method (Options => {cellVariables => null, verbose=>true}) 
