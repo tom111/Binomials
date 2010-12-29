@@ -838,6 +838,8 @@ binomialAssociatedPrimes = I -> (
 	  print "I will compute a primary decomposition and take radicals!";
 	  bpd := BPD I;
 	  print "Primary Decomposition found, taking radicals now:";
+	  -- TODO: Since binomialRadical tries to preserve the input ring this step 
+	  -- will actually change from ring I to 'ring bpd' on the user visible level.
 	  return binomialRadical \ bpd;
 	  )
      else (
