@@ -1152,7 +1152,7 @@ cellularBinomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
      al := for i in 0..#(aldata#1)-1 list (aldata#1#i, aldata#2#i);
      
      -- 1 Lattice: Unmixed
-     if #al == 1 then return I;
+     if #al == 1 then return {I};
 
      R := ring I;
      CoeffR := coefficientRing R;
