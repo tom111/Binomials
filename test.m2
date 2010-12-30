@@ -29,4 +29,11 @@ assert (intersect bpd == I);
 R = QQ[x,y,z]; I = ideal (x^2*y-z^2, x^2-z^3, y^4-1); bpd = BPD (I,verbose=>false);
 assert (intersect bpd == sub(I, ring bpd#0));
 
+-- Unmixed Decomposition
+R = QQ[x,y,z];
+I = ideal (x^2, y^2, x*y, x*(z^3-1), y*(z^2-1))
+bud = BUD I;
+assert(intersect bud == I)
+assert(dim \ flatten (associatedPrimes \ oo23) == {1,0,0,0})
+
 quit();
