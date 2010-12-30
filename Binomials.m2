@@ -23,12 +23,12 @@
 
 newPackage(
 	"Binomials",
-	Version => "0.5.4",
-	Date => "December 2009",
+	Version => "0.6",
+	Date => "December 2010",
 	Authors => {{
 		  Name => "Thomas Kahle",
 		  Email => "kahle@mis.mpg.de",
-		  HomePage => "http://personal-homepages.mis.mpg.de/kahle/bpd"}},
+		  HomePage => "http://www.thomas-kahle.de/bpd"}},
     	Headline => "Specialized routines for binomial Ideals",
 	Configuration => { },
     	DebuggingMode => true
@@ -1534,10 +1534,38 @@ document {
      }
 
 document {
+     Key => {binomialUnmixedDecomposition,
+	  (binomialUnmixedDecomposition, Ideal),
+	  [binomialUnmixedDecomposition, verbose] },
+     Headline => "Binomial Unmixed Decomposition",
+     Usage => "binomialUnmixedDecomposition I",
+     Inputs => {
+          "I" => { "a binomial ideal"} },
+     Outputs => {
+          "l" => {"a list of unmixed components of I"} },
+     "This routine returns an unmixed decomposition of a binomial ideal into binomial ideals.",
+     EXAMPLE {
+          "R = QQ[x,y,z]",
+          "I = ideal (x^2, x*y, y^2, x*(z^3-1), y*(z^2-1))",
+          "bud = binomialPrimaryDecomposition I",
+	  "intersect bud == I"
+          },
+     "A synonym for this function is 'BUD'.",
+     SeeAlso => BUD
+     }
+
+document {
      Key => BPD,
      Headline => "Binomial Primary Decomposition",
      "BPD is a synonym for binomialPrimaryDecomposition."
      }
+
+document {
+     Key => BUD,
+     Headline => "Binomial Unmixed Decomposition",
+     "BUD is a synonym for binomialUnmixedDecomposition."
+     }
+
 
 document {
      Key => {binomialCellularDecomposition,
@@ -1650,8 +1678,6 @@ document {
           },
      SeeAlso => {binomialMinimalPrimes,cellularBinomialAssociatedPrimes}
      }    
-
---     -- tests
 
 document {
      Key => {binomialIsPrime,
@@ -1844,6 +1870,26 @@ document {
      }    
 
 document {
+     Key => {cellularBinomialUnmixedDecomposition,
+	  (cellularBinomialUnmixedDecomposition,Ideal),
+	  [cellularBinomialUnmixedDecomposition,cellVariables]},
+     Headline => "Unmixed decomposition of a cellular binomial ideal",
+     Usage => "cellularBinomialUnmixedDecomposition I",
+     Inputs => {
+          "I" => { "a cellular binomial ideal"} },
+     Outputs => {
+          "l" => {"an unmixed decomposition of I"} },
+     "If the cell variables are known, they can be given via the option ", TO cellVariables, " otherwise they are computed.",
+     EXAMPLE {
+	  "R = QQ[x,y]",
+	  "I = ideal(x*(y^3-1),x^2)",
+	  "cv = isCellular (I,returnCellVars=>true)",
+	  "ud = cellularBinomialUmixedDecomposition (I,cellVariables=>cv)"
+          }
+     SeeAlso => binomialUnmixedDecomposition
+     }    
+
+document {
      Key => {partialCharacter,
 	  (partialCharacter,Ideal),
 	  [partialCharacter,cellVariables]},
@@ -1960,6 +2006,9 @@ document {
      Headline => "generate informative output",
      "If this option is set, functions will generate additional output. Defaults to true"
      }
+
+
+--     -- tests
 
 TEST ///
 R = QQ[a..f]
