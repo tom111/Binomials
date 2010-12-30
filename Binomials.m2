@@ -860,6 +860,7 @@ cellularAssociatedLattices Ideal := Ideal => o -> I -> (
      scan (gens R, (v -> v = local v));
      cv := cellVars(I, cellVariables=>o#cellVariables);
      lats := {}; -- This will hold the list of lattices
+     coeffs := {}; -- This will hold the values of the characters
      ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
      -- print "Noncellvars"; print ncv;
      ml := nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
@@ -877,6 +878,7 @@ cellularAssociatedLattices Ideal := Ideal => o -> I -> (
 	  pc = partialCharacter(Im, cellVariables=>cv);
 	  if #lats == 0 then (
 	       lats = {pc#1};
+	       coeffs = {pc#2};
 	       continue;
 	       )
 	  else (
@@ -886,9 +888,10 @@ cellularAssociatedLattices Ideal := Ideal => o -> I -> (
 	  if redundant then continue
 	  else (
 	       lats = lats | {pc#1};
+	       coeffs = coeffs | {pc#2};
 	       );
       	  ); -- for m in ml	    
-     return {cv, lats};
+     return {cv, lats, coeffs};
      ) -- CellularAssociatedLattices
 
 BCDisPrimary = I -> (
@@ -1141,20 +1144,74 @@ cellularBinomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
      if o#cellVariables === null then cv = cellVars I
      else cv = o#cellVariables;
      ncv := toList (set gens ring I - cv);
-     al := cellularAssociatedLattices (I, cellVariables=>cv)
      
-     ap = cellularBinomialAssociatedPrimes (I, cellVariables => cv,verbose=>vbopt);
-     -- Projecting down the assoc. primes, removing monomials
-     sub2apring := (v) -> (sub (v, ring ap#0));
-     proj := (II) -> eliminate (sub2apring \ ncv,II); 
-     pap := ap / proj ;
-     R := ring ap#0; -- All associated primes live in a common ring
-     J := sub (I,R); -- get I over there to compute sums
-     -- Here, contrary to what is stated in ES'96, we can not assume that J+P is cellular.
-     -- However, since Hull only wants the minimal primary component we can cellularize!
-     -- TODO: Can this be skipped in some cases to be predetermined?
-     use ring I;
-     return pap / ( (P) -> minimalPrimaryComponent ( saturate (P + J , sub (ideal product cv, R)), cellVariables=>cv));
+     -- Get the associated lattices (or better characters)
+     aldata := cellularAssociatedLattices (I, cellVariables=>cv);
+
+     -- We generate a list of pairs representing characters for the lattices:
+     al := for i in 0..#(aldata#1)-1 list (aldata#1#i, aldata#2#i);
+     
+     -- 1 Lattice: Unmixed
+     if #al == 1 then return I;
+
+     R := ring I;
+     CoeffR := coefficientRing R;
+          
+     -- Now find a chain among the associated lattices
+     -- but finite index containment is not sufficient.
+     -- We only need to check pairwise containments.
+     
+     pair := null;
+     for l1 in al do (
+	  for l2 in delete(l1,al) do (
+     	       if (isSubset (image l1#0, image l2#0)) and (rank image l1#0 < rank image l2#0) then (
+		    -- found a comparable pair and thus embedded primes:
+		    pair = (l1,l2);
+		    break;
+		    )
+	       )
+	  );
+     -- If no pair was found I is unmixed an we are done
+     if pair === null then return {I};
+     
+     l1 := pair#0;
+     l2 := pair#1;
+     -- Identify a lattice vector in l2, but not l1
+     L2cols := entries transpose l2#0;
+     i := 0; -- Counter to identify a generator
+     for col in L2cols do (
+	  imc := image transpose matrix {col};
+	  if rank intersect {imc, image l1#0} < 1 then (
+	       -- found a vector
+	       break;
+	       );
+	  -- Else keep going.
+	  i = i+1;
+	  );
+     -- now i contains a suitable index
+     b := sub(makeBinomial(CoeffR[cv], L2cols#i, l2#1#i), R);
+     
+     -- We can't follow Section 4.1 of Ojeda/Sanchez because there is no 
+     -- effictive criterion to decide that mb^[e] will never lie in I, no
+     -- matter how divisible e is.
+    
+     -- We take the approach of computing e_b by actually coloning.
+     -- Stop condition: Find a binomial b^[e] such that I:b^[e] = I:b^[e]^\infty
+     -- and is binomial.
+     
+     e :=1;
+     Itest := I:b;
+     while not ((isBinomial Itest) and ( Itest: binomialQuasiPower(b,e) == Itest)) do(
+	  e = e + 1;
+	  Itest = I:binomialQuasiPower (b,e);
+	  );
+     
+     -- Now we have the right quotient and the right quasi power.
+     -- So we start the recursion:
+     return flatten { 
+	  cellularBinomialUnmixedDecomposition (Itest, cellVariables=>cv),
+	  cellularBinomialUnmixedDecomposition (I+ ideal binomialQuasiPower (b,e), cellVariables=>cv)
+	  };
      )
 
 cellularBinomialPrimaryDecomposition = method (Options => {cellVariables => null, verbose=>true}) 
