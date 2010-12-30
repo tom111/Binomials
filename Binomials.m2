@@ -1,7 +1,7 @@
 -- -*- coding: utf-8 -*-
 --  Binomials.m2
 --
---  Copyright (C) 2009 Thomas Kahle <kahle@mis.mpg.de>
+--  Copyright (C) 2009,2010,2011 Thomas Kahle <kahle@mis.mpg.de>
 --
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 --
