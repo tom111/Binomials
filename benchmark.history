@@ -41,3 +41,13 @@ Benchmark history on my Thinkpad x61s:
 2.40936 seconds
 107.02 seconds
 2.0086 seconds
+-- 31.01.11 - Nothing changed from the last install, yet performance got worse:
+187.337 seconds
+2.66618 seconds
+134.57 seconds
+2.27706 seconds
+-- 31.01.11 - With new combinatorial Hull operation.
+179.673 seconds
+4.18678 seconds
+139.758 seconds
+2.57416 seconds

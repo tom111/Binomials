@@ -1,7 +1,7 @@
 -- -*- coding: utf-8 -*-
 --  Binomials.m2
 --
---  Copyright (C) 2009,2010,2011 Thomas Kahle <kahle@mis.mpg.de>
+--  Copyright (C) 2009-2011 Thomas Kahle <kahle@mis.mpg.de>
 --
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 --
@@ -23,8 +23,8 @@
 
 newPackage(
 	"Binomials",
-	Version => "0.6",
-	Date => "December 2010",
+	Version => "0.7",
+	Date => "January 2011",
 	Authors => {{
 		  Name => "Thomas Kahle",
 		  Email => "kahle@mis.mpg.de",
@@ -59,6 +59,7 @@ export {
      -- cellularAssociatedLattices,
      cellularBinomialPrimaryDecomposition,
      cellularBinomialRadical,
+     -- cellularEmbeddedLatticeWitnesses,
      -- simple wrappers:
      BPD,
      BCD,
@@ -93,7 +94,7 @@ export {
      }
 
 needsPackage "FourTiTwo";
-needsPackage "Cyclotomic"
+needsPackage "Cyclotomic";
 
 axisSaturate = (I,i) -> (
 -- By Ignacio Ojeda and Mike Stillman
@@ -471,6 +472,7 @@ saturatePChar = (va, A, c) -> (
      -- saturation has a list as third entry.  
      
      -- If the lattice is saturated, the character is saturated
+     -- Note that this shortcircuits all problems with c being non-constant.
      if image Lsat A == image A then (
 	  return (va, A, {c});
 	  );
@@ -895,6 +897,52 @@ cellularAssociatedLattices Ideal := Ideal => o -> I -> (
      return {cv, lats, coeffs};
      ) -- CellularAssociatedLattices
 
+cellularEmbeddedLatticeWitnesses = method (Options => {cellVariables => null})
+cellularEmbeddedLatticeWitnesses Ideal := Ideal => o -> I -> (
+     -- Given an ideal whose radical is prime this function will produce
+     -- witness monomials for embedded lattices.
+     -- Throw in these monomials to get rid of additional associated primes,
+     -- i.e. compute Hull.
+
+     R := ring I;
+     scan (gens R, (v -> v = local v));
+     cv := cellVars(I, cellVariables=>o#cellVariables);
+     witnesses := {};
+     lats := {}; -- This will hold the list of lattices
+     ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
+     -- print "Noncellvars"; print ncv;
+     ml := nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
+     -- Should be sorted by total degree to make the shortcut heuristics optimal.
+     ml = sort(ml, DegreeOrder=>Ascending);
+     -- Coercing to R:
+     ml = ml / ( m -> sub (m,R) );
+     -- A dummy ideal and partial Characters:
+     Im := ideal;
+     pc := {};
+     redundant := true;
+     bottomlattice := partialCharacter (I, cellVariables=>cv);
+     -- For each monomial, check if I:m has a different lattice !
+     for m in ml do (
+	  -- if m is divisible by another witness: skip
+	  redundant=false;
+	  for w in witnesses do (
+	       if m%w == 0_R then (
+		    redundant=true;
+		    break;
+		    );
+	       );
+	  if redundant then continue;
+	  Im = I:m;
+	  -- We already know the cell variables in the following computation
+	  pc = partialCharacter(Im, cellVariables=>cv);
+	  -- test if we have an embedded lattice at m:
+	  if (image pc#1 == image bottomlattice#1) then continue
+	  else witnesses = witnesses | {m};
+	  ); -- for m in ml
+     return witnesses;
+     ) -- cellularEmbeddedLatticeWitnesses
+
+
 BCDisPrimary = I -> (
      print "Computing Cellular Decomposition";
      cd := binomialCellularDecomposition I;
@@ -912,14 +960,26 @@ BCDisPrimary = I -> (
      return cd;
      )
 
+
 minimalPrimaryComponent = method (Options => {cellVariables => null})
 minimalPrimaryComponent Ideal := Ideal => o -> I -> (
      -- Input a cellular binomial ideal whose radical is prime.
      -- Ouptut, generators for Hull(I)
-     
+
      cv := cellVars(I, cellVariables=>o#cellVariables);
      if cv === false then error "Input to minimalPrimaryComponent was not cellular!";
-     
+
+     return I + ideal (cellularEmbeddedLatticeWitnesses (I, cellVariables=>cv));
+     )
+
+minimalPrimaryComponent2 = method (Options => {cellVariables => null})
+minimalPrimaryComponent2 Ideal := Ideal => o -> I -> (
+     -- Input a cellular binomial ideal whose radical is prime.
+     -- Ouptut, generators for Hull(I)
+
+     cv := cellVars(I, cellVariables=>o#cellVariables);
+     if cv === false then error "Input to minimalPrimaryComponent was not cellular!";
+
      apc := binomialIsPrimary (I, returnPChars=>true, cellVariables => cv);
      if #apc == 1 then return I -- radical is only associated prime!
      else (
@@ -927,10 +987,10 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 	  CoeffR := coefficientRing R;
 	  -- A trick to not clobber the global variables
 	  scan (gens R, (v -> v = local v));
-	  
+
      	  pc1 := apc#0;
 	  pc2 := apc#1;
-	 
+
 	  -- ap#0 and ap#1 correspond to 
 	  -- distinct lattices L1 and L2
 	  L1 := image pc1#1;
@@ -957,7 +1017,7 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
 		    	 );
 	       	    );
 	       -- Take the quotient of I with respect to b, such that the result is binomial
-	       return minimalPrimaryComponent (binomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
+	       return minimalPrimaryComponent2 (binomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
 	       )
        	   else (
 		-- The case of infinite index :
@@ -983,7 +1043,7 @@ minimalPrimaryComponent Ideal := Ideal => o -> I -> (
      	         -- now i has the suitable index !
 		 b = makeBinomial(CoeffR[pc2#0], L2cols#i, pc2#2#i);
 	    	 -- Take the quotient of I with respect to b, such that the result is binomial
-	    	 return minimalPrimaryComponent (binomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
+		 return minimalPrimaryComponent2 (binomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
 	    	 );
        	    use R;
 	    ) -- else path of if not binomialIsPrimary
