@@ -36,6 +36,12 @@ newPackage(
     	)
    
 export {
+     -- New axis saturation
+     axisSaturate4,
+     axisSaturate3,
+     axisSaturate2,
+     axisSaturate,
+     maxdivide,
      -- 'Official' functions
      binomialPrimaryDecomposition,
      binomialCellularDecomposition,
@@ -111,6 +117,64 @@ axisSaturate = (I,i) -> (
             SyzygyRows=>1,Syzygies=>true););
     {s-1, I}
     )
+
+axisSaturate3 = (I,i) -> (
+    R := ring I;
+    I1 := ideal(1_R);
+    s := 0;
+    f := R_i;
+    while not(I1 == I) do (
+	s = s + 1;
+	I1 = I;
+	I = I:f;);
+    return {s-1, I};
+    )
+
+axisSaturate4 = (I,i) -> (
+     R := ring I;
+     kk := coefficientRing R;
+     var := gens R;
+     -- make a list in which i comes last:
+     genew := append (remove (var, i) , var#i);
+     R' := kk[genew];
+     I' := sub (I, R');
+     
+     s:=0;
+     I1 := ideal(1_R');
+     x := sub(var#i,R');
+     while not (I1 == I') do (
+	  s = s+1;
+	  I1 = I';
+	  I' = ideal for f in flatten entries gens gb I' list if f%x == 0 then lift(f/x, ring f) else f;
+	  );
+     return (s, sub (I',R))
+     )
+
+maxdivide = (f, x) -> (
+     -- R := ring f;
+     -- div := f;
+     i := 1;
+     while f % x^i == 0 do (
+	  i = i+1;
+	  );
+     return (i-1, lift (f // x^(i-1), ring f))
+     )
+
+axisSaturate2 = (I,i) -> (
+     -- map I to a new ring in which i is the last variable:
+     R := ring I;
+     kk := coefficientRing R;
+     var := gens R;
+     -- make a list in which i comes last:
+     genew := append (remove (var, i) , var#i);
+     R' := kk[genew];
+     I' := sub (I, R');
+     groeb := flatten entries gens gb I';
+     groeb' := for g in groeb list maxdivide (g, sub(var#i,R'));
+     I'' := ideal for g in groeb' list g#1;
+     expo := max for g in groeb' list g#0;
+     return (expo, sub (I'',R))
+     )
 
 -- Cellular decomposition of binomial ideals:
 binomialCellularDecomposition = method (Options => {returnCellVars => false, verbose=>true})
