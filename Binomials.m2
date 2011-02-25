@@ -373,17 +373,15 @@ nonCellstdm = {cellVariables=>null} >> o -> I -> (
      CoeffR := coefficientRing R;
      S := CoeffR[ncv];
      J := kernel map (R/I,S); -- image of I in the subring S
-     Q := S/J; 
-     slist := flatten entries flatten basis Q;
      use R;
-     return slist;
+     return basis (S/J);
      )
 
 maxNonCellstdm = {cellVariables=>null} >> o -> I -> (
      -- Extracts the maximal elements in the set of monomials 
      cv := cellVars(I, cellVariables=>o#cellVariables);
 
-     nm := nonCellstdm (I,cellVariables=>cv);
+     nm := flatten entries nonCellstdm (I,cellVariables=>cv);
      -- print nm;
      result := {};
      maxel := 0;
@@ -779,9 +777,10 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
           
      primes := {}; -- This will hold the list of primes
      ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
-     ml := nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
+     stdm := nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
      -- mapping to R:
-     ml = ml / ( m -> sub (m,R) );
+     f := map (R, ring stdm);
+     ml := flatten entries f stdm;
      
      if o#verbose then(
 	  if #ml == 1 then << "1 monomial to consider for this cellular component " << endl
@@ -866,9 +865,12 @@ cellularAssociatedLattices Ideal := Ideal => o -> I -> (
      coeffs := {}; -- This will hold the values of the characters
      ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
      -- print "Noncellvars"; print ncv;
-     ml := nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
+     ml := flatten entries nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
      -- Coercing to R:
-     ml = ml / ( m -> sub (m,R) );
+     f := map (R, ring ml#0);
+     -- old and slow sub
+     -- ml = ml / ( m -> sub (m,R) );
+     ml = ml/f;
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pc := {};
@@ -911,11 +913,12 @@ cellularEmbeddedLatticeWitnesses Ideal := Ideal => o -> I -> (
      lats := {}; -- This will hold the list of lattices
      ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
      -- print "Noncellvars"; print ncv;
-     ml := nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
+     ml := flatten entries nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
      -- Should be sorted by total degree to make the shortcut heuristics optimal.
      ml = sort(ml, DegreeOrder=>Ascending);
      -- Coercing to R:
-     ml = ml / ( m -> sub (m,R) );
+     f := map (R, ring ml#0);
+     ml = ml / f;
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pc := {};
