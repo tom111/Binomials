@@ -1592,7 +1592,7 @@ document {
           "bpd = binomialPrimaryDecomposition I",
 	  "intersect bpd == I"
           },
-     "A synonym for this function is 'BPD'.",
+     "A synonym for this function is ", TO BPD, ".",
      Caveat => {"Note that if the coefficient field needs to be extended, strange things can happen"},
      SeeAlso => BPD
      }
@@ -1614,20 +1614,20 @@ document {
           "bud = binomialUnmixedDecomposition I",
 	  "intersect bud == I"
           },
-     "A synonym for this function is 'BUD'.",
+     "A synonym for this function is ", TO BUD, ".",
      SeeAlso => BUD
      }
 
 document {
      Key => BPD,
      Headline => "Binomial Primary Decomposition",
-     "BPD is a synonym for binomialPrimaryDecomposition."
+     "BPD is a synonym for ", TO binomialPrimaryDecomposition, "."
      }
 
 document {
      Key => BUD,
      Headline => "Binomial Unmixed Decomposition",
-     "BUD is a synonym for binomialUnmixedDecomposition."
+     "BUD is a synonym for ", TO binomialUnmixedDecomposition, "."
      }
 
 
@@ -1914,7 +1914,8 @@ document {
 document {
      Key => {cellularBinomialPrimaryDecomposition,
 	  (cellularBinomialPrimaryDecomposition,Ideal),
-	  [cellularBinomialPrimaryDecomposition,cellVariables]},
+	  [cellularBinomialPrimaryDecomposition,cellVariables],
+	  [cellularBinomialPrimaryDecomposition,verbose]},
      Headline => "Primary decomposition of a cellular binomial ideal",
      Usage => "cellularBinomialPrimaryDecomposition I",
      Inputs => {
@@ -1936,7 +1937,8 @@ document {
 document {
      Key => {cellularBinomialUnmixedDecomposition,
 	  (cellularBinomialUnmixedDecomposition,Ideal),
-	  [cellularBinomialUnmixedDecomposition,cellVariables]},
+	  [cellularBinomialUnmixedDecomposition,cellVariables],
+	  [cellularBinomialUnmixedDecomposition,verbose]},
      Headline => "Unmixed decomposition of a cellular binomial ideal",
      Usage => "cellularBinomialUnmixedDecomposition I",
      Inputs => {
