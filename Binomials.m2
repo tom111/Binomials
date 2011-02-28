@@ -2073,11 +2073,10 @@ document {
 
 
 --     -- tests
-
 TEST ///
 R = QQ[a..f]
 I = ideal(b*c-d*e,b*e*f-a*c,a*d*f-d*e,a*b*f-c*d,d^2*e-e,a*d*e-d*e,a*c*e-d*f) 
-time bpd = BPD I;
+bpd = BPD I;
 assert (intersect bpd == sub(I,ring bpd#0))
 ///
 
@@ -2095,4 +2094,27 @@ I = ideal (U00*R01-R00*U10,R01*D11-D01*R00,D11*L10-L11*D01,
 	   D12*L11-L12*D02,L11*U01-U11*L12);
 bpd = BPD I;
 assert (intersect bpd == I)
+///
+
+TEST ///
+R = QQ[a..h]
+I = ideal(d*g*h-e*g*h,a*b*g-c*f*h,a*b*c-e*g*h,c*f*h^2-d*f,e^2*g*h-d*h,b*d*f*h-c*g,a*d*f*g-c*e,b*c*e*g-a*f,a*b*e*f-c*d);
+bpd = binomialPrimaryDecomposition (I,verbose=>false);
+assert (intersect bpd == I); 
+///
+
+TEST ///
+-- Cyclotomic stuff
+R = QQ[x,y,z]; I = ideal (x^2*y-z^2, x^2-z^3, y^4-1); 
+bpd = BPD (I,verbose=>false);
+assert (intersect bpd == sub(I, ring bpd#0));
+///
+
+TEST ///
+-- Unmixed Decomposition
+R = QQ[x,y,z];
+I = ideal (x^2, y^2, x*y, x*(z^3-1), y*(z^2-1))
+bud = BUD (I, verbose=>false);
+assert(intersect bud == I);
+assert(dim \ flatten (associatedPrimes \ bud) == {1,0,0,0})
 ///
