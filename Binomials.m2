@@ -67,13 +67,13 @@ export {
 --     BCDisPrimary,
      -- auxillary functions:
      partialCharacter,
+     idealFromCharacter,  -- should be renamed to ideal once M2 supports this
      randomBinomialIdeal,
      removeRedundant,
      -- Not in the interface:
 --     axisSaturate,
 --     cellVars,
 --     Lsat,
---     idealFromCharacter,
 --     saturatePChar,
 --     satIdeals,
 --     nonCellstdm,
@@ -424,39 +424,41 @@ makeBinomial = (R,m,c) -> (
      return posmon - c*negmon;
      )
 
-idealFromCharacter = (R,A,c) -> (
+idealFromCharacter = method();
+idealFromCharacter (Ring, PartialCharacter) := Ideal => (R, pc) -> (
      -- Constructs the lattice Ideal I_+(c) in R
      -- R is a ring in which the ideal is returned
      -- The columns of A should contain exponent vectors of generators
      -- The vector c contains the corresponding coefficients which must lie
-     -- in the coefficient ring of R !!!
+     -- in the coefficient ring of R.
      
      use R;
      var := gens R;
-     if A == 0 then return ideal 0_R;
+     if pc#"L" == 0 then return ideal 0_R;
      cols := null;
      binomials :=null;
+     c:= null;
      
      idmat := matrix mutableIdentity(ZZ,#var);
-     if A == idmat then (
+     if pc#"L" == idmat then (
 	  -- If A is the unit matrix we are lucky,
 	  -- no saturation is needed.
 
 	  -- We coerce the coefficients to R:
-	  c = apply (c, a -> (sub (a,R)));
-     	  cols = entries transpose A;    
-     	  binomials = for i in 0..numcols A-1 list makeBinomial (R,cols#i, c#i);	  
+	  c = apply (pc#"c", a -> (sub (a,R)));
+     	  cols = entries transpose pc#"L";
+     	  binomials = for i in 0..numcols(pc#"L")-1 list makeBinomial (R,cols#i, c#i);	  
 	  return ideal binomials
 	  )
-     else if set c === set {1} then (
+     else if set pc#"c" === set {1} then (
 	  -- all coefficients are one, we can use 4ti2.
-	  return toricMarkov (transpose A, R, InputType => "lattice");
+	  return toricMarkov (transpose pc#"L", R, InputType => "lattice");
 	  )
      else (
      	  -- The general case, fall back to saturation in M2:
-	  c = apply (c, a -> (sub (a,R)));
-     	  cols = entries transpose A;    
-     	  binomials = for i in 0..numcols A-1 list makeBinomial (R,cols#i, c#i);
+	  c = apply (pc#"c", a -> (sub (a,R)));
+     	  cols = entries transpose pc#"L";    
+     	  binomials = for i in 0..numcols(pc#"L")-1 list makeBinomial (R,cols#i, c#i);
      	  return saturate (ideal binomials, product var);
 	  );
      )
@@ -495,7 +497,7 @@ saturatePChar = (pc) -> (
      varlist := for i in 0..numvars-1 list value ("m"|i);
      scan (varlist, (v -> v = local v));
      Q := QQ[varlist];
-     eqs := idealFromCharacter(Q,K,pc#"c");
+     eqs := idealFromCharacter (Q, (new PartialCharacter from {"J"=>gens Q, "L"=>K, "c"=>pc#"c"}));
      
      result := binomialSolve eqs;
      r := #result;
@@ -515,10 +517,7 @@ satIdeals = (pc) -> (
      F := ring satpc#0#"c"#0;
      if F === ZZ then F = QQ;
      Q := F[satpc#0#"J"];
-     satideals := apply (satpc , (spc) -> (
-	       -- print {Q, satpc#0#"L", spc#"c"};
-	       idealFromCharacter(Q,satpc#0#"L",spc#"c")));
-     return satideals;
+     return for s in satpc list idealFromCharacter (Q, s);
      )
 
 binomialRadical = I -> (
@@ -596,8 +595,8 @@ binomialIsPrimary Ideal := Ideal => o -> I -> (
      	       F := ring satpc#0#"c"#0;
      	       S := F[satpc#0#"J"];
 	       M = sub(M,S);
-	       ap1 := idealFromCharacter (S,satpc#0#"L",satpc#0#"c") + M;
-	       ap2 := idealFromCharacter (S,satpc#0#"L",satpc#1#"c") + M;
+	       ap1 := idealFromCharacter (S,satpc) + M;
+	       ap2 := idealFromCharacter (S,satpc) + M;
 	       -- Return two distinct associated primes:
 	       use R;
 	       return {ap1,ap2};
@@ -628,7 +627,7 @@ binomialIsPrimary Ideal := Ideal => o -> I -> (
 		    F := ring satqchar#0#"c"#0;
      	       	    S := F[satqchar#0#"J"];
 	       	    M = sub(M,S);
-		    ap2 := idealFromCharacter (S,satqchar#0#"L",satqchar#0#"c");
+		    ap2 := idealFromCharacter (S, satqchar);
 		    use R;
 		    return {rad, ap2 + M};
      	       	    )
@@ -1605,7 +1604,7 @@ document {
           "bpd = binomialPrimaryDecomposition I",
 	  "intersect bpd == I"
           },
-     "A synonym for this function is ", TO BPD, ".",
+     "A synonym for this function is 'BPD'.",
      Caveat => {"Note that if the coefficient field needs to be extended, strange things can happen"},
      SeeAlso => BPD
      }
@@ -1627,20 +1626,20 @@ document {
           "bud = binomialUnmixedDecomposition I",
 	  "intersect bud == I"
           },
-     "A synonym for this function is ", TO BUD, ".",
+     "A synonym for this function is 'BUD'.",
      SeeAlso => BUD
      }
 
 document {
      Key => BPD,
      Headline => "Binomial Primary Decomposition",
-     "BPD is a synonym for ", TO binomialPrimaryDecomposition, "."
+     "BPD is a synonym for binomialPrimaryDecomposition."
      }
 
 document {
      Key => BUD,
      Headline => "Binomial Unmixed Decomposition",
-     "BUD is a synonym for ", TO binomialUnmixedDecomposition, "."
+     "BUD is a synonym for binomialUnmixedDecomposition."
      }
 
 
@@ -1927,8 +1926,7 @@ document {
 document {
      Key => {cellularBinomialPrimaryDecomposition,
 	  (cellularBinomialPrimaryDecomposition,Ideal),
-	  [cellularBinomialPrimaryDecomposition,cellVariables],
-	  [cellularBinomialPrimaryDecomposition,verbose]},
+	  [cellularBinomialPrimaryDecomposition,cellVariables]},
      Headline => "Primary decomposition of a cellular binomial ideal",
      Usage => "cellularBinomialPrimaryDecomposition I",
      Inputs => {
@@ -1950,8 +1948,7 @@ document {
 document {
      Key => {cellularBinomialUnmixedDecomposition,
 	  (cellularBinomialUnmixedDecomposition,Ideal),
-	  [cellularBinomialUnmixedDecomposition,cellVariables],
-	  [cellularBinomialUnmixedDecomposition,verbose]},
+	  [cellularBinomialUnmixedDecomposition,cellVariables]},
      Headline => "Unmixed decomposition of a cellular binomial ideal",
      Usage => "cellularBinomialUnmixedDecomposition I",
      Inputs => {
@@ -2085,12 +2082,29 @@ document {
      }
 
 
+document {
+     Key => PartialCharacter,
+     Headline => "the class of all partial characters",
+     
+     "In ", TO Binomials , " the partial character of a cellular binomial ideal is given as an object of class,", TT "PartialCharacter", "which is
+     given with the following three descriptions:",
+     
+     UL {
+	  {"J the cellular variables"},
+	  {"L a matrix whose colmns are generators for the lattice"},
+	  {"c the values that the character takes on the generator"},
+    
+         }
+        
+     }
+
+
 --     -- tests
 
 TEST ///
 R = QQ[a..f]
 I = ideal(b*c-d*e,b*e*f-a*c,a*d*f-d*e,a*b*f-c*d,d^2*e-e,a*d*e-d*e,a*c*e-d*f) 
-time bpd = BPD I;
+bpd = BPD I;
 assert (intersect bpd == sub(I,ring bpd#0))
 ///
 
