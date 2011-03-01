@@ -90,7 +90,10 @@ export {
      returnPrimes, -- for binomialIsPrimary 
      returnPChars, -- for binomialIsPrimary
      returnCellVars, -- for binomialCellularDecomposition
-     verbose -- produce more output
+     verbose, -- produce more output
+     
+     --Types
+     PartialCharacter--HashTable
      }
 
 needsPackage "FourTiTwo";
@@ -204,6 +207,9 @@ cellVars Ideal := Ideal => o -> I -> (
      else return ((i) -> sub(i, ring I)) \ o#cellVariables;
      )
 
+PartialCharacter = new Type of HashTable;
+     --Setting up the PartialCharacter Type
+
 partialCharacter = method (Options => {cellVariables => null})
 partialCharacter Ideal := Ideal => o -> I -> (
      -- Will compute the partial character associated to a cellular binomial Ideal.
@@ -225,7 +231,7 @@ partialCharacter Ideal := Ideal => o -> I -> (
      -- If there are no cellular variables, 
      -- the ideal is monomial and the partial character is zero:
      if cv == {} then (
-	  return ({}, matrix "0", {1});
+	  return new PartialCharacter from {"J"=>{}, "L"=>matrix "0", "c"=>{1}};
 	  );
      
      -- We need to construct this ring to properly extract coefficients below
@@ -244,7 +250,7 @@ partialCharacter Ideal := Ideal => o -> I -> (
      if ( II == 0 ) then (
 	  for i in cv do vs = vs | { 0_ZZ };
 	  cl = {1_ZZ};
-	  return (cv, transpose matrix {vs}, cl);
+	  return new PartialCharacter from {"J"=>cv, "L"=>transpose matrix {vs}, "c"=>cl};
 	  );
      
      -- So, II is not zero:
@@ -280,10 +286,13 @@ partialCharacter Ideal := Ideal => o -> I -> (
 	  );
      
      use R;
-     return (cv, transpose matrix vs , cl);
+     
+
+     
+     return (new PartialCharacter from {"J"=>cv, "L"=> transpose matrix vs , "c"=>cl});
      )
 
-randomBinomialIdeal = (R,numge,maxdeg, maxwidth, homog) -> (
+randomBinomialIdeal = (R,numge,maxdeg, maxwidth, homog) -> (	 
      -- Generate 'random' ideals for testing purposes. The distribution is completely heuristic and designed to serve
      -- internal purposes 
      -- Inputs: a ring R, the number of generators numgen, the maximal degree of each variable maxded,
@@ -465,20 +474,20 @@ latticeBasisIdeal = (R,L) -> (
      return ideal binomials;
      )
 
-saturatePChar = (va, A, c) -> (
+saturatePChar = (pc) -> (
      -- This function saturates a partial character.  A saturated character is distinguished from its saturation as the
      -- saturation has a list as third entry.  
      
      -- If the lattice is saturated, the character is saturated
      -- Note that this shortcircuits all problems with c being non-constant.
-     if image Lsat A == image A then (
-	  return (va, A, {c});
+     if image Lsat pc#"L" == image pc#"L" then (
+	  return (pc);
 	  );
      
      -- The saturated lattice
-     S := Lsat(A);
+     S := Lsat(pc#"L");
      -- The coefficient matrix :
-     K := A // S;
+     K := pc#"L" // S;
      
      -- print K;
      -- Now we find the (binomial) equations for the saturated character:
@@ -486,25 +495,29 @@ saturatePChar = (va, A, c) -> (
      varlist := for i in 0..numvars-1 list value ("m"|i);
      scan (varlist, (v -> v = local v));
      Q := QQ[varlist];
-     eqs := idealFromCharacter(Q,K,c);
+     eqs := idealFromCharacter(Q,K,pc#"c");
      
      result := binomialSolve eqs;
-     return (va, S, result);
+     r := #result;
+     i := 0;
+     
+     return(for i from 0 to r-1 list(
+	  new PartialCharacter from {"J" => pc#"J", "L" => S, "c" => result#i}));
      )
 
-satIdeals = (va, A, d) -> (
+satIdeals = (pc) -> (
      -- Computes all the ideals belonging to saturations of  
      -- a given partial character.
-     satpc := saturatePChar(va, A, d);
-     scan (satpc#0, (v -> v = local v));     
+     satpc := saturatePChar(pc);
+     scan (satpc#0#"J", (v -> v = local v));     
      -- The following should be the smallest ring containing all new
      -- coefficients but not smaller than QQ
-     F := ring satpc#2#0#0;
+     F := ring satpc#0#"c"#0;
      if F === ZZ then F = QQ;
-     Q := F[satpc#0];
-     satideals := apply (satpc#2 , (c) -> (
-	       -- print {Q, satpc#1, c};
-	       idealFromCharacter(Q,satpc#1,c)));
+     Q := F[satpc#0#"J"];
+     satideals := apply (satpc , (spc) -> (
+	       -- print {Q, satpc#0#"L", spc#"c"};
+	       idealFromCharacter(Q,satpc#0#"L",spc#"c")));
      return satideals;
      )
 
@@ -530,7 +543,7 @@ cellularBinomialRadical Ideal := Ideal => o -> I -> (
      scan (gens R, (v -> v = local v));
      -- Get the partial character of I
      pc := partialCharacter(I, cellVariables=>cv);
-     noncellvars := toList(set (gens R) - pc#0);
+     noncellvars := toList(set (gens R) - pc#"J");
      	       
      M := sub (ideal (noncellvars),R);
      
@@ -572,19 +585,19 @@ binomialIsPrimary Ideal := Ideal => o -> I -> (
      rad := prerad + M;
      
      -- If the partial character is not saturated, the radical is not prime
-     if image Lsat pc#1 != image pc#1 then (
+     if image Lsat pc#"L" != image pc#"L" then (
 	  print "The radical is not prime, as the character is not saturated";
 	  satpc := saturatePChar pc;
 	  if o#returnPChars then (
 	       -- This one is the fastest, so check it first
-	       return {{satpc#0,satpc#1,satpc#2#0}, {satpc#0,satpc#1,satpc#2#1}}
+	       return {{satpc#0#"J",satpc#0#"L",satpc#0#"c"}, {satpc#0#"J",satpc#0#"L",satpc#1#"c"}}
 	       );
 	  if o#returnPrimes then (
-     	       F := ring satpc#2#0#0;
-     	       S := F[satpc#0];
+     	       F := ring satpc#0#"c"#0;
+     	       S := F[satpc#0#"J"];
 	       M = sub(M,S);
-	       ap1 := idealFromCharacter (S,satpc#1,satpc#2#0) + M;
-	       ap2 := idealFromCharacter (S,satpc#1,satpc#2#1) + M;
+	       ap1 := idealFromCharacter (S,satpc#0#"L",satpc#0#"c") + M;
+	       ap2 := idealFromCharacter (S,satpc#0#"L",satpc#1#"c") + M;
 	       -- Return two distinct associated primes:
 	       use R;
 	       return {ap1,ap2};
@@ -609,13 +622,13 @@ binomialIsPrimary Ideal := Ideal => o -> I -> (
 	       -- creating some local names:
 	       satqchar := saturatePChar partialCharacter (q,cellVariables=>cv);
 	       if o#returnPChars then(
-		    return {pc, {satqchar#0,satqchar#1,satqchar#2#0}}
+		    return {pc, {satqchar#0#"J",satqchar#0#"L",satqchar#0#"c"}}
 		    );
 	       if o#returnPrimes then (
-		    F := ring satqchar#2#0#0;
-     	       	    S := F[satqchar#0];
+		    F := ring satqchar#0#"c"#0;
+     	       	    S := F[satqchar#0#"J"];
 	       	    M = sub(M,S);
-		    ap2 := idealFromCharacter (S,satqchar#1,satqchar#2#0);
+		    ap2 := idealFromCharacter (S,satqchar#0#"L",satqchar#0#"c");
 		    use R;
 		    return {rad, ap2 + M};
      	       	    )
@@ -647,7 +660,7 @@ binomialIsPrime Ideal := Ideal => o -> I -> (
      	  );
 
      -- Is the partial character saturated ???     
-     if image Lsat pc#1 != image pc#1 then return false;
+     if image Lsat pc#"L" != image pc#"L" then return false;
      
      -- all tests passed:
      return true;
@@ -713,7 +726,7 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
 	  ME := ideal(toList(set (gens R) - a#1));
 	  pc := partialCharacter (a#0, cellVariables=>a#1);
 	  -- Check whether we have a radical ideal already:
-	  if image Lsat pc#1 == image pc#1 then (
+	  if image Lsat pc#"L" == image pc#"L" then (
 	       si = {a#0};
 	       )
 	  else (
@@ -798,11 +811,11 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	  -- Skip if we already had this character
 	  if seenpc#?pC then continue
 	  else seenpc#pC = true;
-	  if pC#1 == 0 then (
+	  if pC#"L" == 0 then (
 	       primes = primes | {ideal(0_R)}; 
 	       continue;
 	       );
-	  if image Lsat pC#1 == image pC#1 then (
+	  if image Lsat pC#"L" == image pC#"L" then (
 	       sat = {Im};
 	       )
 	  else (
@@ -882,18 +895,18 @@ cellularAssociatedLattices Ideal := Ideal => o -> I -> (
 	  -- We already know the cell variables in the following computation
 	  pc = partialCharacter(Im, cellVariables=>cv);
 	  if #lats == 0 then (
-	       lats = {pc#1};
-	       coeffs = {pc#2};
+	       lats = {pc#"L"};
+	       coeffs = {pc#"c"};
 	       continue;
 	       )
 	  else (
 	       redundant = false;
-	       scan (lats, (l -> (if image l == image pc#1 then redundant = true)))
+	       scan (lats, (l -> (if image l == image pc#"L" then redundant = true)))
      	       );
 	  if redundant then continue
 	  else (
-	       lats = lats | {pc#1};
-	       coeffs = coeffs | {pc#2};
+	       lats = lats | {pc#"L"};
+	       coeffs = coeffs | {pc#"c"};
 	       );
       	  ); -- for m in ml	    
      return {cv, lats, coeffs};
@@ -939,7 +952,7 @@ cellularEmbeddedLatticeWitnesses Ideal := Ideal => o -> I -> (
 	  -- We already know the cell variables in the following computation
 	  pc = partialCharacter(Im, cellVariables=>cv);
 	  -- test if we have an embedded lattice at m:
-	  if (image pc#1 == image bottomlattice#1) then continue
+	  if (image pc#"L" == image bottomlattice#"L") then continue
 	  else witnesses = witnesses | {m};
 	  ); -- for m in ml
      return witnesses;
@@ -1094,18 +1107,18 @@ binomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
 	  pc = partialCharacter (quot, cellVariables=>cv);
 	  	  
 	  --determine whether the exponents of b are in the saturated lattice
-	  if isSubset (bexpim, image Lsat pc#1) then (
+	  if isSubset (bexpim, image Lsat pc#"L") then (
      	       U' = U' | {m};
 	       i := 1;
 	       -- Computing the order of bexp in Lsat / L
 	       while true do (
-		    if isSubset (image transpose matrix {i * bexp} , image pc#1) then (
+		    if isSubset (image transpose matrix {i * bexp} , image pc#"L") then (
 			 D = D | {i};
 			 break;
 			 )
 		    else i = i+1;
 		    );
-	       -- print ("The order of " | toString bexp | "in " | toString image pc#1 | "is " | toString i);
+	       -- print ("The order of " | toString bexp | "in " | toString image pc#"L" | "is " | toString i);
 	       -- print D;
 	       );
 	  ); -- loop over monomials
@@ -1964,9 +1977,7 @@ document {
      Inputs => {
           "I" => { "a cellular binomial ideal"} },
      Outputs => {
-          "cv" => {"the cellular variables"},
-	  "L" => {"A matrix whose columns are generators for the lattice supporting the character"},
-	  "c" => {"The values that the character takes on the generator"}},
+          "pc" => {"the ", TO PartialCharacter, }},
      "If the cell variables are known, they can be given via the option ", TO cellVariables, " otherwise they are computed.",
      EXAMPLE {
 	  "R = QQ[x,y]",
@@ -2075,10 +2086,11 @@ document {
 
 
 --     -- tests
+
 TEST ///
 R = QQ[a..f]
 I = ideal(b*c-d*e,b*e*f-a*c,a*d*f-d*e,a*b*f-c*d,d^2*e-e,a*d*e-d*e,a*c*e-d*f) 
-bpd = BPD I;
+time bpd = BPD I;
 assert (intersect bpd == sub(I,ring bpd#0))
 ///
 
