@@ -345,18 +345,22 @@ randomBinomialIdeal = (R,numge,maxdeg, maxwidth, homog) -> (
      )
 
 isBinomial = I -> (
-     ge := flatten entries gens I;
+     -- Checking binomiality is only proper with a gb.
+     ge := flatten entries gens gb I;
+     isBinomial:=true;
      for g in ge do (
-          if #(terms g) > 2 then return false;	  
+          if #(terms g) > 2 then return false;
 	  );
      return true;
      )
 
 isPureDifference = I -> (
-     ge := flatten entries gens I;
+     -- Here we do allow monomials, because our algorithm also works
+     -- for pure difference + monomials
+     ge := flatten entries gens gb I;
      for g in ge do (
 	  coeffs := sort flatten entries (coefficients g)#1;
-     	  if coeffs == {1} then continue;
+	  if coeffs == {1} then continue;
 	  if coeffs == { -1} then continue;
 	  if coeffs == { -1 , 1} then continue;
 	  return false;
