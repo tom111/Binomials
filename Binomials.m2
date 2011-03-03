@@ -204,7 +204,8 @@ cellVars Ideal := Ideal => o -> I -> (
 	  for i in gens ring I do if saturate (I,i) != substitute(ideal(1), ring I) then cv=cv|{i};
 	  return cv;
 	  )
-     else return ((i) -> sub(i, ring I)) \ o#cellVariables;
+--     else return ((i) -> sub(i, ring I)) \ o#cellVariables;
+     else return o#cellVariables;
      )
 
 PartialCharacter = new Type of HashTable;
@@ -384,19 +385,17 @@ nonCellstdm = {cellVariables=>null} >> o -> I -> (
      )
 
 maxNonCellstdm = {cellVariables=>null} >> o -> I -> (
-     -- Extracts the maximal elements in the set of monomials 
-     cv := cellVars(I, cellVariables=>o#cellVariables);
+     -- Computes the maximal monomials in the non-cellular variables
 
+     cv := cellVars(I, cellVariables=>o#cellVariables);
      nm := flatten entries nonCellstdm (I,cellVariables=>cv);
-     -- print nm;
+     -- The following code extracts the maximal elements in a list of monomials 
      result := {};
      maxel := 0;
      while nm != {} do (
      	  maxel = max nm;
-     
           -- Add maxel to the result
       	  result = result | {maxel};
-
           -- Delete everyone who is dividing maxel     
      	  nm = for m in nm list (if maxel // m != 0 then continue; m);
      );
@@ -600,7 +599,10 @@ binomialIsPrimary Ideal := Ideal => o -> I -> (
      -- standard monomials. 
      
      -- The list of maximally standard monomials:
-     maxstdmon := maxNonCellstdm (I,cellVariables=>cv) / (i -> sub (i,R));
+     maxlist := maxNonCellstdm (I,cellVariables=>cv);
+     -- need to map to R to do colons with I
+     f := map (R, ring maxlist#0);
+     maxstdmon := maxlist / f;
      
      for m in maxstdmon do (
 	  q := I:m;
@@ -808,13 +810,15 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	       -- If the coefficientRing is QQ, we map back to R
 	       F := coefficientRing ring sat#0;
 	       if F === QQ then (
-		    sat = sat / ((p) -> sub(p,R));
+		    f = map (R, ring sat#0);
+		    sat = sat / f ;
 		    )
 	       else (
 		    -- otherwise to the extended ring
 		    -- this is necessary since satIdeals does not know about the non-cell variables
 		    S := F monoid R;
-		    sat = sat / ((p) -> sub(p,S));
+		    f = map (S, ring sat#0);
+		    sat = sat / f;
 		    );
 	       );
 	  primes = primes | sat;
@@ -863,8 +867,6 @@ cellularAssociatedLattices Ideal := Ideal => o -> I -> (
      ml := flatten entries nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
      -- Coercing to R:
      f := map (R, ring ml#0);
-     -- old and slow sub
-     -- ml = ml / ( m -> sub (m,R) );
      ml = ml/f;
      -- A dummy ideal and partial Characters:
      Im := ideal;
@@ -1062,8 +1064,9 @@ binomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
      ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
  
      --Transporting the standardmonomials to R:
-     ncvm := (i -> sub (i,R) ) \ nonCellstdm (I,cellVariables=>cv) ;
-     -- print ncvm;
+     stdm := nonCellstdm (I,cellVariables=>cv);
+     f := map (R, ring stdm#0);
+     ncvm := stdm / f ;
   
      U' := {}; -- U' as in the paper
      D  := {};
@@ -1193,10 +1196,8 @@ cellularBinomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
      -- computes the unmixed decomposition of a cellular ideal
      -- I needs to be cellular. Cell variables can be given to speed up
      -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
-     cv := null;
      vbopt := o#verbose;
-     if o#cellVariables === null then cv = cellVars I
-     else cv = o#cellVariables;
+     cv := cellVars(I, cellVariables=>o#cellVariables);
      ncv := toList (set gens ring I - cv);
      
      -- Get the associated lattices (or better characters)
@@ -1273,23 +1274,23 @@ cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- computes the binomial primary decomposition of a cellular ideal
      -- I needs to be cellular. Cell variables can be given to speed up
      -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
-     ap := {};
-     cv := null;
      vbopt := o#verbose;
-     if o#cellVariables === null then cv = cellVars I
-     else cv = o#cellVariables;
+     cv := cellVars(I, cellVariables=>o#cellVariables);
      ncv := toList (set gens ring I - cv);
-     ap = cellularBinomialAssociatedPrimes (I, cellVariables => cv,verbose=>vbopt);
+     ap := cellularBinomialAssociatedPrimes (I, cellVariables => cv,verbose=>vbopt);
      -- Projecting down the assoc. primes, removing monomials
-     sub2apring := (v) -> (sub (v, ring ap#0));
-     proj := (II) -> eliminate (sub2apring \ ncv,II); 
-     pap := ap / proj ;
+     if #ncv>0 then (
+     	  f := map (ring ap#0, ring ncv#0);
+     	  proj := (II) -> eliminate (f \ ncv,II);
+     	  ap = ap / proj ;
+	  );
      R := ring ap#0; -- All associated primes live in a common ring
      J := sub (I,R); -- get I over there to compute sums
+     mJ := sub (ideal product cv, R);
      -- Here, contrary to what is stated in ES'96, we can not assume that J+P is cellular.
      -- However, since Hull only wants the minimal primary component we can cellularize!
      -- TODO: Can this be skipped in some cases to be predetermined?
-     return pap / ( (P) -> minimalPrimaryComponent ( saturate (P + J , sub (ideal product cv, R)), cellVariables=>cv));
+     return ap / ( (P) -> minimalPrimaryComponent ( saturate (P + J , mJ), cellVariables=>cv));
      )
 
 removeRedundant = method (Options => {verbose => true})
