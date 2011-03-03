@@ -83,7 +83,7 @@ joinCyclotomic = li -> (
      -- This should contain the variables of polynomials
      ge := gens ring li#0;
 
-     S := F[ge];
+     S := F(monoid [ge]);
      li2 := {}; ww:=F_0; local f;
      for i in 0..#li-1 do (
 	  if lc#i == 2 then (
