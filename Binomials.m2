@@ -471,13 +471,13 @@ latticeBasisIdeal = (R,L) -> (
      )
 
 saturatePChar = (pc) -> (
-     -- This function saturates a partial character.  A saturated character is distinguished from its saturation as the
-     -- saturation has a list as third entry.  
-     
+     -- This function saturates a partial character and returns the result
+     -- as a list, even if the input was saturated.
+          
      -- If the lattice is saturated, the character is saturated
      -- Note that this shortcircuits all problems with c being non-constant.
      if image Lsat pc#"L" == image pc#"L" then (
-	  return (pc);
+	  return {pc};
 	  );
      
      -- The saturated lattice
@@ -787,39 +787,65 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      	  else <<  #ml << " monomials to consider for this cellular component" << endl;
 	  );
 
+     -- Saves a witness monomial for a partialCharacter that
+     -- supports associated primes
      seenpc := new MutableHashTable;
 
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pC := {}; sat := {};
-     for m in ml do (
+     -- save 1 as the bottom witness
+     seenpc#(partialCharacter (I, cellVariables=>cv))=1_R;
+     todolist := delete(1_R, ml);
+     -- While we have monomials to check
+     while #todolist > 0 do (
+--	  print ("On todolist: " | toString (#todolist));
+	  -- sample a random monomial:
+	  i := random(0, #todolist-1);
+	  m := todolist#i;
 	  Im = I:m;
 	  pC = partialCharacter(Im, cellVariables=>cv);
-	  -- Skip if we already had this character
-	  if seenpc#?pC then continue
-	  else seenpc#pC = true;
-	  if pC#"L" == 0 then (
-	       primes = primes | {ideal(0_R)}; 
-	       continue;
-	       );
-	  if image Lsat pC#"L" == image pC#"L" then (
-	       sat = {Im};
+	  if seenpc#?pC then (
+	       -- We have seen this lattice: Time to prune the todolist
+	       -- There is a saved monomial n for this pc.
+	       -- If the sa
+	       n := seenpc#pC;
+	       if n % m == 0 then (
+		    -- if m divides n 
+		    -- save m instead, we always try to find 'low' witnesses for this algorithm 
+		    seenpc#pC = m;
+		    -- remove everything between m and n from the todolist:
+		    todolist = select (todolist,
+			 (mm -> ( not ((mm%m==0) and (n%mm==0) ))));
+		    );
+	       if m % n == 0 then (
+		    -- n divides m, prune the todolist:
+		    todolist = select (todolist,
+			 (mm -> ( not ((m%mm==0) and (mm%n==0) ))))
+		    );
+	       -- if they are incomparable, we are out of luck.
+	       -- TODO, what can be done here?
+	       todolist = delete(m, todolist);
+	       )   
+	  else (
+	       seenpc#pC = m;
+	       todolist = delete(m, todolist);
+	       )
+	  );
+     for pc in keys seenpc do (
+	  sat = satIdeals pc;
+	  -- If the coefficientRing is QQ, we map back to R
+	  F := coefficientRing ring sat#0;
+	  if F === QQ then (
+	       f = map (R, ring sat#0);
+	       sat = sat / f ;
 	       )
 	  else (
-	       sat = satIdeals pC;
-	       -- If the coefficientRing is QQ, we map back to R
-	       F := coefficientRing ring sat#0;
-	       if F === QQ then (
-		    f = map (R, ring sat#0);
-		    sat = sat / f ;
-		    )
-	       else (
-		    -- otherwise to the extended ring
-		    -- this is necessary since satIdeals does not know about the non-cell variables
-		    S := F monoid R;
-		    f = map (S, ring sat#0);
-		    sat = sat / f;
-		    );
+	       -- otherwise to the extended ring
+	       -- this is necessary since satIdeals does not know about the non-cell variables
+	       S := F monoid R;
+	       f = map (S, ring sat#0);
+	       sat = sat / f;
 	       );
 	  primes = primes | sat;
 	  );
