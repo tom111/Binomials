@@ -761,6 +761,20 @@ removeEmbedded = l -> (
      return l;
      )
 
+isBetween = (a,b,c) -> (
+     	  -- Checks if a lies between b and c in divisibility order.
+	  -- b and c need not be comparable, or sorted.
+	  if (b%c == 0) then (
+	       -- c divides b
+	       if ( (a%c==0) and (b%a==0)) then return true;
+	       )
+	  else if (c%b == 0) then (
+	       if ( (a%b==0) and (c%a==0)) then return true;
+	       );
+	  -- b and c are not comparable
+	  return false;
+     )
+
 cellularBinomialAssociatedPrimes = method (Options => {cellVariables => null, verbose=>true}) 
 cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> ( 
      -- Computes the associated primes of cellular binomial ideal
@@ -787,15 +801,14 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      	  else <<  #ml << " monomials to consider for this cellular component" << endl;
 	  );
 
-     -- Saves a witness monomial for a partialCharacter that
-     -- supports associated primes
+     -- Saves all witness monomials for a given partialCharacter
      seenpc := new MutableHashTable;
 
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pC := {}; sat := {};
      -- save 1 as the bottom witness
-     seenpc#(partialCharacter (I, cellVariables=>cv))=1_R;
+     seenpc#(partialCharacter (I, cellVariables=>cv))={1_R};
      todolist := delete(1_R, ml);
      -- While we have monomials to check
      while #todolist > 0 do (
@@ -807,31 +820,25 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	  pC = partialCharacter(Im, cellVariables=>cv);
 	  if seenpc#?pC then (
 	       -- We have seen this lattice: Time to prune the todolist
-	       -- There is a saved monomial n for this pc.
-	       -- If the sa
-	       n := seenpc#pC;
-	       if n % m == 0 then (
-		    -- if m divides n 
-		    -- save m instead, we always try to find 'low' witnesses for this algorithm 
-		    seenpc#pC = m;
-		    -- remove everything between m and n from the todolist:
-		    todolist = select (todolist,
-			 (mm -> ( not ((mm%m==0) and (n%mm==0) ))));
-		    );
-	       if m % n == 0 then (
-		    -- n divides m, prune the todolist:
-		    todolist = select (todolist,
-			 (mm -> ( not ((m%mm==0) and (mm%n==0) ))))
-		    );
-	       -- if they are incomparable, we are out of luck.
-	       -- TODO, what can be done here?
+--	       print ("Todolist items before: " | toString (#todolist));
+	       for n in seenpc#pC do (
+		    todolist = select (todolist , (mm -> not isBetween (mm, n, m))
+		    ));
+--	       print ("Todolist items after: " | toString (#todolist));
+	       -- add m to the pruning list
 	       todolist = delete(m, todolist);
+	       addmon := true;
+	       for mmm in seenpc#pC do if m%mmm==0 then (addmon = false; break);
+	       if addmon then seenpc#pC = seenpc#pC | {m};
+--	       print (#(seenpc#pC));
 	       )   
 	  else (
-	       seenpc#pC = m;
+	       -- a new associated lattice
+	       seenpc#pC = {m};
 	       todolist = delete(m, todolist);
 	       )
 	  );
+--     print ("Todolist items: " | toString (#todolist));
      for pc in keys seenpc do (
 	  sat = satIdeals pc;
 	  -- If the coefficientRing is QQ, we map back to R
