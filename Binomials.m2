@@ -954,23 +954,26 @@ cellularEmbeddedLatticeWitnesses Ideal := Ideal => o -> I -> (
      redundant := true;
      bottomlattice := partialCharacter (I, cellVariables=>cv);
      -- For each monomial, check if I:m has a different lattice !
-     for m in ml do (
-	  -- if m is divisible by another witness: skip
-	  redundant=false;
-	  for w in witnesses do (
-	       if m%w == 0_R then (
-		    redundant=true;
-		    break;
-		    );
-	       );
-	  if redundant then continue;
+     todolist := ml;
+--     print ("Number of monomials to consider : " | toString (#todolist));
+     while (#todolist > 0) do (
+	  i := random(0, #todolist-1); -- a random monomial
+	  m := todolist#i;
+	  -- Now two possibilities:
+	  -- if m witnesses an embedded lattice: Remove everything that is above m;
 	  Im = I:m;
-	  -- We already know the cell variables in the following computation
 	  pc = partialCharacter(Im, cellVariables=>cv);
-	  -- test if we have an embedded lattice at m:
-	  if (image pc#"L" == image bottomlattice#"L") then continue
-	  else witnesses = witnesses | {m};
-	  ); -- for m in ml
+	  if (image pc#"L" == image bottomlattice#"L") then (
+	       -- m is the same like 1. Remove everything between them
+	       todolist = select (todolist, (mm) -> not isBetween(mm, 1,m))
+	       )
+	  else (
+	       -- found a witness
+	       witnesses = witnesses | {m};
+	       todolist = for t in todolist list if t%m==0 then continue else t
+	       );
+--	  print ("Number of monomials to consider : " | toString (#todolist));
+	  ); -- while
      return witnesses;
      ) -- cellularEmbeddedLatticeWitnesses
 
