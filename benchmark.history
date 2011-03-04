@@ -51,3 +51,18 @@ Benchmark history on my Thinkpad x61s:
 4.18678 seconds
 139.758 seconds
 2.57416 seconds
+-- 03.03.11 - First try new randomized strategy for associated lattices (2a1d8685fe) --
+108.475 seconds
+3.80941 seconds
+139.825 seconds
+2.35277 seconds
+-- 03.03.11 - More sophisticated randomized strategy (4b97a41a21) --
+113.675 seconds
+3.67684 seconds
+130.755 seconds
+2.31733 seconds
+-- 04.03.11 - Search for embedded monomials improved (922af49) --
+73.0106 seconds
+2.84043 seconds
+136.272 seconds
+2.12938 seconds
