@@ -23,7 +23,7 @@
 
 newPackage(
 	"Binomials",
-	Version => "0.7",
+	Version => "0.7.1",
 	Date => "January 2011",
 	Authors => {{
 		  Name => "Thomas Kahle",
@@ -47,6 +47,7 @@ export {
      -- tests
      binomialIsPrime,
      binomialIsPrimary,
+     cellularBinomialIsPrimary,
      isCellular,
      isBinomial,
      isPureDifference,
@@ -87,8 +88,8 @@ export {
 
      -- Options
      cellVariables, -- for partialCharacter
-     returnPrimes, -- for binomialIsPrimary 
-     returnPChars, -- for binomialIsPrimary
+     returnPrimes, -- for cellularBinomialIsPrimary 
+     returnPChars, -- for cellularBinomialIsPrimary
      returnCellVars, -- for binomialCellularDecomposition
      verbose, -- produce more output
      
@@ -543,8 +544,15 @@ cellularBinomialRadical Ideal := Ideal => o -> I -> (
      return prerad + M;
      )
 
-binomialIsPrimary = method (Options => {returnPrimes => false , returnPChars => false, cellVariables=> null})
-binomialIsPrimary Ideal := Ideal => o -> I -> (
+binomialIsPrimary = I -> (
+     -- Check if an arbitrary binomial ideal is primary
+     -- first check for cellularity, then run the specialized check if the ideal is cellular.
+     if not (cv := isCellular (I, returnCellVars=>true)) then return false
+     else return cellularBinomialIsPrimary (I, cellVariables=>cv);
+)
+
+cellularBinomialIsPrimary = method (Options => {returnPrimes => false , returnPChars => false, cellVariables=> null})
+cellularBinomialIsPrimary Ideal := Ideal => o -> I -> (
      -- Implements Alg. 9.4 in [ES96]
      -- I must be a cellular ideal, cellVariables can be given for speedup
      -- Returns the radical of I and whether I is primary
@@ -986,7 +994,7 @@ BCDisPrimary = I -> (
      for c in cd do (
 	  i = i+1;
 	  print ("Component number " | i );
-	  if binomialIsPrimary c == true then continue;
+	  if cellularBinomialIsPrimary c == true then continue;
 	  print "Following component is not primary: ";
 	  print c;
 	  return false;
@@ -1015,7 +1023,7 @@ minimalPrimaryComponent2 Ideal := Ideal => o -> I -> (
      cv := cellVars(I, cellVariables=>o#cellVariables);
      if cv === false then error "Input to minimalPrimaryComponent was not cellular!";
 
-     apc := binomialIsPrimary (I, returnPChars=>true, cellVariables => cv);
+     apc := cellularBinomialIsPrimary (I, returnPChars=>true, cellVariables => cv);
      if #apc == 1 then return I -- radical is only associated prime!
      else (
 	  R := ring I;
@@ -1079,7 +1087,7 @@ minimalPrimaryComponent2 Ideal := Ideal => o -> I -> (
 	    	 -- Take the quotient of I with respect to b, such that the result is binomial
 		 return minimalPrimaryComponent2 (binomialQuotient (I,b, cellVariables=>cv), cellVariables=>cv);
 	    	 );
-	    ) -- else path of if not binomialIsPrimary
+	    ) -- else path of if not cellularBinomialIsPrimary
      ) -- minimalPrimaryComponent
 
 binomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
@@ -1786,17 +1794,17 @@ document {
 	  "I = ideal(x^2-y,y^2-x)",
 	  "binomialIsPrime I",
           },
-     SeeAlso => {binomialIsPrimary, cellVariables}
+     SeeAlso => {cellularBinomialIsPrimary, cellVariables}
      }    
 
 document {
-     Key => {binomialIsPrimary,
-	  (binomialIsPrimary,Ideal),
-	  [binomialIsPrimary,cellVariables],
-	  [binomialIsPrimary,returnPrimes],
-	  [binomialIsPrimary,returnPChars]},
+     Key => {cellularBinomialIsPrimary,
+	  (cellularBinomialIsPrimary,Ideal),
+	  [cellularBinomialIsPrimary,cellVariables],
+	  [cellularBinomialIsPrimary,returnPrimes],
+	  [cellularBinomialIsPrimary,returnPChars]},
      Headline => "test for primaryness of a binomial ideal",
-     Usage => "binomialIsPrimary I",
+     Usage => "cellularBinomialIsPrimary I",
      Inputs => {
           "I" => { "a binomial ideal"} },
      Outputs => {
@@ -1808,9 +1816,9 @@ document {
      EXAMPLE {
 	  "R = QQ[x,y]",
 	  "I = ideal(x^2-1)",
-	  "binomialIsPrimary (I,returnPrimes=>true)",
+	  "cellularBinomialIsPrimary (I,returnPrimes=>true)",
           },
-     SeeAlso => {binomialIsPrimary, cellVariables, returnPrimes, returnPChars}
+     SeeAlso => {cellularBinomialIsPrimary, cellVariables, returnPrimes, returnPChars}
      }    
 
 document {
@@ -2064,29 +2072,29 @@ document {
 document {
      Key => returnPrimes,
      Headline => "return two associated primes",
-     "If binomialIsPrimary does not return true it can either return 'false' or two associated primes.
+     "If cellularBinomialIsPrimary does not return true it can either return 'false' or two associated primes.
      If this option is set then two associated primes are returned. If returnPChars is set too, then partial
      characters will be returned.",
      EXAMPLE {
 	  "R = QQ[x,y,z]",
           "I = ideal (x^2-1)",
-          "binomialIsPrimary (I,returnPrimes=>true)",
+          "cellularBinomialIsPrimary (I,returnPrimes=>true)",
           },
-     SeeAlso => {returnPChars, binomialIsPrimary}
+     SeeAlso => {returnPChars, cellularBinomialIsPrimary}
      }
 
 document {
      Key => returnPChars,
      Headline => "return two partial characters",
-     "If binomialIsPrimary does not return true it can either return 'false' or two associated primes.
+     "If cellularBinomialIsPrimary does not return true it can either return 'false' or two associated primes.
      If this option is set then two partial characters of distinct associated primes are returned. 
      If returnPrimes is set too, then partial characters will be returned.",
      EXAMPLE {
 	  "R = QQ[x]",
           "I = ideal (x^2-1)",
-          "binomialIsPrimary (I,returnPChars=>true)",
+          "cellularBinomialIsPrimary (I,returnPChars=>true)",
           },
-     SeeAlso => {returnPrimes, binomialIsPrimary}
+     SeeAlso => {returnPrimes, cellularBinomialIsPrimary}
      }
 
 document {
