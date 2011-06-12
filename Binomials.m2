@@ -547,7 +547,9 @@ cellularBinomialRadical Ideal := Ideal => o -> I -> (
 binomialIsPrimary = I -> (
      -- Check if an arbitrary binomial ideal is primary
      -- first check for cellularity, then run the specialized check if the ideal is cellular.
-     if not (cv := isCellular (I, returnCellVars=>true)) then return false
+     cv := isCellular (I, returnCellVars=>true);
+     -- Can't check with logical comparison because the return value could be a list
+     if cv === false then return false
      else return cellularBinomialIsPrimary (I, cellVariables=>cv);
 )
 
@@ -787,12 +789,8 @@ cellularBinomialAssociatedPrimes = method (Options => {cellVariables => null, ve
 cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> ( 
      -- Computes the associated primes of cellular binomial ideal
      -- It returns them in a polynomial ring with the same variables as ring I,
-     -- but potentially extended coefficient ring !
+     -- but potentially extended coefficient ring.
 
-     -- TODO: It could be faster by rearringing things in the m in ml
-
-     -- Innovation: Use memoize to speed up determination of the associated primes:
-     
      R := ring I;
      
      cv := cellVars(I, cellVariables=>o#cellVariables);
@@ -1206,8 +1204,6 @@ binomialPrimaryDecomposition = method (Options => {verbose=>true})
 binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- The full binomial primary decomposition 
      -- starting from a not necessarily cellular binomial ideal
-     
-     -- TODO: Improve this! The first cellular component should always be prime. Are other too ??
      
      if not isBinomial I then error "Input was not binomial !";
      vbopt := o#verbose;
