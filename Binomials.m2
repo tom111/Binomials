@@ -184,6 +184,8 @@ Lsat = A -> LLL syz transpose LLL syz transpose A;
 
 isCellular = method (Options => {returnCellVars => false})
 isCellular Ideal := Ideal => o -> I -> (
+     -- This function checks if a binomial ideal is cellular
+     -- In the affirmative case it can return the regular variables.
      R := ring I;
      cv := cellVars I;
      if cv == {} then prod := 1_R else prod = product cv;
@@ -367,15 +369,17 @@ isPureDifference = I -> (
 
      
 nonCellstdm = {cellVariables=>null} >> o -> I -> (
+     -- This function extracts the (finite) set of nilpotent monomials 
+     -- modulo a cellular binomial ideal.
      R := ring I;
 
      cv2 := cellVars(I, cellVariables=>o#cellVariables);
 
      -- Extracts the monomials in the non-Cell variables.
      cv := set cv2; 
-     -- Here go the non-cell variables
+     -- Computing non-cellular variables
      -- This use of baseName is intended to fix a problem where the variables in cv 
-     -- are actual variables of a ring over a field extension. TODO Item: Understand this
+     -- are actual variables of a ring over a field extension.
      ncv := value \ toList (set (baseName \ (gens R)) - baseName \ cv);
      
      -- We map I to the subring: k[ncv]
