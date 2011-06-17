@@ -82,9 +82,6 @@ export {
 --     minimalPrimaryComponent,
 --     binomialQuasiPower,
 --     binomialQuotient,
-     -- Removed as of M2 v1.2
-     -- Uncomment this if you are using <= 1.1
-     -- lcm
 
      -- Options
      cellVariables, -- for partialCharacter
@@ -369,28 +366,26 @@ isPureDifference = I -> (
 
      
 nonCellstdm = {cellVariables=>null} >> o -> I -> (
-     -- This function extracts the (finite) set of nilpotent monomials 
+     -- extracts the (finite) set of nilpotent monomials 
      -- modulo a cellular binomial ideal.
      R := ring I;
 
-     cv2 := cellVars(I, cellVariables=>o#cellVariables);
-
-     -- Extracts the monomials in the non-Cell variables.
-     cv := set cv2; 
-     -- Computing non-cellular variables
+     cv := set cellVars(I, cellVariables=>o#cellVariables);
+     -- Extracting  the monomials in the non-Cell variables.
+     -- Problem: They may not live in R because R was extended on the way.
      -- This use of baseName is intended to fix a problem where the variables in cv 
      -- are actual variables of a ring over a field extension.
      ncv := value \ toList (set (baseName \ (gens R)) - baseName \ cv);
      
-     -- We map I to the subring: k[ncv]
+     -- We map I to the subring: kk[ncv]
      CoeffR := coefficientRing R;
      S := CoeffR(monoid [ncv]);
-     J := kernel map (R/I,S); -- image of I in the subring S
+     J := kernel map (R/I,S); 
      return basis (S/J);
      )
 
 maxNonCellstdm = {cellVariables=>null} >> o -> I -> (
-     -- Computes the maximal monomials in the non-cellular variables
+     -- Computes the maximal monomials in the nilpotent variables
 
      cv := cellVars(I, cellVariables=>o#cellVariables);
      nm := flatten entries nonCellstdm (I,cellVariables=>cv);
@@ -800,7 +795,7 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      cv := cellVars(I, cellVariables=>o#cellVariables);
           
      primes := {}; -- This will hold the list of primes
-     ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
+     ncv := toList(set (gens R) - cv); -- nilpotent variables x \notin E
      stdm := nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
      -- mapping to R:
      f := map (R, ring stdm);
@@ -859,7 +854,7 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	       )
 	  else (
 	       -- otherwise to the extended ring
-	       -- this is necessary since satIdeals does not know about the non-cell variables
+	       -- this is necessary since satIdeals does not know about the nilpotent variables
 	       S := F monoid R;
 	       f = map (S, ring sat#0);
 	       sat = sat / f;
@@ -905,7 +900,7 @@ cellularAssociatedLattices Ideal := Ideal => o -> I -> (
      cv := cellVars(I, cellVariables=>o#cellVariables);
      lats := {}; -- This will hold the list of lattices
      coeffs := {}; -- This will hold the values of the characters
-     ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
+     ncv := toList(set (gens R) - cv); -- nilpotent variables x \notin E
      -- print "Noncellvars"; print ncv;
      ml := flatten entries nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
      -- Coercing to R:
@@ -950,7 +945,7 @@ cellularEmbeddedLatticeWitnesses Ideal := Ideal => o -> I -> (
      cv := cellVars(I, cellVariables=>o#cellVariables);
      witnesses := {};
      lats := {}; -- This will hold the list of lattices
-     ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
+     ncv := toList(set (gens R) - cv); -- nilpotent variables x \notin E
      -- print "Noncellvars"; print ncv;
      ml := flatten entries nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
      -- Should be sorted by total degree to make the shortcut heuristics optimal.
@@ -1107,7 +1102,7 @@ binomialQuotient = {cellVariables => null} >> o -> (I,b) -> (
      if isBinomial quot then return quot;
      
      cv := cellVars(I, cellVariables=>o#cellVariables);
-     ncv := toList(set (gens R) - cv); -- non-cell variables x \notin E
+     ncv := toList(set (gens R) - cv); -- nilpotent variables x \notin E
  
      --Transporting the standardmonomials to R:
      stdm := nonCellstdm (I,cellVariables=>cv);
@@ -1553,7 +1548,7 @@ cellularBinomialExponentSolve = (I,cv) -> (
      -- unsolved and the special symbol null indicating that the
      -- solution(not exponent) is zero
 
-     -- For each variable we check if it is a non-cell variable, ie 
+     -- For each variable we check if it is a nilpotent variable, i.e. 
      -- each solution of the ideal has coordinate zero there
      -- We alse check how often we have to duplicate each solution in the
      -- end to account for monomials of higher order 
