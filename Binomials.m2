@@ -60,7 +60,6 @@ export {
      -- cellularAssociatedLattices,
      cellularBinomialPrimaryDecomposition,
      cellularBinomialRadical,
-     -- cellularEmbeddedLatticeWitnesses,
      -- simple wrappers:
      BPD,
      BCD,
@@ -74,6 +73,7 @@ export {
      -- Not in the interface:
 --     axisSaturate,
 --     cellVars,
+--     cellularEmbeddedLatticeWitnesses,
 --     Lsat,
 --     saturatePChar,
 --     satIdeals,
@@ -892,9 +892,8 @@ binomialAssociatedPrimes = I -> (
 
 cellularAssociatedLattices = method (Options => {cellVariables => null})
 cellularAssociatedLattices Ideal := Ideal => o -> I -> (
-     -- Computes the some associated lattices of a cellular binomial ideal
-     -- WARNING: The definition might differ from that in the paper with Ezra Miller
-     -- Todo: Can we get the multiplicities too ?
+     -- Computes the associated lattices of a cellular binomial ideal
+     -- WARNING: The definition might differ from the final definition in [Kahle/Miller]
      
      R := ring I;
      cv := cellVars(I, cellVariables=>o#cellVariables);
@@ -910,7 +909,7 @@ cellularAssociatedLattices Ideal := Ideal => o -> I -> (
      Im := ideal;
      pc := {};
      redundant := true;
-     -- For each monomial, check if I:m has a different lattice !
+     -- For each monomial, check if I:m shows an unseen lattice.
      for m in ml do (
 	  -- print m;
 	  Im = I:m;
@@ -1016,6 +1015,7 @@ minimalPrimaryComponent2 = method (Options => {cellVariables => null})
 minimalPrimaryComponent2 Ideal := Ideal => o -> I -> (
      -- Input a cellular binomial ideal whose radical is prime.
      -- Ouptut, generators for Hull(I)
+     -- This function implements the 'old' algorithm from ES96 and is not used anymore in BPD.
 
      cv := cellVars(I, cellVariables=>o#cellVariables);
      if cv === false then error "Input to minimalPrimaryComponent was not cellular!";
@@ -1038,11 +1038,8 @@ minimalPrimaryComponent2 Ideal := Ideal => o -> I -> (
 	  L := intersect {L1,L2};
 	  -- The index of L inside L2 is finite if and only if their dimensions coincide
 	  if rank L == rank L2 then (
-	       print "finite index case !";
-	       print "Only very few examples reach this part of the code";
-	       print "PLEASE, send a copy of your input to kahle@mis.mpg.de";
-	       print "Thank you!";
 	       -- The finite index case :  
+	       -- Note: This code is never reached in characteristic zero
 	       
 	       -- Compute a binomial in J2 which is not in J1.
 	       -- i.e. find a generator on which pc1 and pc2 take different values.
@@ -1548,7 +1545,7 @@ cellularBinomialExponentSolve = (I,cv) -> (
      -- unsolved and the special symbol null indicating that the
      -- solution(not exponent) is zero
 
-     -- For each variable we check if it is a nilpotent variable, i.e. 
+     -- For each variable we check if it is a nilpotent variable, i.e.
      -- each solution of the ideal has coordinate zero there
      -- We alse check how often we have to duplicate each solution in the
      -- end to account for monomials of higher order 
