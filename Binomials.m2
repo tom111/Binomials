@@ -79,7 +79,7 @@ export {
 --     nonCellstdm,
 --     maxNonCellstdm,
 --     minimalPrimaryComponent,
---     binomialQuasiPower,
+--     binomialFrobeniusPower,
 
      -- Options
      cellVariables, -- for partialCharacter
@@ -1109,14 +1109,14 @@ cellularBinomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
      Itest := I:b;
      while not ((isBinomial Itest) and ( Itest: binomialFrobeniusPower(b,e) == Itest)) do(
 	  e = e + 1;
-	  Itest = I:binomialQuasiPower (b,e);
+	  Itest = I:binomialFrobeniusPower (b,e);
 	  );
      
-     -- Now we have the right quotient and the right quasi power.
+     -- Now we have the right quotient and the right Frobenius power.
      -- So we start the recursion:
      return flatten { 
 	  cellularBinomialUnmixedDecomposition (Itest, cellVariables=>cv),
-	  cellularBinomialUnmixedDecomposition (I + ideal binomialQuasiPower (b,e), cellVariables=>cv)
+	  cellularBinomialUnmixedDecomposition (I + ideal binomialFrobeniusPower (b,e), cellVariables=>cv)
 	  };
      )
 
