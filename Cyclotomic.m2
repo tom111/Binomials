@@ -23,13 +23,14 @@
 
 newPackage(
 	"Cyclotomic",
-	Version => "0.5.5",
-	Date => "February 2011",
+	Version => "0.9.9",
+	Date => "June 2011",
     	Authors => {{Name => "Thomas Kahle", 
 		  Email => "kahle@mis.mpg.de", 
 		  HomePage => "http://thomas-kahle.de/bpd"}},
     	Headline => "routines for cyclotomic fields",
-    	DebuggingMode => true
+--    	DebuggingMode => true
+     	Reload=>true
     	)
 
 export {cyclotomicField,
