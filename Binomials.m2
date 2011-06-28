@@ -945,10 +945,8 @@ cellularEmbeddedLatticeWitnesses Ideal := Ideal => o -> I -> (
      witnesses := {};
      lats := {}; -- This will hold the list of lattices
      ncv := toList(set (gens R) - cv); -- nilpotent variables x \notin E
-     -- print "Noncellvars"; print ncv;
+--     print "Noncellvars"; print ncv;
      ml := flatten entries nonCellstdm(I,cellVariables=>cv); -- List of std monomials in ncv
-     -- Should be sorted by total degree to make the shortcut heuristics optimal.
-     ml = sort(ml, DegreeOrder=>Ascending);
      -- Coercing to R:
      f := map (R, ring ml#0);
      ml = ml / f;
