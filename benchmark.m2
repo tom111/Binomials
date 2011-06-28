@@ -29,14 +29,14 @@ I = ideal(d*g*h-e*g*h,a*b*g-c*f*h,a*b*c-e*g*h,c*f*h^2-d*f,e^2*g*h-d*h,b*d*f*h-c*
 time bpd = binomialPrimaryDecomposition (I,verbose=>false);
 assert (intersect bpd == I); 
 
--- The 2,1 Mayr-Meyer ideal
-R = QQ[s, f, b01, b02, b03, b04, b11, b12, b13, b14, c01, c02, c03, c04, c11, c12, c13, c14]
-I = ideal(-f*b01*c01+s*c01,-f*b02*c02+s*c02,-f*b03*c03+s*c03,-f*b04*c04+s*c04,f*c01-s*c02,-s*c03+f*c04,-s*c02+s*c03,
-     f*b01*c02-f*b04*c03,-f*b03*b11*c02*c11+f*b02*c02*c11,-f*b03*b12*c02*c12+f*b02*c02*c12,-f*b03*b13*c02*c13+f*b02*c02*c13,
-     -f*b03*b14*c02*c14+f*b02*c02*c14,s*c04*c11-s*c01*c12,-s*c01*c13+s*c04*c14,-s*c01*c12+s*c01*c13,
-     s*b11*c04*c12-s*b14*c04*c13,s*b12*c04*c12-s*b13*c04*c12)
-time bpd = binomialPrimaryDecomposition (I,verbose=>false);
-assert (intersect bpd == I); 
+-- -- The 2,1 Mayr-Meyer ideal
+-- R = QQ[s, f, b01, b02, b03, b04, b11, b12, b13, b14, c01, c02, c03, c04, c11, c12, c13, c14]
+-- I = ideal(-f*b01*c01+s*c01,-f*b02*c02+s*c02,-f*b03*c03+s*c03,-f*b04*c04+s*c04,f*c01-s*c02,-s*c03+f*c04,-s*c02+s*c03,
+--      f*b01*c02-f*b04*c03,-f*b03*b11*c02*c11+f*b02*c02*c11,-f*b03*b12*c02*c12+f*b02*c02*c12,-f*b03*b13*c02*c13+f*b02*c02*c13,
+--      -f*b03*b14*c02*c14+f*b02*c02*c14,s*c04*c11-s*c01*c12,-s*c01*c13+s*c04*c14,-s*c01*c12+s*c01*c13,
+--      s*b11*c04*c12-s*b14*c04*c13,s*b12*c04*c12-s*b13*c04*c12)
+-- time bpd = binomialPrimaryDecomposition (I,verbose=>false);
+-- assert (intersect bpd == I); 
 
 quit();
 
