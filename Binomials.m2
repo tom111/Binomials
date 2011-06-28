@@ -23,8 +23,8 @@
 
 newPackage(
 	"Binomials",
-	Version => "0.7.1",
-	Date => "January 2011",
+	Version => "0.9.9",
+	Date => "June 2011",
 	Authors => {{
 		  Name => "Thomas Kahle",
 		  Email => "kahle@mis.mpg.de",
@@ -1601,8 +1601,7 @@ document {
    
 document {
      Key => {binomialPrimaryDecomposition,
-	  (binomialPrimaryDecomposition, Ideal),
-	  [binomialPrimaryDecomposition, verbose] },
+	  (binomialPrimaryDecomposition, Ideal)},
      Headline => "Binomial Primary Decomposition",
      Usage => "binomialPrimaryDecomposition I",
      Inputs => {
@@ -1623,8 +1622,7 @@ document {
 
 document {
      Key => {binomialUnmixedDecomposition,
-	  (binomialUnmixedDecomposition, Ideal),
-	  [binomialUnmixedDecomposition, verbose] },
+	  (binomialUnmixedDecomposition, Ideal)},
      Headline => "Binomial Unmixed Decomposition",
      Usage => "binomialUnmixedDecomposition I",
      Inputs => {
@@ -1658,8 +1656,7 @@ document {
 document {
      Key => {binomialCellularDecomposition,
           (binomialCellularDecomposition,Ideal),
-	  [binomialCellularDecomposition,returnCellVars],
-	  [binomialCellularDecomposition,verbose]},
+	  [binomialCellularDecomposition,returnCellVars]},
      Headline => "Binomial Cellular Decomposition",
      Usage => "binomialCellularDecomposition I",
      Inputs => {
@@ -1711,8 +1708,7 @@ document {
 
 document {
      Key => {cellularBinomialRadical,
-	  (cellularBinomialRadical,Ideal),
-	  [cellularBinomialRadical,cellVariables]},
+	  (cellularBinomialRadical,Ideal)},
      Headline => "Radical of a cellular binomial ideal",
      Usage => "cellularBinomialRadical I",
      Inputs => {
@@ -1732,8 +1728,7 @@ document {
 
 document {
      Key => {binomialMinimalPrimes,
-	  (binomialMinimalPrimes,Ideal),
-	  [binomialMinimalPrimes,verbose]},
+	  (binomialMinimalPrimes,Ideal)},
      Headline => "minimal primes of a binomial Ideal",
      Usage => "binomialMinimalPrimes I",
      Inputs => {
@@ -1769,8 +1764,7 @@ document {
 
 document {
      Key => {binomialIsPrime,
-	  (binomialIsPrime,Ideal),
-	  [binomialIsPrime,cellVariables]},
+	  (binomialIsPrime,Ideal)},
      Headline => "test for primeness of a binomial ideal",
      Usage => "binomialIsPrime I",
      Inputs => {
@@ -1789,10 +1783,7 @@ document {
 
 document {
      Key => {cellularBinomialIsPrimary,
-	  (cellularBinomialIsPrimary,Ideal),
-	  [cellularBinomialIsPrimary,cellVariables],
-	  [cellularBinomialIsPrimary,returnPrimes],
-	  [cellularBinomialIsPrimary,returnPChars]},
+	  (cellularBinomialIsPrimary,Ideal)},
      Headline => "test for primaryness of a binomial ideal",
      Usage => "cellularBinomialIsPrimary I",
      Inputs => {
@@ -1836,8 +1827,7 @@ document {
 
 document {
      Key => {isCellular,
-	  (isCellular,Ideal),
-	  [isCellular,returnCellVars]},
+	  (isCellular,Ideal)},
      Headline => "testing for cellular binomial ideals",
      Usage => "isCellular I",
      Inputs => {
@@ -1914,9 +1904,7 @@ document {
 
 document {
      Key => {cellularBinomialAssociatedPrimes,
-	  (cellularBinomialAssociatedPrimes,Ideal),
-	  [cellularBinomialAssociatedPrimes,cellVariables],
-	  [cellularBinomialAssociatedPrimes,verbose]},
+	  (cellularBinomialAssociatedPrimes,Ideal)},
      Headline => "Associated primes of a cellular binomial ideal",
      Usage => "cellularBinomialAssociatedPrimes I",
      Inputs => {
@@ -1937,8 +1925,7 @@ document {
 
 document {
      Key => {cellularBinomialPrimaryDecomposition,
-	  (cellularBinomialPrimaryDecomposition,Ideal),
-	  [cellularBinomialPrimaryDecomposition,cellVariables]},
+	  (cellularBinomialPrimaryDecomposition,Ideal)},
      Headline => "Primary decomposition of a cellular binomial ideal",
      Usage => "cellularBinomialPrimaryDecomposition I",
      Inputs => {
@@ -1959,8 +1946,7 @@ document {
 
 document {
      Key => {cellularBinomialUnmixedDecomposition,
-	  (cellularBinomialUnmixedDecomposition,Ideal),
-	  [cellularBinomialUnmixedDecomposition,cellVariables]},
+	  (cellularBinomialUnmixedDecomposition,Ideal)},
      Headline => "Unmixed decomposition of a cellular binomial ideal",
      Usage => "cellularBinomialUnmixedDecomposition I",
      Inputs => {
@@ -1979,8 +1965,7 @@ document {
 
 document {
      Key => {partialCharacter,
-	  (partialCharacter,Ideal),
-	  [partialCharacter,cellVariables]},
+	  (partialCharacter,Ideal)},
      Headline => "Computing the partial character of a cellular binomial ideal",
      Usage => "partialCharacter I",
      Inputs => {
@@ -1995,6 +1980,27 @@ document {
 	  "pc = partialCharacter (I,cellVariables=>cv)",
           }
      }    
+
+document {
+     Key => {idealFromCharacter,
+	   (idealFromCharacter,Ring,PartialCharacter)},
+     Headline => "Generate a lattice ideal from a character.",
+     Usage => "idealFromCharacter (R, rho)",
+     Inputs => {
+	  "R" => {"a ring to contain the output ideal"},
+	  "rho" => {"a ", TO partialCharacter } },
+     Outputs => {
+	  "I" => {"the lattice ideal corresponding to rho"}
+	  },
+     Caveat => {"The variables occurring in rho#\"J\" must be variables of R."},
+     EXAMPLE {
+	  "R = QQ[x,y]",
+	  "I = ideal(x^3-1,y-x)",
+	  "cv = isCellular (I,returnCellVars=>true)",
+	  "pc = partialCharacter (I,cellVariables=>cv)",
+	  "idealFromCharacter (R,pc) == I"
+	  }
+     }
 
 document {
      Key => {randomBinomialIdeal},
@@ -2020,8 +2026,7 @@ document {
 
 document {
      Key => {removeRedundant,
-	  (removeRedundant,List),	  
-	  [removeRedundant,verbose]},
+	  (removeRedundant,List)},
      Headline => "Remove redundant ideals from a decomposition",
      Usage => "removeRedundant L",
      Inputs => {
@@ -2037,17 +2042,19 @@ document {
      Caveat => "The resulting list is NOT irredundant, because I_1 \\subset I_2 \\cap I_3 is not checked."
      }
 
-document {
-     Key => cellVariables,
-     Headline => "cellular variables",
-     "The cellular variables of a binomial ideal are the variables which are non-zerodivisors 
-     module that ideal. With this option these variables, if known in advance, can be handed over 
-     to specialized functions for cellular ideals. ",
-     SeeAlso => {cellularBinomialPrimaryDecomposition,cellularBinomialAssociatedPrimes}
-     }
+document { Key => {cellVariables, [partialCharacter,cellVariables],
+     [cellularBinomialRadical,cellVariables], [binomialIsPrime,cellVariables],
+     [cellularBinomialIsPrimary,cellVariables], [cellularBinomialAssociatedPrimes,cellVariables],
+     [cellularBinomialPrimaryDecomposition,cellVariables],
+     [cellularBinomialUnmixedDecomposition,cellVariables]}, Headline => "cellular variables", "The
+     cellular variables of a binomial ideal are the variables which are non-zerodivisors modulo that
+     ideal. With this option these variables, if known in advance, can be handed over to specialized
+     functions for cellular ideals. ", SeeAlso =>
+     {cellularBinomialPrimaryDecomposition,cellularBinomialAssociatedPrimes} }
 
 document {
-     Key => returnCellVars,
+     Key => {returnCellVars,
+	  [isCellular,returnCellVars]},
      Headline => "return the cellular variables",
      "The cellular variables of a binomial ideal are the variables which are non-zerodivisors 
      module that ideal. If this option is set to 'true' then binomialCellularDecomposition will
@@ -2060,7 +2067,8 @@ document {
      }
 
 document {
-     Key => returnPrimes,
+     Key => {returnPrimes,
+     	  [cellularBinomialIsPrimary,returnPrimes]},
      Headline => "return two associated primes",
      "If cellularBinomialIsPrimary does not return true it can either return 'false' or two associated primes.
      If this option is set then two associated primes are returned. If returnPChars is set too, then partial
@@ -2074,7 +2082,8 @@ document {
      }
 
 document {
-     Key => returnPChars,
+     Key => {returnPChars,
+	  [cellularBinomialIsPrimary,returnPChars]},
      Headline => "return two partial characters",
      "If cellularBinomialIsPrimary does not return true it can either return 'false' or two associated primes.
      If this option is set then two partial characters of distinct associated primes are returned. 
@@ -2088,7 +2097,15 @@ document {
      }
 
 document {
-     Key => verbose,
+     Key => {verbose,
+	  [binomialPrimaryDecomposition, verbose],
+	  [binomialUnmixedDecomposition, verbose],
+	  [binomialCellularDecomposition,verbose],
+	  [binomialMinimalPrimes,verbose],
+	  [cellularBinomialAssociatedPrimes,verbose],
+	  [cellularBinomialPrimaryDecomposition,verbose],
+	  [removeRedundant,verbose],
+	  [cellularBinomialUnmixedDecomposition,verbose]},
      Headline => "generate informative output",
      "If this option is set, functions will generate additional output. Defaults to true"
      }
