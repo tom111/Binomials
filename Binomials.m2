@@ -519,18 +519,12 @@ binomialRadical = I -> (
 cellularBinomialRadical = method (Options => {cellVariables => null}) 
 cellularBinomialRadical Ideal := Ideal => o -> I -> (
      -- Computes the radical of a cellular binomial ideal
-
      R := ring I;
      cv := cellVars(I, cellVariables=>o#cellVariables);
      -- Get the non-cellular variables
      noncellvars := toList(set (gens R) - cv);
-     	       
      M := sub (ideal (noncellvars),R);
-     
-     -- The binomial part of the radical 
-     prerad := eliminate (noncellvars,I);
-
-     return prerad + M;
+     return I + M;
      )
 
 binomialIsPrimary = I -> (
