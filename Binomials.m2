@@ -423,6 +423,7 @@ idealFromCharacter (Ring, PartialCharacter) := Ideal => (R, pc) -> (
      cols := null;
      binomials := null;
      c := null;
+     k := ring pc#"c"#0;
      
      idmat := matrix mutableIdentity(ZZ,#var);
      if pc#"L" == idmat then (
@@ -435,7 +436,7 @@ idealFromCharacter (Ring, PartialCharacter) := Ideal => (R, pc) -> (
      	  binomials = for i in 0..numcols(pc#"L")-1 list makeBinomial (R,cols#i, c#i);	  
 	  return ideal binomials
 	  )
-     else if set pc#"c" === set {1} then (
+     else if set pc#"c" === set {1_k} then (
 	  -- all coefficients are one, we can use 4ti2.
 	  return toricMarkov (transpose pc#"L", R, InputType => "lattice");
 	  )
