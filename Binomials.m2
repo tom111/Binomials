@@ -507,11 +507,11 @@ binomialRadical = I -> (
      	  cv := isCellular (I, returnCellVars=>true);
      	  if not cv === false then (
 	       return cellularBinomialRadical (I,cellVariables=>cv)
-	       )
+	       );
 	  -- In the general case
 	  print "Input not cellular, computing minimial primes ...";
 	  mp := binomialMinimalPrimes I;
-	  return ideal mingens intersect mp;
+	  return ideal mingens intersect mp
      )
 
 cellularBinomialRadical = method (Options => {cellVariables => null}) 
@@ -558,11 +558,8 @@ cellularBinomialIsPrimary Ideal := Ideal => o -> I -> (
      noncellvars := toList(set gens R - cv);
      
      M := sub (ideal (noncellvars),R);
-     
-     -- We intersect I with the ring k[E] to get the associated lattice ideal
-     prerad := eliminate (noncellvars,I);
-          
-     rad := prerad + M;
+     -- the radical:
+     rad := I + M;
      
      -- If the partial character is not saturated, the radical is not prime
      if image Lsat pc#"L" != image pc#"L" then (
@@ -598,9 +595,10 @@ cellularBinomialIsPrimary Ideal := Ideal => o -> I -> (
      for m in maxstdmon do (
 	  q := I:m;
 	  -- Mapping down to k[E]:
-	  q2 := eliminate (noncellvars,q);
+--	  q2 := eliminate (noncellvars,q);
+     	  q2 := q + M;
      	  -- I_+(sigma) was called prerad above:
-	  if not isSubset(q2, prerad) then (
+	  if not isSubset(q2, rad) then (
 	       -- creating some local names:
 	       satqchar := saturatePChar partialCharacter (q,cellVariables=>cv);
 	       if o#returnPChars then(
@@ -1131,18 +1129,29 @@ cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      cv := cellVars(I, cellVariables=>o#cellVariables);
      ncv := toList (set gens ring I - cv);
      ap := cellularBinomialAssociatedPrimes (I, cellVariables => cv,verbose=>vbopt);
-     -- Projecting down the assoc. primes, removing monomials
-     if #ncv>0 then (
+     -- If cv coincides with gens R, then the associated primes are their own minimal primary
+     -- components (since in characteristic zero lattice ideals are radical):
+     if #ncv == 0 then return ap
+     else (
+     	  -- Remove monomials from associated primes to get the lattice ideals
      	  f := map (ring ap#0, ring ncv#0);
      	  proj := (II) -> eliminate (f \ ncv,II);
-     	  ap = ap / proj ;
+     	  ap = ap / proj
 	  );
      R := ring ap#0; -- All associated primes live in a common ring
      J := sub (I,R); -- get I over there to compute sums
-     mJ := sub (ideal product cv, R);
      -- Here, contrary to what is stated in ES'96, we can not assume that J+P is cellular.
      -- However, since Hull only wants the minimal primary component we can cellularize.
-     return ap / ( (P) -> minimalPrimaryComponent ( saturate (P + J , mJ), cellVariables=>cv));
+     -- Saturation variable by variable seems to be faster than saturating by the product.
+     cvsaturate := (p) -> (
+	  todo := cv;
+	  resu := p;
+	  while #todo > 0 do (
+	       resu = saturate (resu, sub(todo#0, R));
+	       todo = drop(todo,1)
+	       );
+	  resu);
+     return ap / ( (P) -> minimalPrimaryComponent ( cvsaturate (P + J), cellVariables=>cv));
      )
 
 removeRedundant = method (Options => {verbose => true})
