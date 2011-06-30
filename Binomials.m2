@@ -518,13 +518,12 @@ binomialRadical = I -> (
 
 cellularBinomialRadical = method (Options => {cellVariables => null}) 
 cellularBinomialRadical Ideal := Ideal => o -> I -> (
-     cv := cellVars(I, cellVariables=>o#cellVariables);
-     
      -- Computes the radical of a cellular binomial ideal
+
      R := ring I;
-     -- Get the partial character of I
-     pc := partialCharacter(I, cellVariables=>cv);
-     noncellvars := toList(set (gens R) - pc#"J");
+     cv := cellVars(I, cellVariables=>o#cellVariables);
+     -- Get the non-cellular variables
+     noncellvars := toList(set (gens R) - cv);
      	       
      M := sub (ideal (noncellvars),R);
      
@@ -798,14 +797,16 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      	  else <<  #ml << " monomials to consider for this cellular component" << endl;
 	  );
 
-     -- Saves all witness monomials for a given partialCharacter
+     -- For a given partialCharacter, this hash table saves a witness monomial,
+     -- and the corresponding lattice ideal.  The ideal is saved to potentially
+     -- skip the saturation further down.
      seenpc := new MutableHashTable;
 
      -- A dummy ideal and partial Characters:
      Im := ideal;
      pC := {}; sat := {};
      -- save 1 as the bottom witness
-     seenpc#(partialCharacter (I, cellVariables=>cv))={1_R};
+     seenpc#(partialCharacter (I, cellVariables=>cv))=({1_R}, I);
      todolist := delete(1_R, ml);
      -- While we have monomials to check
      while #todolist > 0 do (
@@ -818,40 +819,48 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	  if seenpc#?pC then (
 	       -- We have seen this lattice: Time to prune the todolist
 --	       print ("Todolist items before: " | toString (#todolist));
-	       for n in seenpc#pC do (
+	       for n in seenpc#pC#0 do (
 		    todolist = select (todolist , (mm -> not isBetween (mm, n, m))
 		    ));
 --	       print ("Todolist items after: " | toString (#todolist));
 	       -- add m to the pruning list
 	       todolist = delete(m, todolist);
 	       addmon := true;
-	       for mmm in seenpc#pC do if m%mmm==0 then (addmon = false; break);
-	       if addmon then seenpc#pC = seenpc#pC | {m};
+	       for mmm in seenpc#pC#0 do if m%mmm==0 then (addmon = false; break);
+	       if addmon then seenpc#pC = (seenpc#pC#0 | {m}, seenpc#pC#1);
 --	       print (#(seenpc#pC));
 	       )   
 	  else (
 	       -- a new associated lattice
-	       seenpc#pC = {m};
+	       seenpc#pC = ({m} , Im);
 	       todolist = delete(m, todolist);
 	       )
 	  );
 --     print ("Todolist items: " | toString (#todolist));
      for pc in keys seenpc do (
-	  sat = satIdeals pc;
-	  -- If the coefficientRing is QQ, we map back to R
-	  F := coefficientRing ring sat#0;
-	  if F === QQ then (
-	       f = map (R, ring sat#0);
-	       sat = sat / f ;
+	  -- If the lattice of pc is saturated, then we can skip the saturation (which would compute
+	  -- a Markov basis (slow))
+	  if image pc#"L" == image Lsat pc#"L" then (
+	       primes = primes | {cellularBinomialRadical (seenpc#pc#1, cellVariables=>pc#"J")}
 	       )
 	  else (
-	       -- otherwise to the extended ring
-	       -- this is necessary since satIdeals does not know about the nilpotent variables
-	       S := F monoid R;
-	       f = map (S, ring sat#0);
-	       sat = sat / f;
-	       );
-	  primes = primes | sat;
+	       -- need to actually saturate and potentially extend coefficients
+	       sat = satIdeals pc;
+	       -- If the coefficientRing is QQ, we map back to R
+	       F := coefficientRing ring sat#0;
+	       if F === QQ then (
+	       	    f = map (R, ring sat#0);
+	       	    sat = sat / f ;
+	       	    )
+	       else (
+	       	    -- otherwise to the extended ring
+	       	    -- this is necessary since satIdeals does not know about the nilpotent variables
+	       	    S := F monoid R;
+	       	    f = map (S, ring sat#0);
+	       	    sat = sat / f;
+	       	    );
+	       primes = primes | sat;
+	       )
 	  );
      -- We need to remove duplicate elements and join all associated primes in an apropriate new ring that contains all
      -- their coefficients.
