@@ -1140,17 +1140,20 @@ cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
 	  );
      R := ring ap#0; -- All associated primes live in a common ring
      J := sub (I,R); -- get I over there to compute sums
-     -- Here, contrary to what is stated in ES'96, we can not assume that J+P is cellular.
+     -- Here, contrary to what is stated in ES'96, we can not assume that J+ap#i is cellular.
      -- However, since Hull only wants the minimal primary component we can cellularize.
-     -- Saturation variable by variable seems to be faster than saturating by the product.
-     cvsaturate := (p) -> (
-	  todo := cv;
-	  resu := p;
-	  while #todo > 0 do (
-	       resu = saturate (resu, sub(todo#0, R));
-	       todo = drop(todo,1)
-	       );
-	  resu);
+
+     -- Saturate product cv or saturate variable by variable?
+     -- It seems to depend on the example which one is faster :(
+--      cvsaturate := (p) -> (
+-- 	  todo := cv;
+-- 	  resu := p;
+-- 	  while #todo > 0 do (
+-- 	       resu = saturate (resu, sub(todo#0, R));
+-- 	       todo = drop(todo,1)
+-- 	       );
+-- 	  resu);
+     cvsaturate := (p) -> saturate (p, sub (product cv, R));
      return ap / ( (P) -> minimalPrimaryComponent ( cvsaturate (P + J), cellVariables=>cv));
      )
 
