@@ -71,4 +71,13 @@ used 68.5799 seconds
 used 2.75544 seconds
 used 135.446 seconds
 used 2.07765 seconds
-
+-- 30.6.11 - use 4ti2 & no eliminate in radical (a6110d7ba)
+used 68.5998 seconds
+used 2.15233 seconds
+used 101.088 seconds
+used 2.15623 seconds
+-- 30.6.11 - Improvements to associated primes and cellular components (c40e0e934)
+used 71.0134 seconds
+used 1.98664 seconds
+used 89.58 seconds
+used 2.05569 seconds
