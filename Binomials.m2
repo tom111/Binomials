@@ -508,12 +508,10 @@ binomialRadical = I -> (
      	  if not cv === false then (
 	       return cellularBinomialRadical (I,cellVariables=>cv)
 	       )
-      	  else (
 	  -- In the general case
 	  print "Input not cellular, computing minimial primes ...";
 	  mp := binomialMinimalPrimes I;
 	  return ideal mingens intersect mp;
-	  )
      )
 
 cellularBinomialRadical = method (Options => {cellVariables => null}) 
