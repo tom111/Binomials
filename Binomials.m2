@@ -115,6 +115,7 @@ binomialCellularDecomposition = method (Options => {returnCellVars => false, ver
 binomialCellularDecomposition Ideal := Ideal => o -> I -> (
 -- based on code by Ignacio Ojeda and Mike Stillman     
      R := ring I;
+     if I == ideal (1_R) then error "Input was not a proper ideal";
      n := numgens R;
      Answer := {};
      L := null;
@@ -649,6 +650,7 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
      -- Algorithm from "Decompositions of Binomial Ideals" (AISM), 
      -- based on computing a cellular decomposition of the radical of I.
      R := ring I;
+     if I == ideal (1_R) then error "Input was not a proper ideal";
      ge := gens R;
      n := numgens R;
      Answer := {};
@@ -1021,8 +1023,10 @@ binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- starting from a not necessarily cellular binomial ideal
      
      if not isBinomial I then error "Input was not binomial !";
+     if I == ideal (1_(ring I)) then error "Input was not a proper ideal";
+
      vbopt := o#verbose;
-     
+
      if vbopt then print "Running cellular decomposition:";
      cd := binomialCellularDecomposition (I, returnCellVars => true, verbose=>vbopt);
      counter := 1;
