@@ -701,7 +701,8 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
      ME :=ideal; {* pc = {}; *} si := ideal; mp := {}; F := null; S:= null;
      for a in Answer do (
 	  i = i+1;
-	  print ("Finding minimal primes of cellular component: " | toString i | " of " | toString j);
+	  if o#verbose  then (
+	       print ("Finding minimal primes of cellular component: " | toString i | " of " | toString j));
 	  ME := ideal(toList(set (gens R) - a#1));
 	  pc := partialCharacter (a#0, cellVariables=>a#1);
 	  -- Check whether we have a radical ideal already:
