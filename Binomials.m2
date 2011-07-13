@@ -1442,7 +1442,7 @@ document {
           "bpd = binomialPrimaryDecomposition I",
 	  "intersect bpd == I"
           },
-     "A synonym for this function is 'BPD'.",
+     "A synonym for this function is ", TO BPD, ".",
      Caveat => {"Note that if the coefficient field needs to be extended, strange things can happen"},
      SeeAlso => BPD
      }
@@ -1463,20 +1463,20 @@ document {
           "bud = binomialUnmixedDecomposition I",
 	  "intersect bud == I"
           },
-     "A synonym for this function is 'BUD'.",
+     "A synonym for this function is ", TO BUD, ".",
      SeeAlso => BUD
      }
 
 document {
      Key => BPD,
      Headline => "Binomial Primary Decomposition",
-     "BPD is a synonym for binomialPrimaryDecomposition."
+     "BPD is a synonym for ", TO binomialPrimaryDecomposition, "."
      }
 
 document {
      Key => BUD,
      Headline => "Binomial Unmixed Decomposition",
-     "BUD is a synonym for binomialUnmixedDecomposition."
+     "BUD is a synonym for ", TO binomialUnmixedDecomposition, "."
      }
 
 
@@ -1503,7 +1503,7 @@ document {
 	  "intersect bcd == I",
      	  "binomialCellularDecomposition (I, returnCellVars=>true, verbose=>false)"
           },
-     "A synonym for this function is 'BCD'.",
+     "A synonym for this function is ", TO BCD, ".",
      "If the option ", TO verbose, " is set (default), then output about the number of components found so far will be generated.",
      SeeAlso => BCD
      }
@@ -1511,7 +1511,7 @@ document {
 document {
      Key => BCD,
      Headline => "Binomial Cellular Decomposition",
-     "BCD is a synonym for binomialCellularDecomposition."
+     "BCD is a synonym for ", TO binomialCellularDecomposition ,"."
      }
 
 document {
@@ -1606,7 +1606,26 @@ document {
 	  "binomialIsPrime I",
           },
      SeeAlso => {cellularBinomialIsPrimary, cellVariables}
+     }
+
+document {
+     Key => binomialIsPrimary,
+     Headline => "test for primary binomial ideals",
+     Usage => "binomialIsPrime I",
+     Inputs => {
+          "I" => { "a binomial ideal"} },
+     Outputs => {
+          "f" => {"true or false, depending on whether I is a primary binomial ideal"} },
+     "A binomial ideal is prime only if it is cellular. If the cellular variables ",
+     "are known, the function ", TO cellularBinomialIsPrimary, " should be used.",
+     EXAMPLE {
+	  "R = QQ[x,y,z]",
+	  "I = ideal(x-y,z^3)",
+	  "binomialIsPrimary I",
+          },
+     SeeAlso => {cellularBinomialIsPrimary, cellVariables}
      }    
+
 
 document {
      Key => {cellularBinomialIsPrimary,
@@ -1874,11 +1893,12 @@ document { Key => {cellVariables, [partialCharacter,cellVariables],
      [cellularBinomialRadical,cellVariables], [binomialIsPrime,cellVariables],
      [cellularBinomialIsPrimary,cellVariables], [cellularBinomialAssociatedPrimes,cellVariables],
      [cellularBinomialPrimaryDecomposition,cellVariables],
-     [cellularBinomialUnmixedDecomposition,cellVariables]}, Headline => "cellular variables", "The
-     cellular variables of a binomial ideal are the variables which are non-zerodivisors modulo that
-     ideal. With this option these variables, if known in advance, can be handed over to specialized
-     functions for cellular ideals. ", SeeAlso =>
-     {cellularBinomialPrimaryDecomposition,cellularBinomialAssociatedPrimes} }
+     [cellularBinomialUnmixedDecomposition,cellVariables]},
+     Headline => "cellular variables",
+     "The cellular variables of a binomial ideal are the variables which are non-zerodivisors modulo
+     that ideal. With this option these variables, if known in advance, can be handed over to
+     specialized functions for cellular ideals. ",
+     SeeAlso => {cellularBinomialPrimaryDecomposition,cellularBinomialAssociatedPrimes} }
 
 document {
      Key => {returnCellVars,
