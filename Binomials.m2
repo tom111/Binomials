@@ -1168,19 +1168,24 @@ removeRedundant List := List => o -> l -> (
      -- Algorithm: For each ideal in the list, remove all ideals above it.
      if #l == 0 then error "empty list given !";
      
+     -- List to store the result, the flag marks elements that are already checked
      result := for i in l list {i,false};
-     flist := for i in result list if i#1===false then i else continue;
-     
+     -- List to keep track of ideals ot be checked
+     flist := copy result;
+     -- flist at this point is only needed for the output 
+     -- at the beginning of the while loop.
+          
      p:= Ideal;
-     -- While we have not considered elements:	  
+     -- While we have previously unconsidered elements:
      while #(flist) > 0 do (
 	  if o#verbose then << #flist << " Ideals to check" << endl;
      	  p = flist#0;
      	  result = for f in result list (
+	       -- Check if p is contained in f which makes f redundant
 	       if isSubset (p#0,f#0) then continue
 	       else f
      	  );
-          -- inserting p, but flagged
+          -- insert p, but flagged.
      	  result = append (result,(p#0,true));
 	  -- Updating the todolist
 	  flist = for i in result list if i#1===false then i else continue;
