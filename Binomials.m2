@@ -628,22 +628,19 @@ binomialIsPrime Ideal := Ideal => o -> I -> (
 
      -- Input: A Binomial Ideal and the cell variables if the ideal is cellular.
      -- Output: true if the ideal is a prime ideal, false otherwise
-     cv := cellVars(I, cellVariables=>o#cellVariables);
-
-     R := ring I;
-     if I == ideal (1_R) then return false;
-     pc := partialCharacter (I,cellVariables=>cv);
-     ncv := toList(set (gens R) - cv);
-     for v in ncv do (
-	  if not isSubset(ideal (v) , I) then return false;
-     	  );
-
-     -- Is the partial character saturated ???     
-     if image Lsat pc#"L" != image pc#"L" then return false;
      
-     -- all tests passed:
-     return true;
-     )
+     -- test for cellularity:
+     -- if cellular variables are given then we belive that I is cellular
+     cv := null;
+     if o#cellVariables === null then (
+	  cv = isCellular (I, returnCellVars=>true);
+     	  if cv === false  then return false)
+     else cv = o#cellVariables;
+     
+     -- Test if the partial character saturated:
+     pc := partialCharacter (I, cellVariables=>cv);
+     if image Lsat pc#"L" != image pc#"L" then return false;
+     true)
 
 binomialMinimalPrimes = method (Options => {verbose=>true})
 binomialMinimalPrimes Ideal := Ideal => o -> I -> (
