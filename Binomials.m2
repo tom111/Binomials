@@ -646,6 +646,7 @@ binomialMinimalPrimes = method (Options => {verbose=>true})
 binomialMinimalPrimes Ideal := Ideal => o -> I -> (
      -- Algorithm from "Decompositions of Binomial Ideals" (AISM), 
      -- based on computing a cellular decomposition of the radical of I.
+     if not isBinomial I then error "Input was not binomial";
      R := ring I;
      if I == ideal (1_R) then error "Input was not a proper ideal";
      ge := gens R;
