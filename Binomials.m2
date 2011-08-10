@@ -31,7 +31,7 @@ newPackage(
 		  HomePage => "http://www.thomas-kahle.de/bpd"}},
     	Headline => "Specialized routines for binomial ideals",
 	Configuration => { },
-    	DebuggingMode => true,
+    	DebuggingMode => false,
 	Reload=>true
     	)
    
@@ -1431,7 +1431,15 @@ beginDocumentation()
 document { 
         Key => Binomials,
         Headline => "a package for binomial ideals",
-        EM "Binomials", " is a package for binomial ideals."
+        EM "Binomials", " is a package for binomial ideals.\n", BR{},BR{},BR{},
+	BOLD "Literature \n",
+	UL {
+	LI {"[ES96] ", EM "Binomial ideals ", "(D. Eisenbud, B.Sturmfels, 1996).\n"},
+    	LI {"[DMM10] ", EM "Combinatorics of binomial primary decomposition ", "(A. Dickenstein, L. Matusevich, E.Miller, 2010)\n"},
+    	LI {"[OS00] ", EM "Cellular Binomial Ideals. Primary Decomposition of Binomial Ideals ", "(I. Ojeda, R. Piedra-Sanchez, 2000)\n"},
+    	LI {"[Alt00] ", EM "The chain property for the associated primes of A-graded ideals ", "(K. Altmann, 2000)\n"},
+	LI {"[KM11] ", EM "Decompositions of commutative monoid congruences and binomial ideals ", "(T. Kahle, E. Miller, 2011)"}
+	}
         }
    
 document {
@@ -1464,7 +1472,7 @@ document {
           "I" => { "a binomial ideal"} },
      Outputs => {
           "l" => {"a list of unmixed components of I"} },
-     "This routine returns an unmixed decomposition of a binomial ideal into binomial ideals.",
+     "This routine returns an unmixed decomposition of a binomial ideal into binomial ideals. The implemented algorithm is a variant of Algorithm 4 in [OS00].",
      EXAMPLE {
           "R = QQ[x,y,z]",
           "I = ideal (x^2, x*y, y^2, x*(z^3-1), y*(z^2-1))",
@@ -1472,6 +1480,7 @@ document {
 	  "intersect bud == I"
           },
      "A synonym for this function is ", TO BUD, ".",
+     Caveat=> "Apart from unmixedness, properties of the output decomposition are defined only by the course of the algorithm, in particular it is not mesoprimary decomposition of [KM11].",
      SeeAlso => BUD
      }
 
