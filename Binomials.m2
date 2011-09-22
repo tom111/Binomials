@@ -764,10 +764,10 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
 	  if #ml == 1 then << "1 monomial to consider for this cellular component " << endl
      	  else <<  #ml << " monomials to consider for this cellular component" << endl;
 	  );
-
+     
      -- For a given partialCharacter, this hash table saves a witness monomial,
      -- and the corresponding lattice ideal.  The ideal is saved to potentially
-     -- skip the saturation further down.
+     -- skip the ideal saturation further down.
      seenpc := new MutableHashTable;
 
      -- A dummy ideal and partial Characters:
@@ -1040,14 +1040,14 @@ cellularBinomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
      -- We only need to check pairwise containments.
      pair := null;
      for l1 in al do (
+	  -- break out if the inner loop assigned a pair:
+	  if pair === null then break;
 	  for l2 in delete(l1,al) do (
      	       if (isSubset (image l1#0, image l2#0)) and (rank image l1#0 < rank image l2#0) then (
 		    -- found a comparable pair and thus embedded primes:
 		    pair = (l1,l2);
-		    break;
-		    )
-	       )
-	  );
+		    -- break the inner loop.
+		    break)));
      -- If no pair was found, then I is unmixed an we are done
      if pair === null then return {I};
      
