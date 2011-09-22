@@ -23,15 +23,14 @@
 
 newPackage(
 	"Binomials",
-	Version => "0.9.9",
-	Date => "June 2011",
+	Version => "1.0",
+	Date => "September 2011",
 	Authors => {{
 		  Name => "Thomas Kahle",
 		  Email => "kahle@mis.mpg.de",
 		  HomePage => "http://www.thomas-kahle.de/bpd"}},
     	Headline => "Specialized routines for binomial ideals",
 	Configuration => { },
-    	DebuggingMode => false,
 	Reload=>true
     	)
    
@@ -86,7 +85,6 @@ export {
      returnPrimes, -- for cellularBinomialIsPrimary 
      returnPChars, -- for cellularBinomialIsPrimary
      returnCellVars, -- for binomialCellularDecomposition
-     verbose, -- produce more output
      
      --Types
      PartialCharacter--HashTable
@@ -111,7 +109,7 @@ axisSaturate = (I,i) -> (
     )
 
 -- Cellular decomposition of binomial ideals:
-binomialCellularDecomposition = method (Options => {returnCellVars => false, verbose=>true})
+binomialCellularDecomposition = method (Options => {returnCellVars => false, Verbose=>true})
 binomialCellularDecomposition Ideal := Ideal => o -> I -> (
 -- based on code by Ignacio Ojeda and Mike Stillman     
      R := ring I;
@@ -132,7 +130,7 @@ binomialCellularDecomposition Ideal := Ideal => o -> I -> (
 	      L = ToDo#0;
 	      ToDo = drop(ToDo,1);
 	      if gens IntersectAnswer % L#2 == 0 then (
-		   if o#verbose then (
+		   if o#Verbose then (
 			<< "redundant component" << endl;
 			)
 		   )
@@ -142,7 +140,7 @@ binomialCellularDecomposition Ideal := Ideal => o -> I -> (
 		   -- We have an answer
                    compo = compo + 1; 
 		   newone := trim L#2;
-		   if o#verbose then (
+		   if o#Verbose then (
 			<< "cellular components found: " << compo << endl;);
 		   if o#returnCellVars then Answer = append(Answer,{newone, delete(1_R,L#0)})
 		   else Answer = append (Answer,newone);
@@ -641,7 +639,7 @@ binomialIsPrime Ideal := Ideal => o -> I -> (
      if image Lsat pc#"L" != image pc#"L" then return false;
      true)
 
-binomialMinimalPrimes = method (Options => {verbose=>true})
+binomialMinimalPrimes = method (Options => {Verbose=>true})
 binomialMinimalPrimes Ideal := Ideal => o -> I -> (
      -- Algorithm from "Decompositions of Binomial Ideals" (AISM), 
      -- based on computing a cellular decomposition of the radical of I.
@@ -661,14 +659,14 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
 	      L = ToDo#0;
 	      ToDo = drop(ToDo,1);
 	      if gens IntersectAnswer % L#2 == 0 then (
-		   if o#verbose then (
+		   if o#Verbose then (
 			<< "redundant component" << endl;
 			);
 		   )
 	      else if #(L#1) === 0 then ( -- #(L#1) counts 'remaining variables to check'
                    compo = compo + 1; 		
 		   newone := trim L#2;
-		   if o#verbose then (
+		   if o#Verbose then (
 			<< "components found so far: " << compo << endl;);
 		   Answer = append(Answer,{newone, delete(1_R,L#0)});
 		   IntersectAnswer = intersect(IntersectAnswer,newone);
@@ -692,7 +690,7 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
      while next() do ();
      -- print Answer;
      
-     if o#verbose then print "Decomposition done.";
+     if o#Verbose then print "Decomposition done.";
           
      ncv := {};
      i := 0;
@@ -700,7 +698,7 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
      ME :=ideal; {* pc = {}; *} si := ideal; mp := {}; F := null; S:= null;
      for a in Answer do (
 	  i = i+1;
-	  if o#verbose  then (
+	  if o#Verbose  then (
 	       print ("Finding minimal primes of cellular component: " | toString i | " of " | toString j));
 	  ME := ideal(toList(set (gens R) - a#1));
 	  pc := partialCharacter (a#0, cellVariables=>a#1);
@@ -765,7 +763,7 @@ isBetween = (a,b,c) -> (
 	  return false;
      )
 
-cellularBinomialAssociatedPrimes = method (Options => {cellVariables => null, verbose=>true}) 
+cellularBinomialAssociatedPrimes = method (Options => {cellVariables => null, Verbose=>true}) 
 cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> ( 
      -- Computes the associated primes of cellular binomial ideal
      -- It returns them in a polynomial ring with the same variables as ring I,
@@ -782,7 +780,7 @@ cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> (
      f := map (R, ring stdm);
      ml := flatten entries f stdm;
      
-     if o#verbose then(
+     if o#Verbose then(
 	  if #ml == 1 then << "1 monomial to consider for this cellular component " << endl
      	  else <<  #ml << " monomials to consider for this cellular component" << endl;
 	  );
@@ -988,13 +986,13 @@ BCD = I -> binomialCellularDecomposition I
 BPD = I -> binomialPrimaryDecomposition I
 BUD = I -> binomialUnmixedDecomposition I
 
-binomialUnmixedDecomposition = method (Options => {verbose=>true})
+binomialUnmixedDecomposition = method (Options => {Verbose=>true})
 binomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
      if not isBinomial I then error "Input was not binomial !";
-     vbopt := o#verbose;
+     vbopt := o#Verbose;
 
      if vbopt then print "Running cellular decomposition:";
-     cd := binomialCellularDecomposition (I, returnCellVars => true, verbose=>vbopt);
+     cd := binomialCellularDecomposition (I, returnCellVars => true, Verbose=>vbopt);
      counter := 1;
      cdc := #cd;
      bud := {};
@@ -1003,7 +1001,7 @@ binomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
 		    if vbopt then (
 	   	    	 print ("Decomposing cellular component: " | toString counter | " of " | toString cdc);
 		    	 counter = counter +1;);
-		    bud = bud | cellularBinomialUnmixedDecomposition (i#0, cellVariables => i#1,verbose=>vbopt);
+		    bud = bud | cellularBinomialUnmixedDecomposition (i#0, cellVariables => i#1,Verbose=>vbopt);
 		    if vbopt then (
 			 print "done";
 			 );
@@ -1011,10 +1009,10 @@ binomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
 	       ) -- lambda term
     	  ); -- scan
      if vbopt then print "Removing redundant components...";
-     return removeRedundant (bud, verbose=>vbopt );
+     return removeRedundant (bud, Verbose=>vbopt );
      )
 
-binomialPrimaryDecomposition = method (Options => {verbose=>true})
+binomialPrimaryDecomposition = method (Options => {Verbose=>true})
 binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- The full binomial primary decomposition 
      -- starting from a not necessarily cellular binomial ideal
@@ -1022,10 +1020,10 @@ binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      if not isBinomial I then error "Input was not binomial !";
      if I == ideal (1_(ring I)) then error "Input was not a proper ideal";
 
-     vbopt := o#verbose;
+     vbopt := o#Verbose;
 
      if vbopt then print "Running cellular decomposition:";
-     cd := binomialCellularDecomposition (I, returnCellVars => true, verbose=>vbopt);
+     cd := binomialCellularDecomposition (I, returnCellVars => true, Verbose=>vbopt);
      counter := 1;
      cdc := #cd;
      bpd := {};
@@ -1034,7 +1032,7 @@ binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
 		    if vbopt then (
 	   	    	 print ("Decomposing cellular component: " | toString counter | " of " | toString cdc);
 		    	 counter = counter +1;);
-		    bpd = bpd | cellularBinomialPrimaryDecomposition (i#0, cellVariables => i#1,verbose=>vbopt);
+		    bpd = bpd | cellularBinomialPrimaryDecomposition (i#0, cellVariables => i#1,Verbose=>vbopt);
 		    if vbopt then (
 			 print "done";
 			 );
@@ -1044,14 +1042,14 @@ binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
       
      bpd = joinCyclotomic bpd;
      if vbopt then print "Removing redundant components...";
-     return removeRedundant (bpd, verbose=>vbopt );
+     return removeRedundant (bpd, Verbose=>vbopt );
      )
 
-cellularBinomialUnmixedDecomposition = method (Options => {cellVariables => null, verbose=>true}) 
+cellularBinomialUnmixedDecomposition = method (Options => {cellVariables => null, Verbose=>true}) 
 cellularBinomialUnmixedDecomposition Ideal := Ideal => o -> I -> ( 
      -- computes the unmixed decomposition of a cellular ideal
      -- as defined in Ojeda/Sanchez
-     vbopt := o#verbose;
+     vbopt := o#Verbose;
      cv := cellVars(I, cellVariables=>o#cellVariables);
      ncv := toList (set gens ring I - cv);
      
@@ -1122,15 +1120,15 @@ cellularBinomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
 	  };
      )
 
-cellularBinomialPrimaryDecomposition = method (Options => {cellVariables => null, verbose=>true}) 
+cellularBinomialPrimaryDecomposition = method (Options => {cellVariables => null, Verbose=>true}) 
 cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> ( 
      -- computes the binomial primary decomposition of a cellular ideal
      -- I needs to be cellular. Cell variables can be given to speed up
      -- Implements algorithm 9.7 in ES96, respectively A5 in OS97
-     vbopt := o#verbose;
+     vbopt := o#Verbose;
      cv := cellVars(I, cellVariables=>o#cellVariables);
      ncv := toList (set gens ring I - cv);
-     ap := cellularBinomialAssociatedPrimes (I, cellVariables => cv,verbose=>vbopt);
+     ap := cellularBinomialAssociatedPrimes (I, cellVariables => cv,Verbose=>vbopt);
      -- If cv coincides with gens R, then the associated primes are their own minimal primary
      -- components (since in characteristic zero lattice ideals are radical):
      if #ncv == 0 then return ap
@@ -1159,7 +1157,7 @@ cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      return ap / ( (P) -> minimalPrimaryComponent ( cvsaturate (P + J), cellVariables=>cv));
      )
 
-removeRedundant = method (Options => {verbose => true})
+removeRedundant = method (Options => {Verbose => true})
 removeRedundant List := List => o -> l -> (
      -- Removes redundant components from a list of ideals to be intersected
      -- Algorithm: For each ideal in the list, remove all ideals above it.
@@ -1175,7 +1173,7 @@ removeRedundant List := List => o -> l -> (
      p:= Ideal;
      -- While we have previously unconsidered elements:
      while #(flist) > 0 do (
-	  if o#verbose then << #flist << " Ideals to check" << endl;
+	  if o#Verbose then << #flist << " Ideals to check" << endl;
      	  p = flist#0;
      	  result = for f in result list (
 	       -- Check if p is contained in f which makes f redundant
@@ -1187,7 +1185,7 @@ removeRedundant List := List => o -> l -> (
 	  -- Updating the todolist
 	  flist = for i in result list if i#1===false then i else continue;
 	  );
-     if o#verbose then << #l-#result << " redundant ideals removed. Computing mingens of result.";
+     if o#Verbose then << #l-#result << " redundant ideals removed. Computing mingens of result.";
      result = for i in result list ideal mingens i#0;
      return result;
 )
@@ -1310,7 +1308,7 @@ binomialSolve = I -> (
 	  );
 	  
      R := ring I;
-     cd := binomialCellularDecomposition (I,returnCellVars=>true,verbose=>false);
+     cd := binomialCellularDecomposition (I,returnCellVars=>true,Verbose=>false);
      exponentsols := flatten for c in cd list cellularBinomialExponentSolve (c#0,c#1);
 
      -- determine the least common denominator, ignoring nulls
@@ -1516,10 +1514,10 @@ document {
           "I = ideal (x*y-z, x*z-y^2)",
           "bcd = binomialCellularDecomposition I",
 	  "intersect bcd == I",
-     	  "binomialCellularDecomposition (I, returnCellVars=>true, verbose=>false)"
+     	  "binomialCellularDecomposition (I, returnCellVars=>true, Verbose=>false)"
           },
      "A synonym for this function is ", TO BCD, ".",
-     "If the option ", TO verbose, " is set (default), then output about the number of components found so far will be generated.",
+     "If the option ", TO Verbose, " is set (default), then output about the number of components found so far will be generated.",
      SeeAlso => BCD
      }
 
@@ -1583,7 +1581,7 @@ document {
 	  "I = ideal(y^3,y^2*z^2-x^3,x*y^2*z,x^3*z-x*y)",
 	  "binomialMinimalPrimes I",
           },
-     "If the option ", TO verbose, " is set (default), then output about the number of components found so far will be generated.",
+     "If the option ", TO Verbose, " is set (default), then output about the number of components found so far will be generated.",
      SeeAlso => binomialRadical
      }    
 
@@ -1960,15 +1958,14 @@ document {
      }
 
 document {
-     Key => {verbose,
-	  [binomialPrimaryDecomposition, verbose],
-	  [binomialUnmixedDecomposition, verbose],
-	  [binomialCellularDecomposition,verbose],
-	  [binomialMinimalPrimes,verbose],
-	  [cellularBinomialAssociatedPrimes,verbose],
-	  [cellularBinomialPrimaryDecomposition,verbose],
-	  [removeRedundant,verbose],
-	  [cellularBinomialUnmixedDecomposition,verbose]},
+     Key => {[binomialPrimaryDecomposition, Verbose],
+	  [binomialUnmixedDecomposition, Verbose],
+	  [binomialCellularDecomposition,Verbose],
+	  [binomialMinimalPrimes,Verbose],
+	  [cellularBinomialAssociatedPrimes,Verbose],
+	  [cellularBinomialPrimaryDecomposition,Verbose],
+	  [removeRedundant,Verbose],
+	  [cellularBinomialUnmixedDecomposition,Verbose]},
      Headline => "generate informative output",
      "If this option is set, functions will generate additional output. Defaults to true"
      }
@@ -2003,7 +2000,7 @@ assert (intersect bpd == sub(I,ring bpd#0))
 TEST ///
 R = QQ[c,d,x,y,z,w];
 I = ideal(x^3*d^2*w-c*z^2,x^5*y^2-w^7,w^3-z^8,z^2-d*w*x^7)
-time bpd = binomialPrimaryDecomposition (I,verbose=>false);
+time bpd = binomialPrimaryDecomposition (I,Verbose=>false);
 assert (intersect bpd == I)
 ///
 
@@ -2019,14 +2016,14 @@ assert (intersect bpd == I)
 TEST ///
 R = QQ[a..h]
 I = ideal(d*g*h-e*g*h,a*b*g-c*f*h,a*b*c-e*g*h,c*f*h^2-d*f,e^2*g*h-d*h,b*d*f*h-c*g,a*d*f*g-c*e,b*c*e*g-a*f,a*b*e*f-c*d);
-bpd = binomialPrimaryDecomposition (I,verbose=>false);
+bpd = binomialPrimaryDecomposition (I,Verbose=>false);
 assert (intersect bpd == I); 
 ///
 
 TEST ///
 -- Cyclotomic stuff
 R = QQ[x,y,z]; I = ideal (x^2*y-z^2, x^2-z^3, y^4-1); 
-bpd = BPD (I,verbose=>false);
+bpd = BPD (I,Verbose=>false);
 assert (intersect bpd == sub(I, ring bpd#0));
 ///
 
@@ -2034,6 +2031,6 @@ TEST ///
 -- Unmixed Decomposition
 R = QQ[x,y,z];
 I = ideal (x^2, y^2, x*y, x*(z^3-1), y*(z^2-1))
-bud = BUD (I, verbose=>false);
+bud = BUD (I, Verbose=>false);
 assert(intersect bud == I);
 ///
