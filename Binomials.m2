@@ -113,7 +113,7 @@ binomialCellularDecomposition = method (Options => {ReturnCellVars => false, Ver
 binomialCellularDecomposition Ideal := Ideal => o -> I -> (
 -- based on code by Ignacio Ojeda and Mike Stillman     
      R := ring I;
-     if I == ideal (1_R) then error "Input was not a proper ideal";
+     if I == ideal (1_R) then return {};
      n := numgens R;
      Answer := {};
      L := null;
@@ -631,7 +631,7 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
      -- based on computing a cellular decomposition of the radical of I.
      if not isBinomial I then error "Input was not binomial";
      R := ring I;
-     if I == ideal (1_R) then error "Input was not a proper ideal";
+     if I == ideal (1_R) then return {};
      ge := gens R;
      n := numgens R;
      Answer := {};
@@ -989,10 +989,9 @@ binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- starting from a not necessarily cellular binomial ideal
      
      if not isBinomial I then error "Input was not binomial !";
-     if I == ideal (1_(ring I)) then error "Input was not a proper ideal";
+     if I == ideal (1_(ring I)) then return {};
 
      vbopt := o#Verbose;
-
      if vbopt then print "Running cellular decomposition:";
      cd := binomialCellularDecomposition (I, ReturnCellVars => true, Verbose=>vbopt);
      counter := 1;
@@ -1129,20 +1128,19 @@ removeRedundant = method (Options => {Verbose => true})
 removeRedundant List := List => o -> l -> (
      -- Removes redundant components from a list of ideals to be intersected
      -- Algorithm: For each ideal in the list, remove all ideals above it.
-     if #l == 0 then error "empty list given !";
+     if #l == 0 then return {};
      
      -- List to store the result, the flag marks elements that are already checked
      result := for i in l list {i,false};
-     -- List to keep track of ideals ot be checked
+     -- List to keep track of ideals to be checked
      flist := copy result;
      -- flist at this point is only needed for the output 
      -- at the beginning of the while loop.
           
-     p:= Ideal;
      -- While we have previously unconsidered elements:
      while #(flist) > 0 do (
 	  if o#Verbose then << #flist << " Ideals to check" << endl;
-     	  p = flist#0;
+     	  p := flist#0;
      	  result = for f in result list (
 	       -- Check if p is contained in f which makes f redundant
 	       if isSubset (p#0,f#0) then continue
