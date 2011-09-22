@@ -1344,9 +1344,6 @@ binomialSolve = I -> (
      sols = expo \ sols;
      sols = pack (#(gens ring I),sols);
 
-     if lcd > 2 then ( 
-	  print ("BinomialSolve created a cyclotomic field of order " | toString lcd ); 
-	  );
      return sols; 
      )
 
