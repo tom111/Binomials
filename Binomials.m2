@@ -1446,7 +1446,7 @@ document {
      Inputs => {
           "I" => { "a binomial ideal"} },
      Outputs => {
-          "l" => {"a list of binomial primary components of I"} },
+          {"a list of binomial primary components of I"} },
      "This routine returns a minimal primary decomposition of a binomial ideal into binomial ideals.",
      EXAMPLE {
           "R = QQ[x,y,z]",
@@ -1467,7 +1467,7 @@ document {
      Inputs => {
           "I" => { "a binomial ideal"} },
      Outputs => {
-          "l" => {"a list of unmixed components of I"} },
+          {"a list of unmixed components of I"} },
      "This routine returns an unmixed decomposition of a binomial ideal into binomial ideals. The implemented algorithm is a variant of Algorithm 4 in [OS00].",
      EXAMPLE {
           "R = QQ[x,y,z]",
@@ -1502,7 +1502,7 @@ document {
      Inputs => {
           "I" => { "a binomial ideal"} },
      Outputs => {
-          "l" => {"a list of cellular ideals whose intersection is I or 
+          {"a list of cellular ideals whose intersection is I or 
 	        a list of pairs of these ideals and their cellular variables 
 		if the option ReturnCellVars => true is used"} },
      "A binomial ideal I is called cellular if modulo I every variable in 
@@ -1534,7 +1534,7 @@ document {
      Inputs => {
           "I" => { "a binomial ideal"} },
      Outputs => {
-          "l" => {"the radical of I"} },
+          {"the radical of I"} },
      "If the input is a cellular binomial ideal then a very fast algorithm is used. 
      If one knows this and also the cellular variables then ", 
      TO cellularBinomialRadical, " should be used.",
@@ -1554,7 +1554,7 @@ document {
      Inputs => {
           "I" => { "a cellular binomial ideal"} },
      Outputs => {
-          "l" => {"the radical of I"} },
+          {"the radical of I"} },
      "The radical of a cellular binomial ideal can be determined very quickly. If the 
      cellular variables are known they can be given as a list via the option ", TO CellVariables, ".",
      EXAMPLE {
@@ -1574,7 +1574,7 @@ document {
      Inputs => {
           "I" => { "a binomial ideal"} },
      Outputs => {
-          "l" => {"the list of minimal primes of I"} },
+          {"the list of minimal primes of I"} },
      "The binomial minimal primes of a binomial ideal over QQ exist only in extension fields.",
      EXAMPLE {
 	  "R = QQ[x,y,z]",
@@ -1592,7 +1592,7 @@ document {
      Inputs => {
           "I" => { "a binomial ideal"} },
      Outputs => {
-          "l" => {"the list of associated primes of I"} },
+          {"the list of associated primes of I"} },
      "First a cellular decomposition is run, then the associated primes of each cellular component are determined.",
      EXAMPLE {
 	  "R = QQ[x,y]",
@@ -1610,7 +1610,7 @@ document {
      Inputs => {
           "I" => { "a binomial ideal"} },
      Outputs => {
-          "f" => {"true or false, depending on whether I is a binomial prime ideal"} },
+          {"true or false, depending on whether I is a binomial prime ideal"} },
      "A binomial ideal is prime only if it is cellular. If the cellular variables ",
      "are known they can be given via the ", TO CellVariables, " option.",
      EXAMPLE {
@@ -1628,7 +1628,7 @@ document {
      Inputs => {
           "I" => { "a binomial ideal"} },
      Outputs => {
-          "f" => {"true or false, depending on whether I is a primary binomial ideal"} },
+          {"true or false, depending on whether I is a primary binomial ideal"} },
      "A binomial ideal is prime only if it is cellular. If the cellular variables ",
      "are known, the function ", TO cellularBinomialIsPrimary, " should be used.",
      EXAMPLE {
@@ -1648,7 +1648,7 @@ document {
      Inputs => {
           "I" => { "a binomial ideal"} },
      Outputs => {
-          "f" => {"true or false, depending on whether I is a binomial primary ideal"} },
+          {"true or false, depending on whether I is a binomial primary ideal"} },
      "A binomial ideal is primary only if it is cellular. If the cellular variables ",
      "are known they can be given via the ", TO CellVariables, " option. ", "If the ideal is not primary, ",
      "either 'false' or two distinct associated primes can be returned. The behaviour can be changed using the options ",
@@ -1668,10 +1668,10 @@ document {
      Inputs => {
           "I" => { "a unital binomial ideal"}},
      Outputs => {
-          "l" => {"the list of solutions of I in QQ[ww]"} },
-     "The solutions of a unital binomial ideal exist in a cyclotomic field. This function
-     will solve the ideal and construct an apropriate cyclotomic field such that the solutions are contained.
-     If no extension is needed then the symbol that was given will remain untouched",
+          {"the list of points in the zero locus of I in QQ[ww]"} },
+     "The solutions of a set of unital binomial equations exist in a cyclotomic field. This function
+     will compute the variety of a unital binomial ideal and construct an apropriate cyclotomic 
+     field containing the entire variety (as a subset of the algebraic closure of QQ).",
      EXAMPLE {
 	  "R = QQ[x,y,z,w]",
 	  "I = ideal (x-y,y-z,z*w-1*w,w^2-x)",
@@ -1692,7 +1692,7 @@ document {
      Inputs => {
           "I" => { "a binomial ideal"}},
      Outputs => {
-          "t" => {"true, or the list of cell variables if I is cellular, false otherwise."} },
+          {"true, or the list of cell variables if I is cellular, false otherwise."} },
      "This function is the standard way to compute the cellular variables.",
      EXAMPLE {
 	  "R = QQ[x,y,z]",
@@ -1711,7 +1711,7 @@ document {
      Inputs => {
           "I" => { "an ideal"}},
      Outputs => {
-          "t" => {"true if I is binomial, or unital respectively."} },
+          {"true if I is binomial, or unital respectively."} },
      EXAMPLE {
 	  "R = QQ[x,y,z]",
 	  "isBinomial ideal(x^2)",
@@ -1735,7 +1735,7 @@ document {
 	  "m" => { "a vector of exponents, one for each generator of R"},
 	  "c" => { "an element of the coefficient ring of R"}},
      Outputs => {
-          "b" => {"The binomial defined by the input data, as an element of R."} },
+          {"The binomial defined by the input data, as an element of R."} },
      EXAMPLE {
 	  "R = QQ[x,y,z]",
 	  "makeBinomial (R, [1,-1,-2], 10)"
@@ -1750,7 +1750,7 @@ document {
           "R" => { "a ring"},
 	  "L" => { "an interger matrix whose columns span the lattice."}},
      Outputs => {
-          "I" => {"The unital lattice basis ideal in R."} },
+          {"The unital lattice basis ideal in R, defined by L"} },
      "This function is only a very simple wrapper around ", TO makeBinomial ,
      EXAMPLE {
 	  "R = QQ[x,y,z]",
@@ -1769,7 +1769,7 @@ document {
      Inputs => {
           "I" => { "a cellular binomial ideal"} },
      Outputs => {
-          "l" => {"the list of associated primes of I"} },
+          {"the list of associated primes of I"} },
      "If the cell variables are known, they can be given via the option ", TO CellVariables, " otherwise they are computed.",
      EXAMPLE {
 	  "R = QQ[x,y]",
@@ -1790,7 +1790,7 @@ document {
      Inputs => {
           "I" => { "a cellular binomial ideal"} },
      Outputs => {
-          "l" => {"the primary decomposition of I"} },
+          {"a binoimal primary decomposition of I"} },
      "If the cell variables are known, they can be given via the option ", TO CellVariables, " otherwise they are computed.",
      EXAMPLE {
 	  "R = QQ[x,y]",
@@ -1811,7 +1811,7 @@ document {
      Inputs => {
           "I" => { "a cellular binomial ideal"} },
      Outputs => {
-          "l" => {"an unmixed decomposition of I"} },
+          {"an unmixed decomposition of I"} },
      "If the cell variables are known, they can be given via the option ", TO CellVariables, " otherwise they are computed.",
      EXAMPLE {
 	  "R = QQ[x,y]",
@@ -1830,7 +1830,7 @@ document {
      Inputs => {
           "I" => { "a cellular binomial ideal"} },
      Outputs => {
-          "pc" => {"the ", TO PartialCharacter, }},
+          {"the ", TO PartialCharacter, }},
      "If the cell variables are known, they can be given via the option ", TO CellVariables, " otherwise they are computed.",
      EXAMPLE {
 	  "R = QQ[x,y]",
@@ -1850,7 +1850,7 @@ document {
 	  "R" => {"a ring to contain the output ideal"},
 	  "rho" => {"a ", TO partialCharacter } },
      Outputs => {
-	  "I" => {"the lattice ideal corresponding to rho"}
+	  {"the lattice ideal corresponding to rho"}
 	  },
      Caveat => {"The variables occurring in rho#\"J\" must be variables of R."},
      EXAMPLE {
@@ -1873,7 +1873,7 @@ document {
 	  "w" => { "number of variables in each generator "},
 	  "h" => { "should the generators be 'as homogeneous as possible'"} },
      Outputs => {
-          "I" => {"a random ideal"} },
+           {"a random ideal"} },
      "The exponents are drawn at random from {-d,...,d}. All coefficients are set to 1.",
      EXAMPLE {
 	  "R = QQ[a..x]",
@@ -1892,7 +1892,7 @@ document {
      Inputs => {
           "L" => { "A list of ideals"} },
      Outputs => {
-          "l" => {"A list with some redundant ideals removed"} },
+          {"A list with some redundant ideals removed"} },
      EXAMPLE {
 	  "R = QQ[a,b]",
 	  "L = {ideal(a^4),ideal(a^3),ideal(a^5),ideal(b^2*a) }",
