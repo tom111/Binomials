@@ -854,7 +854,7 @@ binomialAssociatedPrimes = I -> (
 cellularAssociatedLattices = method (Options => {CellVariables => null})
 cellularAssociatedLattices Ideal := Ideal => o -> I -> (
      -- Computes the associated lattices of a cellular binomial ideal
-     -- WARNING: The definition might differ from the final definition in [Kahle/Miller]
+     -- WARNING: The definition might differ from the final definition in [KM11]
      
      R := ring I;
      cv := cellVars(I, CellVariables=>o#CellVariables);
@@ -1381,19 +1381,17 @@ cellularBinomialExponentSolve = (I,cv) -> (
 
 beginDocumentation()
 
-document { 
+document {
         Key => Binomials,
         Headline => "a package for binomial ideals",
         EM "Binomials", " is a package for binomial ideals.\n", BR{},BR{},BR{},
 	BOLD "Literature \n",
 	UL {
-	LI {"[ES96] ", EM "Binomial ideals ", "(D. Eisenbud, B.Sturmfels, 1996).\n"},
-    	LI {"[DMM10] ", EM "Combinatorics of binomial primary decomposition ", "(A. Dickenstein, L. Matusevich, E.Miller, 2010)\n"},
-    	LI {"[OS00] ", EM "Cellular Binomial Ideals. Primary Decomposition of Binomial Ideals ", "(I. Ojeda, R. Piedra-Sanchez, 2000)\n"},
-    	LI {"[Alt00] ", EM "The chain property for the associated primes of A-graded ideals ", "(K. Altmann, 2000)\n"},
-	LI {"[KM11] ", EM "Decompositions of commutative monoid congruences and binomial ideals ", "(T. Kahle, E. Miller, 2011)"}
-	}
-        }
+	  LI {"[ES96] ", EM "Binomial ideals ", "(D. Eisenbud, B.Sturmfels, 1996).\n"},
+	  LI {"[DMM10] ", EM "Combinatorics of binomial primary decomposition ", "(A. Dickenstein, L. Matusevich, E.Miller, 2010)\n"},
+	  LI {"[OS00] ", EM "Cellular Binomial Ideals. Primary Decomposition of Binomial Ideals ", "(I. Ojeda, R. Piedra-Sanchez, 2000)\n"},
+	  LI {"[Alt00] ", EM "The chain property for the associated primes of A-graded ideals ", "(K. Altmann, 2000)\n"},
+	  LI {"[KM11] ", EM "Decompositions of commutative monoid congruences and binomial ideals ", "(T. Kahle, E. Miller, 2011)"}}}
    
 document {
      Key => {binomialPrimaryDecomposition,
@@ -1413,8 +1411,7 @@ document {
           },
      "A synonym for this function is ", TO BPD, ".",
      Caveat => {"Note that if the coefficient field needs to be extended, strange things can happen"},
-     SeeAlso => BPD
-     }
+     SeeAlso => BPD}
 
 document {
      Key => {binomialUnmixedDecomposition,
@@ -1425,7 +1422,8 @@ document {
           "I" => { "a binomial ideal"} },
      Outputs => {
           {"a list of unmixed components of I"} },
-     "This routine returns an unmixed decomposition of a binomial ideal into binomial ideals. The implemented algorithm is a variant of Algorithm 4 in [OS00].",
+     "This routine returns an unmixed decomposition of a binomial ideal into binomial ideals. 
+     The implemented algorithm is a variant of Algorithm 4 in [OS00].",
      EXAMPLE {
           "R = QQ[x,y,z]",
           "I = ideal (x^2, x*y, y^2, x*(z^3-1), y*(z^2-1))",
@@ -1433,22 +1431,20 @@ document {
 	  "intersect bud == I"
           },
      "A synonym for this function is ", TO BUD, ".",
-     Caveat=> "Apart from unmixedness, properties of the output decomposition are defined only by the course of the algorithm, in particular it is not mesoprimary decomposition of [KM11].",
-     SeeAlso => BUD
-     }
+     Caveat=> "Apart from unmixedness, properties of the output decomposition are 
+     defined only by the course of the algorithm, in particular it 
+     is not mesoprimary decomposition of [KM11].",
+     SeeAlso => BUD}
 
 document {
      Key => BPD,
      Headline => "Binomial Primary Decomposition",
-     "BPD is a synonym for ", TO binomialPrimaryDecomposition, "."
-     }
+     "BPD is a synonym for ", TO binomialPrimaryDecomposition, "."}
 
 document {
      Key => BUD,
      Headline => "Binomial Unmixed Decomposition",
-     "BUD is a synonym for ", TO binomialUnmixedDecomposition, "."
-     }
-
+     "BUD is a synonym for ", TO binomialUnmixedDecomposition, "."}
 
 document {
      Key => {binomialCellularDecomposition,
@@ -1460,8 +1456,8 @@ document {
           "I" => { "a binomial ideal"} },
      Outputs => {
           {"a list of cellular ideals whose intersection is I or 
-	        a list of pairs of these ideals and their cellular variables 
-		if the option ReturnCellVars => true is used"} },
+	    a list of pairs of these ideals and their cellular variables 
+	    if the option ReturnCellVars => true is used"} },
      "A binomial ideal I is called cellular if modulo I every variable in 
      the polynomial ring is either a non-zerodivisor or nilpotent. 
      This routine returns a minimal cellular decomposition of a 
@@ -1474,15 +1470,14 @@ document {
      	  "binomialCellularDecomposition (I, ReturnCellVars=>true, Verbose=>false)"
           },
      "A synonym for this function is ", TO BCD, ".",
-     "If the option ", TO Verbose, " is set (default), then output about the number of components found so far will be generated.",
-     SeeAlso => BCD
-     }
+     "If the option ", TO Verbose, " is set (default), then output about the 
+     number of components found so far will be generated.",
+     SeeAlso => BCD}
 
 document {
      Key => BCD,
      Headline => "Binomial Cellular Decomposition",
-     "BCD is a synonym for ", TO binomialCellularDecomposition ,"."
-     }
+     "BCD is a synonym for ", TO binomialCellularDecomposition ,"."}
 
 document {
      Key => {binomialRadical},
@@ -1491,17 +1486,16 @@ document {
      Inputs => {
           "I" => { "a binomial ideal"} },
      Outputs => {
-          {"the radical of I"} },
+	  {"the radical of I"}},
      "If the input is a cellular binomial ideal then a very fast algorithm is used. 
      If one knows this and also the cellular variables then ", 
      TO cellularBinomialRadical, " should be used.",
      EXAMPLE {
           "R = QQ[x,y]",
 	  "I = ideal (y^2, x*y-y, x^2-1)",
-	  "binomialRadical I",
+	  "binomialRadical I"
           },
-     SeeAlso => cellularBinomialRadical
-     }
+     SeeAlso => cellularBinomialRadical}
 
 document {
      Key => {cellularBinomialRadical,
@@ -1509,7 +1503,7 @@ document {
      Headline => "Radical of a cellular binomial ideal",
      Usage => "cellularBinomialRadical I",
      Inputs => {
-          "I" => { "a cellular binomial ideal"} },
+          "I" => {"a cellular binomial ideal"} },
      Outputs => {
           {"the radical of I"} },
      "The radical of a cellular binomial ideal can be determined very quickly. If the 
@@ -1520,8 +1514,7 @@ document {
 	  "cv = isCellular (I,ReturnCellVars=>true)",
 	  "cellularBinomialRadical (I,CellVariables=>cv)"
           },
-     SeeAlso => binomialRadical
-     }
+     SeeAlso => binomialRadical}
 
 document {
      Key => {binomialMinimalPrimes,
@@ -1529,7 +1522,7 @@ document {
      Headline => "minimal primes of a binomial Ideal",
      Usage => "binomialMinimalPrimes I",
      Inputs => {
-          "I" => { "a binomial ideal"} },
+          "I" => {"a binomial ideal"}},
      Outputs => {
           {"the list of minimal primes of I"} },
      "The binomial minimal primes of a binomial ideal over QQ exist only in extension fields.",
@@ -1538,16 +1531,16 @@ document {
 	  "I = ideal(y^3,y^2*z^2-x^3,x*y^2*z,x^3*z-x*y)",
 	  "binomialMinimalPrimes I",
           },
-     "If the option ", TO Verbose, " is set (default), then output about the number of components found so far will be generated.",
-     SeeAlso => binomialRadical
-     }    
+     "If the option ", TO Verbose, " is set (default), then output about the 
+     number of components found so far will be generated.",
+     SeeAlso => binomialRadical}
 
 document {
      Key => {binomialAssociatedPrimes},
      Headline => "Associated primes of a binomial ideal",
      Usage => "binomialAssociatedPrimes I",
      Inputs => {
-          "I" => { "a binomial ideal"} },
+          "I" => {"a binomial ideal"} },
      Outputs => {
           {"the list of associated primes of I"} },
      "First a cellular decomposition is run, then the associated primes of each cellular component are determined.",
@@ -1556,8 +1549,7 @@ document {
 	  "I = ideal(x^2-y,y^2-x)",
 	  "binomialAssociatedPrimes I",
           },
-     SeeAlso => {binomialMinimalPrimes,cellularBinomialAssociatedPrimes}
-     }    
+     SeeAlso => {binomialMinimalPrimes,cellularBinomialAssociatedPrimes}}
 
 document {
      Key => {binomialIsPrime,
@@ -1565,7 +1557,7 @@ document {
      Headline => "test for primeness of a binomial ideal",
      Usage => "binomialIsPrime I",
      Inputs => {
-          "I" => { "a binomial ideal"} },
+          "I" => {"a binomial ideal"} },
      Outputs => {
           {"true or false, depending on whether I is a binomial prime ideal"} },
      "A binomial ideal is prime only if it is cellular. If the cellular variables ",
@@ -1575,15 +1567,14 @@ document {
 	  "I = ideal(x^2-y,y^2-x)",
 	  "binomialIsPrime I",
           },
-     SeeAlso => {cellularBinomialIsPrimary, CellVariables}
-     }
+     SeeAlso => {cellularBinomialIsPrimary, CellVariables}}
 
 document {
      Key => binomialIsPrimary,
      Headline => "test for primary binomial ideals",
      Usage => "binomialIsPrime I",
      Inputs => {
-          "I" => { "a binomial ideal"} },
+          "I" => {"a binomial ideal"}},
      Outputs => {
           {"true or false, depending on whether I is a primary binomial ideal"} },
      "A binomial ideal is prime only if it is cellular. If the cellular variables ",
@@ -1593,9 +1584,7 @@ document {
 	  "I = ideal(x-y,z^3)",
 	  "binomialIsPrimary I",
           },
-     SeeAlso => {cellularBinomialIsPrimary, CellVariables}
-     }    
-
+     SeeAlso => {cellularBinomialIsPrimary, CellVariables}}
 
 document {
      Key => {cellularBinomialIsPrimary,
@@ -1615,15 +1604,14 @@ document {
 	  "I = ideal(x^2-1)",
 	  "cellularBinomialIsPrimary (I,ReturnPrimes=>true)",
           },
-     SeeAlso => {cellularBinomialIsPrimary, CellVariables, ReturnPrimes, ReturnPChars}
-     }    
+     SeeAlso => {cellularBinomialIsPrimary, CellVariables, ReturnPrimes, ReturnPChars}}
 
 document {
      Key => {binomialSolve},
      Headline => "solving zero-dimensional binomial Ideals",
      Usage => "binomialSolve I",
      Inputs => {
-          "I" => { "a unital binomial ideal"}},
+          "I" => {"a unital binomial ideal"}},
      Outputs => {
           {"the list of points in the zero locus of I in QQ[ww]"} },
      "The solutions of a set of unital binomial equations exist in a cyclotomic field. This function
@@ -1638,8 +1626,7 @@ document {
 	  "binomialSolve J"
           },
      Caveat => {"The current implementation can only handle unital binomial ideals."},
-     SeeAlso => Cyclotomic
-     }
+     SeeAlso => Cyclotomic}
 
 document {
      Key => {isCellular,
@@ -1647,7 +1634,7 @@ document {
      Headline => "testing for cellular binomial ideals",
      Usage => "isCellular I",
      Inputs => {
-          "I" => { "a binomial ideal"}},
+          "I" => {"a binomial ideal"}},
      Outputs => {
           {"true, or the list of cell variables if I is cellular, false otherwise."} },
      "This function is the standard way to compute the cellular variables.",
@@ -1657,8 +1644,7 @@ document {
 	  "isCellular I",
 	  "isCellular (I, ReturnCellVars=>true)"
           },
-     SeeAlso => {cellularBinomialAssociatedPrimes,binomialCellularDecomposition}
-     }
+     SeeAlso => {cellularBinomialAssociatedPrimes,binomialCellularDecomposition}}
 
 document {
      Key => {isBinomial,
@@ -1666,7 +1652,7 @@ document {
      Headline => "testing for unital binomial ideals",
      Usage => "isBinomial I; isUnital I",
      Inputs => {
-          "I" => { "an ideal"}},
+          "I" => {"an ideal"}},
      Outputs => {
           {"true if I is binomial, or unital respectively."} },
      EXAMPLE {
@@ -1678,66 +1664,57 @@ document {
 	  "isUnital ideal (x+z)",
 	  "isUnital ideal (x^2)"
           },
-     SeeAlso => {isCellular}
-     }
+     SeeAlso => {isCellular}}
 
---     -- input related
-
+-- input related functions
 document {
      Key => {makeBinomial},
      Headline => "make a binomial from an exponent vector and a coefficient",
      Usage => "makeBinomial (R,m,c)",
      Inputs => {
-          "R" => { "a ring"},
-	  "m" => { "a vector of exponents, one for each generator of R"},
-	  "c" => { "an element of the coefficient ring of R"}},
+          "R" => {"a ring"},
+	  "m" => {"a vector of exponents, one for each generator of R"},
+	  "c" => {"an element of the coefficient ring of R"}},
      Outputs => {
           {"The binomial defined by the input data, as an element of R."} },
      EXAMPLE {
 	  "R = QQ[x,y,z]",
-	  "makeBinomial (R, [1,-1,-2], 10)"
-          }
-     }
+	  "makeBinomial (R, [1,-1,-2], 10)"}}
 
 document {
      Key => {latticeBasisIdeal},
      Headline => "construct the ideal whose generators correspond to generators of an integer lattice",
      Usage => "latticeBasisIdeal (R,L)",
      Inputs => {
-          "R" => { "a ring"},
-	  "L" => { "an interger matrix whose columns span the lattice."}},
+          "R" => {"a ring"},
+	  "L" => {"an interger matrix whose columns span the lattice."}},
      Outputs => {
           {"The unital lattice basis ideal in R, defined by L"} },
-     "This function is only a very simple wrapper around ", TO makeBinomial ,
+     "This function is only a very simple wrapper around ", TO makeBinomial,
      EXAMPLE {
 	  "R = QQ[x,y,z]",
 	  "L = matrix {{1,1},{-3,0},{0,1}}",
-	  "latticeBasisIdeal (R, L)"
-          }
-     }
+	  "latticeBasisIdeal (R, L)"}}
 
---     -- cellular stuff:
-
+-- cellular stuff:
 document {
      Key => {cellularBinomialAssociatedPrimes,
 	  (cellularBinomialAssociatedPrimes,Ideal)},
      Headline => "Associated primes of a cellular binomial ideal",
      Usage => "cellularBinomialAssociatedPrimes I",
      Inputs => {
-          "I" => { "a cellular binomial ideal"} },
+          "I" => {"a cellular binomial ideal"} },
      Outputs => {
           {"the list of associated primes of I"} },
-     "If the cell variables are known, they can be given via the option ", TO CellVariables, " otherwise they are computed.",
+     "If the cell variables are known, they can be given via the option ", 
+     TO CellVariables, " otherwise they are computed.",
      EXAMPLE {
 	  "R = QQ[x,y]",
 	  "I = ideal(x^2-1,y-x)",
 	  "cv = isCellular (I,ReturnCellVars=>true)",
 	  "cellularBinomialAssociatedPrimes (I,CellVariables=>cv)"
           },
-     SeeAlso => binomialAssociatedPrimes
-     }    
-
---     cellularAssociatedLattices,
+     SeeAlso => binomialAssociatedPrimes}    
 
 document {
      Key => {cellularBinomialPrimaryDecomposition,
@@ -1745,10 +1722,11 @@ document {
      Headline => "Primary decomposition of a cellular binomial ideal",
      Usage => "cellularBinomialPrimaryDecomposition I",
      Inputs => {
-          "I" => { "a cellular binomial ideal"} },
+          "I" => {"a cellular binomial ideal"}},
      Outputs => {
-          {"a binoimal primary decomposition of I"} },
-     "If the cell variables are known, they can be given via the option ", TO CellVariables, " otherwise they are computed.",
+          {"a binoimal primary decomposition of I"}},
+     "If the cell variables are known, they can be given via the option ", 
+     TO CellVariables, " otherwise they are computed.",
      EXAMPLE {
 	  "R = QQ[x,y]",
 	  "I = ideal(x^3-1,y-x)",
@@ -1757,8 +1735,7 @@ document {
 	  "mingens \\ pd"
           },
      Caveat => {"This function will not return minimal generators for performance reasons."},
-     SeeAlso => binomialAssociatedPrimes
-     }    
+     SeeAlso => binomialAssociatedPrimes}
 
 document {
      Key => {cellularBinomialUnmixedDecomposition,
@@ -1766,18 +1743,18 @@ document {
      Headline => "Unmixed decomposition of a cellular binomial ideal",
      Usage => "cellularBinomialUnmixedDecomposition I",
      Inputs => {
-          "I" => { "a cellular binomial ideal"} },
+          "I" => {"a cellular binomial ideal"}},
      Outputs => {
-          {"an unmixed decomposition of I"} },
-     "If the cell variables are known, they can be given via the option ", TO CellVariables, " otherwise they are computed.",
+          {"an unmixed decomposition of I"}},
+     "If the cell variables are known, they can be given via the option ", 
+     TO CellVariables, " otherwise they are computed.",
      EXAMPLE {
 	  "R = QQ[x,y]",
 	  "I = ideal(x*(y^3-1),x^2)",
 	  "cv = isCellular (I,ReturnCellVars=>true)",
 	  "ud = cellularBinomialUnmixedDecomposition (I,CellVariables=>cv)"
           },
-     SeeAlso => binomialUnmixedDecomposition
-     }    
+     SeeAlso => binomialUnmixedDecomposition}
 
 document {
      Key => {partialCharacter,
@@ -1785,18 +1762,18 @@ document {
      Headline => "Computing the partial character of a cellular binomial ideal",
      Usage => "partialCharacter I",
      Inputs => {
-          "I" => { "a cellular binomial ideal"} },
+          "I" => {"a cellular binomial ideal"}},
      Outputs => {
-          {"the ", TO PartialCharacter, }},
-     "If the cell variables are known, they can be given via the option ", TO CellVariables, " otherwise they are computed.",
+          {"the ", TO PartialCharacter}},
+     "If the cell variables are known, they can be given via the option ", 
+     TO CellVariables, " otherwise they are computed.",
      EXAMPLE {
 	  "R = QQ[x,y]",
 	  "I = ideal(x^3-1,y-x)",
 	  "cv = isCellular (I,ReturnCellVars=>true)",
 	  "pc = partialCharacter (I,CellVariables=>cv)",
           },
-     Caveat => {"If the input is not cellular the behaviour is undefined. Cellularity is not checked."}
-     }    
+     Caveat => {"If the input is not cellular the behaviour is undefined. Cellularity is not checked."}}
 
 document {
      Key => {idealFromCharacter,
@@ -1815,20 +1792,18 @@ document {
 	  "I = ideal(x^3-1,y-x)",
 	  "cv = isCellular (I,ReturnCellVars=>true)",
 	  "pc = partialCharacter (I,CellVariables=>cv)",
-	  "idealFromCharacter (R,pc) == I"
-	  }
-     }
+	  "idealFromCharacter (R,pc) == I"}}
 
 document {
      Key => {randomBinomialIdeal},
      Headline => "Random Binomial Ideals",
      Usage => "randomBinomialIdeal (R,n,d,w,h)",
      Inputs => {
-          "I" => { "a ring for the output"},
-	  "n" => { "number of generators of the output "},
-	  "d" => { "maximum degree of each variable" },
-	  "w" => { "number of variables in each generator "},
-	  "h" => { "should the generators be 'as homogeneous as possible'"} },
+          "I" => {"a ring for the output"},
+	  "n" => {"number of generators of the output "},
+	  "d" => {"maximum degree of each variable" },
+	  "w" => {"number of variables in each generator "},
+	  "h" => {"should the generators be 'as homogeneous as possible'"} },
      Outputs => {
            {"a random ideal"} },
      "The exponents are drawn at random from {-d,...,d}. All coefficients are set to 1.",
@@ -1838,8 +1813,8 @@ document {
      	  "randomBinomialIdeal (R,3,4,10,false)"
           },
      "This function is mostly for internal testing purposes. Don't expect anything from it.",
-     Caveat => "Minimal generators are produced. These can be less than n and of higher degree. They also need not be homogeneous"
-     }    
+     Caveat => "Minimal generators are produced. These can be less than n and of 
+     higher degree. They also need not be homogeneous."}
 
 document {
      Key => {removeRedundant,
@@ -1847,17 +1822,17 @@ document {
      Headline => "Remove redundant ideals from a decomposition",
      Usage => "removeRedundant L",
      Inputs => {
-          "L" => { "A list of ideals"} },
+          "L" => {"a list of ideals"} },
      Outputs => {
-          {"A list with some redundant ideals removed"} },
+          {"the list with some redundant ideals removed"}},
      EXAMPLE {
 	  "R = QQ[a,b]",
 	  "L = {ideal(a^4),ideal(a^3),ideal(a^5),ideal(b^2*a) }",
 	  "removeRedundant L",
           },
      "This function is mostly for internal purposes.",
-     Caveat => "The resulting list is NOT irredundant, because I_1 \\subset I_2 \\cap I_3 is not checked."
-     }
+     Caveat => "The resulting list may be not irredundant, because I_1 
+     \\subset I_2 \\cap I_3 is not checked."}
 
 document { Key => {CellVariables, [partialCharacter,CellVariables],
      [cellularBinomialRadical,CellVariables], [binomialIsPrime,CellVariables],
@@ -1868,7 +1843,7 @@ document { Key => {CellVariables, [partialCharacter,CellVariables],
      "The cellular variables of a binomial ideal are the variables which are non-zerodivisors modulo
      that ideal. With this option these variables, if known in advance, can be handed over to
      specialized functions for cellular ideals. ",
-     SeeAlso => {cellularBinomialPrimaryDecomposition,cellularBinomialAssociatedPrimes} }
+     SeeAlso => {cellularBinomialPrimaryDecomposition,cellularBinomialAssociatedPrimes}}
 
 document {
      Key => {ReturnCellVars,
@@ -1880,9 +1855,7 @@ document {
      EXAMPLE {
 	  "R = QQ[x,y,z]",
           "I = ideal (x*y-z, x*z-y^2)",
-          "bcd = binomialCellularDecomposition (I,ReturnCellVars=>true)",
-          }
-     }
+          "bcd = binomialCellularDecomposition (I,ReturnCellVars=>true)"}}
 
 document {
      Key => {ReturnPrimes,
@@ -1896,8 +1869,7 @@ document {
           "I = ideal (x^2-1)",
           "cellularBinomialIsPrimary (I,ReturnPrimes=>true)",
           },
-     SeeAlso => {ReturnPChars, cellularBinomialIsPrimary}
-     }
+     SeeAlso => {ReturnPChars, cellularBinomialIsPrimary}}
 
 document {
      Key => {ReturnPChars,
@@ -1911,8 +1883,7 @@ document {
           "I = ideal (x^2-1)",
           "cellularBinomialIsPrimary (I,ReturnPChars=>true)",
           },
-     SeeAlso => {ReturnPrimes, cellularBinomialIsPrimary}
-     }
+     SeeAlso => {ReturnPrimes, cellularBinomialIsPrimary}}
 
 document {
      Key => {[binomialPrimaryDecomposition, Verbose],
@@ -1924,29 +1895,18 @@ document {
 	  [removeRedundant,Verbose],
 	  [cellularBinomialUnmixedDecomposition,Verbose]},
      Headline => "generate informative output",
-     "If this option is set, functions will generate additional output. Defaults to true"
-     }
-
+     "If this option is set, functions will generate additional output. Defaults to true"}
 
 document {
      Key => PartialCharacter,
      Headline => "the class of all partial characters",
-     
-     "In ", TO Binomials , " the partial character of a cellular binomial ideal is given as an object of class,", TT "PartialCharacter", "which is
-     given with the following three descriptions:",
-     
-     UL {
-	  {"J the cellular variables"},
-	  {"L a matrix whose colmns are generators for the lattice"},
-	  {"c the values that the character takes on the generator"},
-    
-         }
-        
-     }
+     "In ", TO Binomials , " the partial character of a cellular binomial ideal is represented 
+     as an object of class ", TO PartialCharacter,".  It contains the following three data:",
+     UL { {"J -- the cellular variables"},
+	  {"L -- a matrix whose colmns are generators for the lattice"},
+	  {"c -- the list of values the character takes on the generators"}}}
 
-
---     -- tests
-
+----- TESTS -----
 TEST ///
 R = QQ[a..f]
 I = ideal(b*c-d*e,b*e*f-a*c,a*d*f-d*e,a*b*f-c*d,d^2*e-e,a*d*e-d*e,a*c*e-d*f) 
