@@ -23,13 +23,12 @@
 
 newPackage(
 	"Cyclotomic",
-	Version => "0.9.9",
-	Date => "June 2011",
+	Version => "1.0",
+	Date => "September 2011",
     	Authors => {{Name => "Thomas Kahle", 
 		  Email => "kahle@mis.mpg.de", 
 		  HomePage => "http://thomas-kahle.de/bpd"}},
     	Headline => "routines for cyclotomic fields",
---    	DebuggingMode => true
      	Reload=>true
     	)
 
@@ -39,11 +38,11 @@ export {cyclotomicField,
 	joinCyclotomic
        }
 
-ww := local ww
+ww := getSymbol "ww"
   
 -- We use memoize to get physically the same cyclotomic field again and again!
 cf = (i) -> (
-     Q := QQ[symbol ww_i];
+     Q := QQ(monoid [ww_i]);
      return toField ((Q) / cyclotomicPoly (i, Q_0));
      )
 
@@ -119,7 +118,6 @@ cyclotomicPoly = (i,v) -> (
 	  -- check for factor
 	  if i%f == 0 then (
 	       fac := cyclotomicPoly (f,v);
-	       -- print fac;
 	       -- division with result in polynomial ring:
 	       mini = (flatten entries syz matrix {{mini,fac}})#1;
 	       )
