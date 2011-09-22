@@ -43,8 +43,7 @@ ww := getSymbol "ww"
 -- We use memoize to get physically the same cyclotomic field again and again!
 cf = (i) -> (
      Q := QQ(monoid [ww_i]);
-     return toField ((Q) / cyclotomicPoly (i, Q_0));
-     )
+     toField ((Q) / cyclotomicPoly (i, Q_0)))
 
 cyclotomicField = memoize cf
 
@@ -96,8 +95,7 @@ joinCyclotomic = li -> (
 	       li2 = li2 | { f li#i };
 	       );
 	  );
-     return li2;
-     )
+     li2)
 
 cyclotomicPoly = (i,v) -> (
      -- returns the i-th cyclotomic polynomial in variable v.
@@ -123,10 +121,7 @@ cyclotomicPoly = (i,v) -> (
 	       )
 	  );
      --make sure the leading coefficient is one.
-     mini=mini / leadCoefficient(mini);
-     return mini;
-     
-     )
+     mini / leadCoefficient(mini))
 
 findRootPower = R -> (
      -- Finds the power of the adjoined root of unity in the
@@ -145,8 +140,7 @@ findRootPower = R -> (
 	  gg = gg *g;
 	  );
      if r<2 then return 2
-     else return r+1;
-     )
+     else r+1)
 
 -- End of source code ---
 
