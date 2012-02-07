@@ -1,7 +1,7 @@
 -- -*- coding: utf-8 -*-
 --  cyclotomic.m2
 --
---  Copyright (C) 2009-11 Thomas Kahle <kahle@mis.mpg.de>
+--  Copyright (C) 2009-12 Thomas Kahle <thomas-kahle@gmx.de>
 --
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 --
@@ -24,10 +24,10 @@
 newPackage(
 	"Cyclotomic",
 	Version => "1.0",
-	Date => "September 2011",
+	Date => "Februar 2012",
     	Authors => {{Name => "Thomas Kahle", 
-		  Email => "kahle@mis.mpg.de", 
-		  HomePage => "http://thomas-kahle.de/bpd"}},
+		  Email => "thomas-kahle@gmx.de", 
+		  HomePage => "http://thomas-kahle.de"}},
     	Headline => "routines for cyclotomic fields",
      	Reload=>true
     	)
@@ -149,7 +149,9 @@ beginDocumentation()
 document { 
         Key => Cyclotomic,
         Headline => "a package for cyclotomic fields",
-        EM "Cyclotomic", " is a package for cyclotomic fields."
+        EM "Cyclotomic", " is a package for cyclotomic fields.  It is used in
+        to construct extensions of the coefficient field during binomial
+        primary decomposition using the package ", TO Binomials, "."
         }
 
 document {
