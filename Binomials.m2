@@ -1,7 +1,7 @@
 -- -*- coding: utf-8 -*-
 --  Binomials.m2
 --
---  Copyright (C) 2009-2011 Thomas Kahle <kahle@mis.mpg.de>
+--  Copyright (C) 2009-2012 Thomas Kahle <thomas-kahle@gmx.de>
 --
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 --
@@ -24,11 +24,11 @@
 newPackage(
 	"Binomials",
 	Version => "1.0",
-	Date => "September 2011",
+	Date => "Februar 2012",
 	Authors => {{
 		  Name => "Thomas Kahle",
-		  Email => "kahle@mis.mpg.de",
-		  HomePage => "http://www.thomas-kahle.de/bpd"}},
+		  Email => "thomas-kahle@gmx.de",
+		  HomePage => "http://www.thomas-kahle.de"}},
     	Headline => "Specialized routines for binomial ideals",
 	Configuration => { },
 	Reload=>true
@@ -109,7 +109,7 @@ axisSaturate = (I,i) -> (
     )
 
 -- Cellular decomposition of binomial ideals:
-binomialCellularDecomposition = method (Options => {ReturnCellVars => false, Verbose=>true})
+binomialCellularDecomposition = method (Options => {ReturnCellVars => false, Verbose=>false})
 binomialCellularDecomposition Ideal := Ideal => o -> I -> (
 -- based on code by Ignacio Ojeda and Mike Stillman     
      R := ring I;
@@ -625,7 +625,7 @@ binomialIsPrime Ideal := Ideal => o -> I -> (
      if image Lsat pc#"L" != image pc#"L" then return false;
      true)
 
-binomialMinimalPrimes = method (Options => {Verbose=>true})
+binomialMinimalPrimes = method (Options => {Verbose=>false})
 binomialMinimalPrimes Ideal := Ideal => o -> I -> (
      -- Algorithm from "Decompositions of Binomial Ideals" (AISM), 
      -- based on computing a cellular decomposition of the radical of I.
@@ -743,7 +743,7 @@ isBetween = (a,b,c) -> (
      -- b and c are not comparable
      false)
 
-cellularBinomialAssociatedPrimes = method (Options => {CellVariables => null, Verbose=>true}) 
+cellularBinomialAssociatedPrimes = method (Options => {CellVariables => null, Verbose=>false}) 
 cellularBinomialAssociatedPrimes Ideal := Ideal => o -> I -> ( 
      -- Computes the associated primes of cellular binomial ideal
      -- It returns them in a polynomial ring with the same variables as ring I,
@@ -958,7 +958,7 @@ BCD = I -> binomialCellularDecomposition I
 BPD = I -> binomialPrimaryDecomposition I
 BUD = I -> binomialUnmixedDecomposition I
 
-binomialUnmixedDecomposition = method (Options => {Verbose=>true})
+binomialUnmixedDecomposition = method (Options => {Verbose=>false})
 binomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
      if not isBinomial I then error "Input was not binomial !";
      vbopt := o#Verbose;
@@ -983,7 +983,7 @@ binomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
      if vbopt then print "Removing redundant components...";
      removeRedundant (bud, Verbose=>vbopt))
 
-binomialPrimaryDecomposition = method (Options => {Verbose=>true})
+binomialPrimaryDecomposition = method (Options => {Verbose=>false})
 binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- The full binomial primary decomposition 
      -- starting from a not necessarily cellular binomial ideal
@@ -1014,7 +1014,7 @@ binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      if vbopt then print "Removing redundant components...";
      removeRedundant (bpd, Verbose=>vbopt))
 
-cellularBinomialUnmixedDecomposition = method (Options => {CellVariables => null, Verbose=>true}) 
+cellularBinomialUnmixedDecomposition = method (Options => {CellVariables => null, Verbose=>false}) 
 cellularBinomialUnmixedDecomposition Ideal := Ideal => o -> I -> ( 
      -- computes the unmixed decomposition of a cellular ideal
      -- as defined in Ojeda/Sanchez
@@ -1088,7 +1088,7 @@ cellularBinomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
 	  cellularBinomialUnmixedDecomposition (I + ideal binomialFrobeniusPower (b,e), CellVariables=>cv)
 	  })
 
-cellularBinomialPrimaryDecomposition = method (Options => {CellVariables => null, Verbose=>true}) 
+cellularBinomialPrimaryDecomposition = method (Options => {CellVariables => null, Verbose=>false}) 
 cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> ( 
      -- computes the binomial primary decomposition of a cellular ideal
      -- I needs to be cellular. Cell variables can be given to speed up
@@ -1124,7 +1124,7 @@ cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      cvsaturate := (p) -> saturate (p, sub (product cv, R));
      ap / ( (P) -> minimalPrimaryComponent ( cvsaturate (P + J), CellVariables=>cv)))
 
-removeRedundant = method (Options => {Verbose => true})
+removeRedundant = method (Options => {Verbose=>false})
 removeRedundant List := List => o -> l -> (
      -- Removes redundant components from a list of ideals to be intersected
      -- Algorithm: For each ideal in the list, remove all ideals above it.
@@ -1382,7 +1382,22 @@ beginDocumentation()
 document {
         Key => Binomials,
         Headline => "a package for binomial ideals",
-        EM "Binomials", " is a package for binomial ideals.\n", BR{},BR{},BR{},
+
+        EM "Binomials", " is a package for binomial ideals with a particular
+        focus on intersection decompositions and associated primes.  For
+        instance, if the input is a unital binomial ideal (that is generated
+        by monomials and differences of monomials) then the function",
+        TO binomialPrimaryDecomposition, "computes a primary decomposition into
+        binomial ideals. To this end a cyclotomic field extension of the
+        coefficient field may be necessary which is automatically constructed
+        using the package ",TO Cyclotomic, ".", EM " Binomials", " also
+        implements the data type ", TO partialCharacter, " (see [ES96]) and
+        several convenience functions to transform binomials into exponent
+        vectors and vice versa.  Those may be useful for manual inspection of
+        binomial ideals.", "There is no special datatype for binomial ideals
+        implemented, one just uses ", TO ideal, "s.",
+	
+	BR{},BR{},
 	BOLD "Literature \n",
 	UL {
 	  LI {"[ES96] ", EM "Binomial ideals ", "(D. Eisenbud, B.Sturmfels, 1996).\n"},
