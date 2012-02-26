@@ -1908,7 +1908,7 @@ document {
 	  [removeRedundant,Verbose],
 	  [cellularBinomialUnmixedDecomposition,Verbose]},
      Headline => "generate informative output",
-     "If this option is set, functions will generate additional output. Defaults to true"}
+     "If this option is set, functions will generate additional output. Defaults to false"}
 
 document {
      Key => PartialCharacter,
