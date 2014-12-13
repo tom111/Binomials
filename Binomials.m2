@@ -67,7 +67,7 @@ export {
      partialCharacter,
      idealFromCharacter,  -- should be renamed to ideal once M2 supports this
      randomBinomialIdeal,
-     removeRedundant,
+     extractInclusionMinimalIdeals,
      -- Not in the interface:
 --     axisSaturate,
 --     cellVars,
@@ -703,32 +703,7 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
 	  mp = mp | si;
 	  );
 
-     joinCyclotomic mp)
-
-removeEmbedded = l -> (
-     -- Computes the minimal primes from a list of primes.  
-     
-     -- Algorithm: Copy the input list, then walk through the input
-     -- list and remove from the copy of every element which contains the
-     -- element at hand.
-     
-     ToDo := copy l;
-     i := ideal;
-     su := {};
-     while #ToDo > 0 do (
-	  i = ToDo#0;
-	  su = for i2 in l list (if (isSubset (i,i2)) and (i!=i2) then i2);
-	  
-     	  -- Remove any occurrences of redundant primes from l 
-	  -- and the todolist;
-	  for s in su do (
-	       ToDo = delete (s, ToDo);
-	       l = delete (s, l);
-	       );
-	  -- Remove i from the todolist;
-	  ToDo = delete (i, ToDo);
-	  );
-     l)
+     extractInclusionMinimalIdeals joinCyclotomic mp)
 
 isBetween = (a,b,c) -> (
      -- Checks if a lies between b and c in divisibility order.
@@ -980,8 +955,11 @@ binomialUnmixedDecomposition Ideal := Ideal => o -> I -> (
 		    ) -- right hand side of lambda term
 	       ) -- lambda term
     	  ); -- scan
-     if vbopt then print "Removing redundant components...";
-     removeRedundant (bud, Verbose=>vbopt))
+     if vbopt then print "Removing some redundant components...";
+     -- In principle this does not make the intersection irredundant,
+     -- but we don't want to run an exponential algorithm at this
+     -- point.
+     extractInclusionMinimalIdeals (bud, Verbose=>vbopt))
 
 binomialPrimaryDecomposition = method (Options => {Verbose=>false})
 binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
@@ -1011,8 +989,11 @@ binomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
     	  ); -- scan
       
      bpd = joinCyclotomic bpd;
-     if vbopt then print "Removing redundant components...";
-     removeRedundant (bpd, Verbose=>vbopt))
+     if vbopt then print "Removing some redundant components...";
+     -- In principle this does not make the intersection irredundant,
+     -- but we don't want to run an exponential algorithm at this
+     -- point.
+     extractInclusionMinimalIdeals (bpd, Verbose=>vbopt))
 
 cellularBinomialUnmixedDecomposition = method (Options => {CellVariables => null, Verbose=>false}) 
 cellularBinomialUnmixedDecomposition Ideal := Ideal => o -> I -> ( 
@@ -1124,33 +1105,32 @@ cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      cvsaturate := (p) -> saturate (p, sub (product cv, R));
      ap / ( (P) -> minimalPrimaryComponent ( cvsaturate (P + J), CellVariables=>cv)))
 
-removeRedundant = method (Options => {Verbose=>false})
-removeRedundant List := List => o -> l -> (
-     -- Removes redundant components from a list of ideals to be intersected
-     -- Algorithm: For each ideal in the list, remove all ideals above it.
+extractInclusionMinimalIdeals = method (Options => {Verbose=>false})
+extractInclusionMinimalIdeals List := List => o -> l -> (
+    -- Computes the inclusion minimal elements in a list of ideals
+    -- (like the minimal primes) Algorithm: For each ideal in the
+    -- list, remove all ideals above it.  Note: This does not make an
+    -- arbitrary intersection of ideals irredundant.  For example it
+    -- would not reduce <x-y> \cap <x,y^2> \cap <x^2,y> where each of
+    -- the last two components is redundant given the other two.
+
      if #l == 0 then return {};
      
-     -- List to store the result, the flag marks elements that are already checked
-     result := for i in l list {i,false};
-     -- List to keep track of ideals to be checked
-     flist := copy result;
-     -- flist at this point is only needed for the output 
-     -- at the beginning of the while loop.
-          
+     -- List to store the result, the flag marks elements that have been treated.
+     result := for i in l list (i,false);
+
      -- While we have previously unconsidered elements:
-     while #(flist) > 0 do (
-	  if o#Verbose then << #flist << " Ideals to check" << endl;
-     	  p := flist#0;
-     	  result = for f in result list (
-	       -- Check if p is contained in f which makes f redundant
-	       if isSubset (p#0,f#0) then continue
-	       else f
-     	  );
-          -- insert p, but flagged.
-     	  result = append (result,(p#0,true));
-	  -- Updating the todolist
-	  flist = for i in result list if i#1===false then i else continue;
-	  );
+     unconsidered := #l;
+     while unconsidered > 0 do (
+	 if o#Verbose then << unconsidered << " Ideals to check" << endl;
+     	 p := (select(1, result, p -> p#1==false))#0 ; -- select returns list
+	 result = for f in result list (
+	     -- Check if p is contained in f which makes f redundant
+	     if isSubset (p#0,f#0) then continue
+	     else f);
+         -- insert p again (flagged true) since it was removed before.
+	 result = append (result,(p#0,true));
+	 unconsidered = #(select (result, pp -> pp#1==false)));
      if o#Verbose then << #l-#result << " redundant ideals removed. Computing mingens of result.";
      for i in result list ideal mingens i#0)
 
@@ -1415,7 +1395,7 @@ document {
           "I" => { "a binomial ideal"} },
      Outputs => {
           {"a list of binomial primary components of I"} },
-     "This routine returns a minimal primary decomposition of a binomial ideal into binomial ideals.",
+     "This routine returns a primary decomposition of I into binomial ideals.",
      EXAMPLE {
           "R = QQ[x,y,z]",
           "I = ideal (x*y-z, x*z-y^2)",
@@ -1423,7 +1403,7 @@ document {
 	  "intersect bpd == I"
           },
      "A synonym for this function is ", TO BPD, ".",
-     Caveat => {"Note that if the coefficient field needs to be extended, strange things can happen"},
+     Caveat => {"Currently it can not be guaranteed that the decomposition is irredundant, although serious attempts are made to reduce redundancy."},
      SeeAlso => BPD}
 
 document {
@@ -1830,10 +1810,10 @@ document {
      higher degree. They also need not be homogeneous."}
 
 document {
-     Key => {removeRedundant,
-	  (removeRedundant,List)},
-     Headline => "Remove redundant ideals from a decomposition",
-     Usage => "removeRedundant L",
+     Key => {extractInclusionMinimalIdeals,
+	  (extractInclusionMinimalIdeals,List)},
+     Headline => "Extract inclusion minimal ideals from a list of ideals",
+     Usage => "extractInclusionMinimalIdeals L",
      Inputs => {
           "L" => {"a list of ideals"} },
      Outputs => {
@@ -1841,7 +1821,7 @@ document {
      EXAMPLE {
 	  "R = QQ[a,b]",
 	  "L = {ideal(a^4),ideal(a^3),ideal(a^5),ideal(b^2*a) }",
-	  "removeRedundant L",
+	  "extractInclusionMinimalIdeals L",
           },
      "This function is mostly for internal purposes.",
      Caveat => "The resulting list may be not irredundant, because I_1 
@@ -1905,7 +1885,7 @@ document {
 	  [binomialMinimalPrimes,Verbose],
 	  [cellularBinomialAssociatedPrimes,Verbose],
 	  [cellularBinomialPrimaryDecomposition,Verbose],
-	  [removeRedundant,Verbose],
+	  [extractInclusionMinimalIdeals,Verbose],
 	  [cellularBinomialUnmixedDecomposition,Verbose]},
      Headline => "generate informative output",
      "If this option is set, functions will generate additional output. Defaults to false"}
@@ -1974,3 +1954,15 @@ I = ideal (a^2 - b^2, c^2 - d^2, x*(a*d-b*c), x*(a*c-b*d))
 mp = binomialMinimalPrimes I
 assert (intersect mp == I)
 assert (#mp == 4)
+///
+
+TEST ///
+-- remove redundant:
+R = QQ[x]
+I1 = ideal (x)
+I2 = ideal (x^2)
+I3 = ideal (x^3)
+for L in permutations {I1,I2,I3} do (
+    assert (#(extractInclusionMinimalIdeals L) == 1);
+    )
+///
