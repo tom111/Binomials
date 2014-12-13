@@ -1964,3 +1964,13 @@ I = ideal (x^2, y^2, x*y, x*(z^3-1), y*(z^2-1))
 bud = BUD (I, Verbose=>false);
 assert(intersect bud == I);
 ///
+
+TEST ///
+-- minimal primes:
+-- The 1.0 version of Binomials.m2 would return 6 minimal primes here
+-- because redundancy was not taken care of properly
+R = QQ[a,b,c,d,x]
+I = ideal (a^2 - b^2, c^2 - d^2, x*(a*d-b*c), x*(a*c-b*d))
+mp = binomialMinimalPrimes I
+assert (intersect mp == I)
+assert (#mp == 4)
