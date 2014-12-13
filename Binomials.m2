@@ -1,7 +1,7 @@
 -- -*- coding: utf-8 -*-
 --  Binomials.m2
 --
---  Copyright (C) 2009-2012 Thomas Kahle <thomas-kahle@gmx.de>
+--  Copyright (C) 2009-2014 Thomas Kahle <thomas.kahle@jpberlin.de>
 --
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 --
@@ -23,11 +23,11 @@
 
 newPackage(
 	"Binomials",
-	Version => "1.0",
-	Date => "Februar 2012",
+	Version => "1.1",
+	Date => "December 2014",
 	Authors => {{
 		  Name => "Thomas Kahle",
-		  Email => "thomas-kahle@gmx.de",
+		  Email => "thomas.kahle@jpberlin.de",
 		  HomePage => "http://www.thomas-kahle.de"}},
     	Headline => "Specialized routines for binomial ideals",
 	Configuration => { },
