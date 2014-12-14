@@ -703,7 +703,7 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
 	  mp = mp | si;
 	  );
 
-     extractInclusionMinimalIdeals joinCyclotomic mp)
+     extractInclusionMinimalIdeals (joinCyclotomic mp, Verbose=>o#Verbose))
 
 isBetween = (a,b,c) -> (
      -- Checks if a lies between b and c in divisibility order.
