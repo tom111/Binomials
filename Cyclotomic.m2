@@ -91,7 +91,7 @@ joinCyclotomic = li -> (
 	       )
 	  else (
 	       -- Was cyclotomic: need to find image of ww in new ring!
-	       f = map (S, ring li#i , (gens S) |{ww^(leastcm/lc#i)});
+	       f = map (S, ring li#i , (gens S) |{ww^(leastcm//lc#i)});
 	       li2 = li2 | { f li#i };
 	       );
 	  );
@@ -151,7 +151,7 @@ document {
         Headline => "a package for cyclotomic fields",
         EM "Cyclotomic", " is a package for cyclotomic fields.  It is used in
         to construct extensions of the coefficient field during binomial
-        primary decomposition using the package ", TO Binomials, "."
+        primary decomposition using the package ", TO "Binomials::Binomials", "."
         }
 
 document {

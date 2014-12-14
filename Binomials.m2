@@ -31,7 +31,19 @@ newPackage(
 		  HomePage => "http://www.thomas-kahle.de"}},
     	Headline => "Specialized routines for binomial ideals",
 	Configuration => { },
-	Reload=>true
+	Certification => {
+	     "journal name" => "The Journal of Software for Algebra and Geometry: Macaulay2",
+	     "journal URI" => "http://j-sag.org/",
+	     "article title" => "Decompositions of binomial ideals",
+	     "acceptance date" => "2012-02-06",
+	     "published article URI" => "http://j-sag.org/Volume4/jsag-1-2012.pdf",
+	     "published code URI" => "http://j-sag.org/Volume4/Binomials.m2",
+	     "repository code URI" => "svn://svn.macaulay2.com/Macaulay2/trunk/M2/Macaulay2/packages/Binomials.m2",
+	     "release at publication" => 14467,
+	     "version at publication" => "1.0",
+	     "volume number" => "4",
+	     "volume URI" => "http://j-sag.org/Volume4/"
+	     }
     	)
    
 export {
@@ -1966,3 +1978,28 @@ for L in permutations {I1,I2,I3} do (
     assert (#(extractInclusionMinimalIdeals L) == 1);
     )
 ///
+
+end
+------------------------------------------------------------
+restart
+uninstallPackage "Binomials"
+installPackage "Binomials"
+check "Binomials"
+
+restart
+needsPackage "Binomials";
+S = QQ[x,y];
+b = makeBinomial (S, [2,-3], 5)
+isBinomial ideal b
+I = ideal(x^2-x*y, x*y-y^2);
+isCellular I
+binomialIsPrimary I
+binomialRadical I
+binomialPrimaryDecomposition I
+
+L = binomialPrimaryDecomposition ideal(x^3-1)
+L#0
+
+P = binomialPrimaryDecomposition ideal (x^10000 * (y-1), x^10001)
+radical P#0
+P#1
