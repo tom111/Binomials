@@ -30,7 +30,6 @@ newPackage(
 		  Email => "thomas.kahle@jpberlin.de",
 		  HomePage => "http://www.thomas-kahle.de"}},
     	Headline => "Specialized routines for binomial ideals",
-	Configuration => { },
 	PackageImports => {"FourTiTwo", "Cyclotomic"},
 	Certification => {
 	     "journal name" => "The Journal of Software for Algebra and Geometry: Macaulay2",
@@ -696,7 +695,7 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
      ncv := {};
      i := 0;
      j := #Answer;
-     ME :=ideal; {* pc = {}; *} si := ideal; mp := {}; F := null; S:= null;
+     ME :=ideal; -* pc = {}; *- si := ideal; mp := {}; F := null; S:= null;
      for a in Answer do (
 	  i = i+1;
 	  if o#Verbose  then (
