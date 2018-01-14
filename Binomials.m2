@@ -23,8 +23,8 @@
 
 newPackage(
 	"Binomials",
-	Version => "1.2",
-	Date => "April 2015",
+	Version => "1.2.1",
+	Date => "January 2018",
 	Authors => {{
 		  Name => "Thomas Kahle",
 		  Email => "thomas.kahle@jpberlin.de",
