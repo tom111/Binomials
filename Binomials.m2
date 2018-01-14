@@ -630,6 +630,11 @@ binomialIsPrime Ideal := Ideal => o -> I -> (
      	  if cv === false  then return false)
      else cv = o#CellVariables;
      
+     -- Check if non-cellular variables are all contained:
+     R := ring I;
+     ncv := toList(set (gens R) - cv); -- nilpotent variables x \notin E
+     if not isSubset(promote(ideal ncv, R), I) then return false;
+
      -- Test if the partial character saturated:
      pc := partialCharacter (I, CellVariables=>cv);
      if image Lsat pc#"L" != image pc#"L" then return false;
@@ -1975,6 +1980,13 @@ I3 = ideal (x^3)
 for L in permutations {I1,I2,I3} do (
     assert (#(extractInclusionMinimalIdeals L) == 1);
     )
+///
+
+TEST ///
+R = QQ[x,y]
+assert(binomialIsPrime ideal x^2 == false)
+assert(binomialIsPrime ideal (x^2-y^2) == false)
+assert(binomialIsPrime ideal (x-y) == true)
 ///
 
 end
