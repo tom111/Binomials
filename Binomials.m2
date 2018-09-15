@@ -1,7 +1,7 @@
 -- -*- coding: utf-8 -*-
 --  Binomials.m2
 --
---  Copyright (C) 2009-2014 Thomas Kahle <thomas.kahle@jpberlin.de>
+--  Copyright (C) 2009-2018 Thomas Kahle <thomas.kahle@jpberlin.de>
 --
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 --
@@ -23,12 +23,19 @@
 
 newPackage(
 	"Binomials",
-	Version => "1.2.1",
-	Date => "January 2018",
+	Version => "1.3",
+	Date => "September 2018",
 	Authors => {{
 		  Name => "Thomas Kahle",
 		  Email => "thomas.kahle@jpberlin.de",
-		  HomePage => "http://www.thomas-kahle.de"}},
+		  HomePage => "http://www.thomas-kahle.de"},
+	  {
+		  Name => "Ruilong Zhuang",
+		  Email => "zhuangr@whitman.edu"}, --joined in 2018
+	  {
+		  Name => "Alexandru Iosif",
+		  Email => "alexandru.iosif@ovgu.de",
+		  HomePage => "https://alexandru-iosif.github.io"}}, --joined in 2018
     	Headline => "Specialized routines for binomial ideals",
 	PackageImports => {"FourTiTwo", "Cyclotomic"},
 	Certification => {
@@ -45,7 +52,7 @@ newPackage(
 	     "volume URI" => "http://j-sag.org/Volume4/"
 	     }
     	)
-   
+
 export {
      -- 'Official' functions
      "binomialPrimaryDecomposition",
@@ -55,6 +62,8 @@ export {
      "binomialMinimalPrimes",
      "binomialAssociatedPrimes",
      "binomialSolve",
+     "binomialBasis",
+     "monomialParameterization",
      -- tests
      "binomialIsPrime",
      "binomialIsPrimary",
@@ -80,6 +89,7 @@ export {
      "idealFromCharacter",  -- should be renamed to ideal once M2 supports this
      "randomBinomialIdeal",
      "extractInclusionMinimalIdeals",
+
      -- Not in the interface:
 --     "axisSaturate",
 --     "cellVars",
@@ -92,12 +102,21 @@ export {
 --     "minimalPrimaryComponent",
 --     "binomialFrobeniusPower",
 
+-- -- Helpers for Gröbner-free isBinomial
+--     "reducedRowEchelon",
+--     "gensMinimalDegree",
+--     "isSupportOfRowsAtMostTwo",
+--     "CKbasisRecursion"
+--     "isBinomialGroebnerFree",
+--     "isStandardGraded",
+
      -- Options
      "CellVariables", -- for partialCharacter
      "ReturnPrimes", -- for cellularBinomialIsPrimary 
      "ReturnPChars", -- for cellularBinomialIsPrimary
      "ReturnCellVars", -- for binomialCellularDecomposition
-     
+     "GroebnerFree", -- for isBinomial
+
      --Types
      "PartialCharacter"--HashTable
      }
@@ -287,13 +306,17 @@ partialCharacter Ideal := Ideal => o -> I -> (
      )
 
 randomBinomialIdeal = (R,numge,maxdeg, maxwidth, homog) -> (	 
-     -- Generate 'random' ideals for testing purposes. The distribution is completely heuristic and designed to serve
-     -- internal purposes 
-     -- Inputs: a ring R, the number of generators numgen, the maximal degree of each variable maxded,
-     -- the maximal number of variables appearing in binomial, wether the output should be homogeneous
+     -- Generate 'random' ideals for testing purposes. The
+     -- distribution is completely heuristic and designed to serve
+     -- internal purposes
+
+     -- Inputs: a ring R, the number of generators numgen, the maximal
+     -- degree of each variable maxded, the maximal number of
+     -- variables appearing in binomial, wether the output should be
+     -- homogeneous
      
-     -- Caveat: The result might simply be not homogeneous or of the given degree 
-     -- due to deps between the random generators     
+     -- Caveat: The result might simply be not homogeneous or of the
+     -- given degree due to deps between the random generators
      
      -- Output: a 'random' binomial ideal.
      
@@ -320,7 +343,7 @@ randomBinomialIdeal = (R,numge,maxdeg, maxwidth, homog) -> (
      	       -- filling with zeros
 	       m = random (m |z);
      	       ge = ge | {makeBinomial (R,m,1)};
-  	       );  
+  	       );
 	  )
      else (
      	  for i in 0..numge do (
@@ -337,13 +360,239 @@ randomBinomialIdeal = (R,numge,maxdeg, maxwidth, homog) -> (
 	  );
      ideal (mingens ideal(ge)))
 
-isBinomial = I -> (
-     -- Checking binomiality with a reduced gb.
-     ge := flatten entries gens gb I;
-     for g in ge do (
-          if #(terms g) > 2 then return false;
-	  );
-     true)
+isStandardGraded = R -> (
+    -- check if a ring is standard graded
+    if unique degrees R != {{1}} then return false;
+    true)
+
+isBinomial = method (Options => {GroebnerFree => true})
+isBinomial Ideal := Ideal => o -> I -> (
+    --Checks binomiality of an ideal
+    --Input: an ideal I
+    --Output: Boolean: whether the ideal is a binomial ideal
+    --Option: GroebnerFree: By default, it sets to be true, then use
+    --Groebner free method to detect binomiality. If it sets to be
+    --false, then compute redeced gb.
+
+    -- The GroebnerFree Method only works with a standard grading.
+    if not isStandardGraded ring I then return isBinomialGroebner I;
+    if not o#GroebnerFree then return isBinomialGroebner I;
+
+    isB := (isBinomialGroebnerFree I)#0;
+    if isHomogeneous I then return isB;
+    if not isB then
+       print "Gröbner free method failed.\nStarting computation of Gröbner basis...\n";
+    isBinomialGroebner I)
+
+isBinomialGroebner = I -> (
+    ge := flatten entries gens gb I;
+    for g in ge do (
+	if #(terms g) > 2 then return false;
+	);
+    true)
+
+binomialBasis = I -> (
+    --this function generates a binomial basis of an ideal if exists
+    --Input: an ideal I
+    --Output: a binomial basis of the input if it exists. Otherwise, error.
+    --The output is a matrix
+
+    -- The GroebnerFree Method only works with a standard grading.
+    if not isStandardGraded ring I then (
+	if isBinomialGroebner I then return gens gb I
+	else (
+	    print "Ideal is not binomial";
+	    return null);
+	);
+
+    (isB, bins) := isBinomialGroebnerFree I;
+    if isB then return bins;
+    if isHomogeneous I then (
+	print "Ideal is not binomial";
+	return null)
+    else (
+	-- inhomogeneous case:
+       	print "Gröbner free method failed.\nStarting computation of Gröbner basis...\n";
+	if isBinomialGroebner I then return gens gb I
+	else (
+	    print "Ideal is not binomial";
+	    return null);
+	)
+    )
+
+reducedRowEchelon = C ->(
+    --this function returns the row echelon form of a matrix
+    if C == 0 then return C;
+    c := numColumns C;
+    variable := symbol variable;
+    R:=ring (C_(0,0)); S := R[variable_1..variable_c,MonomialOrder => Lex];
+    C=sub(transpose(coefficients(matrix {flatten entries gens gb ideal flatten entries (sub(C,S)*transpose(vars S))},
+		Monomials=> flatten entries vars S))_1,R);
+    matrix reverse entries C)
+
+minDegreeElements = L -> (
+    -- The input is a list of polynomials in a standard graded ring
+    -- and the output is the sublist of polynomials of minimal degree.
+    -- If the zero polynomnial appears in the list, it is discarded
+    L = select (L, l -> l!=0);
+    mindegree := min(apply (L, l -> first degree l));
+    select (L, l -> first degree l == mindegree)
+    )
+
+isSupportOfRowsAtMostTwo = C ->(
+    --decides if a matrix has at most two non zero entries in each row
+    lead := 0;
+    for r to numRows C - 1 do(
+        lead = 0;
+        for c to numColumns C - 1 do(
+            if C_(r,c) !=0 then lead = lead+1;
+            if lead > 2 then return false;
+            );
+        );
+    true)
+
+isBinomialGroebnerFree = I ->(
+    -- detecting Binomiality using Groebner Free method.
+    -- Implements Algorithm 3.3 in [CK15] and part of Recipe 4.5 in [CK15]
+    -- Input: an ideal I
+    -- Output: a list consisting of a boolean value indicating the binomality
+    -- of the given ideal and its binomial basis
+    -- CAVEAT: The calling function must respect that the Boolean return value
+    -- false does not mean that the ideal is not binomial.  The calling function
+    -- must deal with the case of an inhomogeneous input and the return value
+    -- false separately.
+    R:=ring I;
+    F:= set I_*;
+    tttt := symbol tttt;
+    needToDehom := false;
+
+    if not isHomogeneous I then(
+	--homogenize the generators of the ideal as in Recipe 4.5 in [CK15]
+        T := toList(set flatten entries vars R + set{tttt});
+        Rh := coefficientRing R [T];
+        IinRh := sub(I,Rh);
+        homogenizedGensI := homogenize (gens IinRh, tttt);
+	needToDehom = true;
+        F = set flatten entries homogenizedGensI;
+        );
+
+    (isB, bins) := CKbasisRecursion F;
+    if not isB then return (false, {});
+    if needToDehom then (
+	bins = sub (bins, {tttt=>1});
+	bins = sub (bins, R);
+	);
+    (true,bins))
+
+CKbasisRecursion = F -> (
+    -- Input: A set of standard-graded polynomials,
+    -- Output: (Boolean, a matrix of binomials)
+    -- Algorithm 3.3. in [CK15]
+    if F === set {} then return (true, matrix{{0}});
+    R:=ring first toList F;
+    Rorig:=ring first toList F;
+    A:=matrix{{}};
+    M:=matrix{{}};
+    B:={};
+    Fmin:={};
+    while F=!=set{} do(
+        Fmin = minDegreeElements toList F;
+        (M,A) = coefficients (matrix{Fmin}, Monomials =>
+	    toList set flatten entries monomials matrix{toList F});
+	-- We think of this as coefficients times monomials -> transpose.
+        A = reducedRowEchelon transpose A;
+        M = transpose M;
+        if not isSupportOfRowsAtMostTwo A then return (false, {});
+        B = B | flatten entries sub(A*M, Rorig);
+        F = F-(set Fmin);
+        if F === set{} then return (true, matrix{B}); --this avoids the next step in case F is empty
+        R = R/(ideal (A*M));
+        F = set flatten entries gens sub(ideal toList F,R);
+        F = F-set{0_R};
+	-- Check again if the reduction made things zero
+	if F === set{} then return (true, matrix{B}); --this avoids the next step in case F is empty
+	);
+    -- We should never reach this:
+    print "You have found a bug in the binomials package.  Please report.";
+    (false, matrix {{}})
+    )
+
+monomialParameterization = I ->(
+    --parameterize an pure prime binomial ideal over a field
+    --Input: a prime binomial ideal (as an ideal of the Lauren ring) containing no monomial
+    --The set of generators should be in binomial form
+    --Output: a map. the parameterization map
+
+    R := ring I;
+
+    if (char R =!= 0) then (
+        error "Sorry, only implemented for characteristic 0";
+        );
+
+    -- we check that I is not equal to R
+    if I == R then (
+        error "Sorry, only implemented for prime binomial ideals";
+        );
+
+    n := numColumns vars R;
+    K := coefficientRing R;
+    idealList := flatten entries gens I;
+    exponentList := {};
+
+    --extract exponents into the rows of a matrix & put constant term at the last column
+    for e in idealList do(
+        coeff := flatten entries (coefficients e)#1;
+        coeff = flatten entries sub (matrix{coeff}, coefficientRing ring I);
+        if (length coeff > 2) then (
+            error "One of the generators is not binomial";
+            );
+        if (length coeff == 1) then (
+            error "Sorry, only implemented for prime binomial ideals";
+            );
+        exponentList = exponentList|{(exponents e)#0 - (exponents e)#1|{-coeff#1/coeff#0}};
+        );
+    exponentMatrix := matrix exponentList;
+
+    -- we check whether the ideal is prime
+    if ( I == R or image transpose sub(submatrix'(exponentMatrix,,{n}),ZZ) != image Lsat transpose sub(submatrix'(exponentMatrix,,{n}),ZZ)) then (
+        error "Sorry, only implemented for prime binomial ideals";
+        );
+
+    --characters are enconded as variables v_i in a ring S
+    --storeVarMap maps v_i to the i-th character
+    imageDimension := rank exponentMatrix_{0..(numColumns exponentMatrix-2)};
+    i := 0;
+    while (imageDimension =!= numRows exponentMatrix) do (
+        if rank submatrix'(exponentMatrix,{i},) == imageDimension then (
+            exponentMatrix = submatrix'(exponentMatrix,{i},);
+            i = i-1;
+	    );    
+        i = i+1;
+        );
+    r := numRows exponentMatrix;
+    v := symbol v;
+    S:=R[v_1..v_r,MonomialOrder => Lex];
+    exponentList = entries transpose exponentMatrix;
+    i = 0;
+    storeVarMap := {};
+    while (i < r) do (
+        storeVarMap = storeVarMap|{v_(i+1)_S => (exponentList#-1#i)};
+        i = i+1;
+        );
+
+    --compute the kernel of exponentMatrix to find parameterization and
+    --perform the substitution of v_i by the i-th character
+    exponentList = exponentList_{0..(length exponentList-2)};
+    exponentMatrix = sub(matrix( transpose (exponentList|entries (id_(ZZ^r)*-1))),ZZ);
+    solution := gens gb ker exponentMatrix;
+    t := symbol t;
+    G := K[t_1..t_(numColumns solution-r),MonomialOrder=>Lex,Inverses=>true];
+    vectorVars := flatten entries(vars G|sub(sub(vars S, storeVarMap),coefficientRing R));
+    L := entries solution;
+    --get parameterization from exponents in the list
+    T := apply(L,l->product apply(vectorVars,l,(i,j)->i^j));
+    map(G,R,T_{0..numColumns vars ring I-1}) --return the map
+    )
 
 isUnital = I -> (
      -- A unital ideal is generated by unital binomials and monomials.
@@ -357,7 +606,6 @@ isUnital = I -> (
 	  );
      true)
 
-     
 nonCellstdm = {CellVariables=>null} >> o -> I -> (
      -- extracts the (finite) set of nilpotent monomials 
      -- modulo a cellular binomial ideal.
@@ -369,7 +617,7 @@ nonCellstdm = {CellVariables=>null} >> o -> I -> (
      -- This use of baseName is intended to fix a problem where the variables in cv 
      -- are actual variables of a ring over a field extension.
      ncv := value \ toList (set (baseName \ (gens R)) - baseName \ cv);
-     
+
      -- We map I to the subring: kk[ncv]
      CoeffR := coefficientRing R;
      S := CoeffR(monoid [ncv]);
@@ -378,7 +626,6 @@ nonCellstdm = {CellVariables=>null} >> o -> I -> (
 
 maxNonCellstdm = {CellVariables=>null} >> o -> I -> (
      -- Computes the maximal monomials in the nilpotent variables
-
      cv := cellVars(I, CellVariables=>o#CellVariables);
      nm := flatten entries nonCellstdm (I,CellVariables=>cv);
      -- The following code extracts the maximal elements in a list of monomials 
@@ -416,7 +663,6 @@ idealFromCharacter (Ring, PartialCharacter) := Ideal => (R, pc) -> (
      -- The columns of A should contain exponent vectors of generators
      -- The vector c contains the corresponding coefficients which must lie
      -- in the coefficient ring of R.
-     
      var := gens R;
      if pc#"L" == 0 then return ideal 0_R;
      cols := null;
@@ -428,7 +674,6 @@ idealFromCharacter (Ring, PartialCharacter) := Ideal => (R, pc) -> (
      if pc#"L" == idmat then (
 	  -- If A is the unit matrix we are lucky,
 	  -- no saturation is needed.
-
 	  -- We coerce the coefficients to R:
 	  c = apply (pc#"c", a -> (sub (a,R)));
      	  cols = entries transpose pc#"L";
@@ -689,9 +934,9 @@ binomialMinimalPrimes Ideal := Ideal => o -> I -> (
 	      true));
      while next() do ();
      -- print Answer;
-     
+
      if o#Verbose then print "Decomposition done.";
-          
+
      ncv := {};
      i := 0;
      j := #Answer;
@@ -1107,7 +1352,7 @@ cellularBinomialPrimaryDecomposition Ideal := Ideal => o -> I -> (
      -- However, since Hull only wants the minimal primary component we can cellularize.
 
      -- Saturate product cv or saturate variable by variable?
-     -- It seems to depend on the example which one is faster :(
+     -- It seems to depend on the example which one is faster :O
 --      cvsaturate := (p) -> (
 -- 	  todo := cv;
 -- 	  resu := p;
@@ -1398,8 +1643,10 @@ document {
 	  LI {"[DMM10] ", EM "Combinatorics of binomial primary decomposition ", "(A. Dickenstein, L. Matusevich, E.Miller, 2010)\n"},
 	  LI {"[OS00] ", EM "Cellular Binomial Ideals. Primary Decomposition of Binomial Ideals ", "(I. Ojeda, R. Piedra-Sanchez, 2000)\n"},
 	  LI {"[Alt00] ", EM "The chain property for the associated primes of A-graded ideals ", "(K. Altmann, 2000)\n"},
-	  LI {"[KM11] ", EM "Decompositions of commutative monoid congruences and binomial ideals ", "(T. Kahle, E. Miller, 2011)"}}}
-   
+	  LI {"[KM11] ", EM "Decompositions of commutative monoid congruences and binomial ideals ", "(T. Kahle, E. Miller, 2011)"},
+	  LI {"[CK15] ", EM "Detecting binomiality ", "(C. Conradi, T. Kahle, 2015)" },
+	  LI {"[CLO15] ", EM "Ideals, Varieties, and Algorithms ", "(D.A. Cox, J. Little, D. O'Shea, 2015)" }}}
+
 document {
      Key => {binomialPrimaryDecomposition,
 	  (binomialPrimaryDecomposition, Ideal)},
@@ -1559,6 +1806,35 @@ document {
      SeeAlso => {binomialMinimalPrimes,cellularBinomialAssociatedPrimes}}
 
 document {
+    Key => {monomialParameterization},
+    Headline => "Parameterization for the variety of prime Laurent binomial ideal",
+    Usage => "monomialParameterization I",
+    Inputs => {
+        "I" => {"a prime Laurent binomial ideal. The generators of ideal I should be binomial."}
+    },
+    Outputs => {
+        {"a map, the parameterization map"} },
+    "This function returns a monomial parameterization of a prime Laurent binomial ideal.",
+    EXAMPLE {
+        "R = QQ[x,y]",
+        "I = ideal(x-y)",
+        "p = monomialParameterization I",
+        "p.matrix"
+        },
+    "Another example:",
+    EXAMPLE {
+        "R = QQ[x,y,z,w]",
+        "I = ideal (x-7*y, y*z^2-2,x-3*w^3)",
+        "binomialIsPrime I",
+        "p = monomialParameterization I",
+        "p.matrix"
+        },
+        Caveat => {"The current implementation can only handle prime Laurent binomial ideals
+        in rings of characteristic 0. The option " , TO Inverses, " of the ring of the input ideal
+	needs to be false."},
+        SeeAlso => {binomialSolve}}
+
+document {
      Key => {binomialIsPrime,
 	  (binomialIsPrime,Ideal)},
      Headline => "test for primeness of a binomial ideal",
@@ -1649,28 +1925,80 @@ document {
 	  "R = QQ[x,y,z]",
 	  "I = ideal (x-z^2,y^4)",
 	  "isCellular I",
-	  "isCellular (I, ReturnCellVars=>true)"
-          },
+	  "isCellular (I, ReturnCellVars=>true)"},
      SeeAlso => {cellularBinomialAssociatedPrimes,binomialCellularDecomposition}}
 
 document {
-     Key => {isBinomial,
-	     isUnital},
-     Headline => "testing for unital binomial ideals",
-     Usage => "isBinomial I; isUnital I",
-     Inputs => {
-          "I" => {"an ideal"}},
-     Outputs => {
-          {"true if I is binomial, or unital respectively."} },
-     EXAMPLE {
-	  "R = QQ[x,y,z]",
-	  "isBinomial ideal(x^2)",
-	  "isBinomial ideal(x-y+z,z)",
-	  "isBinomial ideal(x^3-x)",
-	  "isUnital ideal (x-z,z-y)",
-	  "isUnital ideal (x+z)",
-	  "isUnital ideal (x^2)"
-          },
+    Key => {binomialBasis},
+    Headline => "binomial generators for an ideal",
+    Usage => "binomialBasis I",
+    Inputs => {
+        "I" => {"an ideal"}
+    },
+    Outputs => {
+        {"binomial generators of the input if they exists, or null otherwise."} },
+    "This function computes a binomial basis of a binomial ideal. If the ideal is not binomial, 
+    it prints an error and returns null.  This function uses the ", TO GroebnerFree, " method to 
+    find the binomial basis.  For an inhomogeneous ideal, the method first homogenizes the 
+    generators of the ideal.  If the method fails to find a binomial basis after this homogenization, 
+    the computation of a Gröbner basis starts.",
+    EXAMPLE {
+        "R = QQ[x,y,z]",
+        "I = ideal (x^2+x*y, z^2+x^2, x*z+y*z)",
+        "binomialBasis I",
+        "J = ideal (x^3+y^2+z,x+z)",
+        "binomialBasis J"
+        },
+    SeeAlso => {isBinomial, binomialSolve},
+    Caveat => {"It is not guaranteed to return a minimal generating set of the ideal. It is also
+    not guaranteed to return a Gröbner basis of the ideal."}}
+
+document {
+    Key => {isBinomial,
+        isUnital,
+	(isBinomial,Ideal)},
+    Headline => "testing for unital binomial ideals",
+    Usage => "isBinomial I; isUnital I",
+    Inputs => {
+        "I" => {"an ideal"}},
+    Outputs => {
+        {"true if I is binomial, or unital respectively."}},
+    "This function checks if an ideal can be generated by binomials.  By default the option "
+    , TO GroebnerFree, " is true and the algorithm tries to avoid potentially expensive Gröbner bases.
+    This only works for ideals that are homogeneous in the standard grading.
+    If the input is not homogenous, an attempt is made with homogenized generators to show binomiality.
+    If this fails and in all remaining cases, a Gröbner bases is computed.  The function isUnital returns 'true' if the ideal is unital.",
+    EXAMPLE {
+        "R = QQ[x,y,z]",
+        "isBinomial ideal(x^2)",
+        "isBinomial ideal(x-y+z,z)",
+        "isBinomial ideal(x^3-x)",
+        "isBinomial (ideal(x+y+z),GroebnerFree=>false)",
+        "isUnital ideal (x-z,z-y)",
+        "isUnital ideal (x+z)",
+        "isUnital ideal (x^2)"},
+    "In the following example, the Gröbner free method is unable to detect binomiality as, 
+    after a homogenization of the generators, the ideal is not binomial anymore
+    (see Example 4.1 in [CK15]).",
+    EXAMPLE {
+        "R = QQ[a,b,x,y]",
+        "I = ideal(a*b-x,a*b-y,x+y+1)",
+        "isBinomial I",
+        "binomialBasis I",
+        "S = QQ[a,b,x,y,z]",
+        "J = sub(I,S)",
+        "J = ideal homogenize(gens J,z)",
+        "isBinomial J"},
+    "The next example shows that, compared to computing a Gröbner basis, detecting
+    binomiality with Gröbner free methods can be very fast (see Chapter 2 §10 in [CLO15]):",
+    EXAMPLE {
+        "R=QQ[x,y,z,w]",
+        "n=40",
+        "I=ideal(x^(n+1) - z^(n)*w+x*(x*y^(n-1)-z^n)+x^n*z-y^n*w, x*y^(n-1)-z^n,x^n*z-y^n*w)",
+	"time gens gb I",
+        "time isBinomial I",
+	"time binomialBasis I"
+	},
      SeeAlso => {isCellular}}
 
 -- input related functions
@@ -1713,7 +2041,7 @@ document {
           "I" => {"a cellular binomial ideal"} },
      Outputs => {
           {"the list of associated primes of I"} },
-     "If the cell variables are known, they can be given via the option ", 
+     "If the cell variables are known, they can be given via the option ",
      TO CellVariables, " otherwise they are computed.",
      EXAMPLE {
 	  "R = QQ[x,y]",
@@ -1721,7 +2049,7 @@ document {
 	  "cv = isCellular (I,ReturnCellVars=>true)",
 	  "cellularBinomialAssociatedPrimes (I,CellVariables=>cv)"
           },
-     SeeAlso => binomialAssociatedPrimes}    
+     SeeAlso => binomialAssociatedPrimes}
 
 document {
      Key => {cellularBinomialPrimaryDecomposition,
@@ -1732,7 +2060,7 @@ document {
           "I" => {"a cellular binomial ideal"}},
      Outputs => {
           {"a binoimal primary decomposition of I"}},
-     "If the cell variables are known, they can be given via the option ", 
+     "If the cell variables are known, they can be given via the option ",
      TO CellVariables, " otherwise they are computed.",
      EXAMPLE {
 	  "R = QQ[x,y]",
@@ -1753,7 +2081,7 @@ document {
           "I" => {"a cellular binomial ideal"}},
      Outputs => {
           {"an unmixed decomposition of I"}},
-     "If the cell variables are known, they can be given via the option ", 
+     "If the cell variables are known, they can be given via the option ",
      TO CellVariables, " otherwise they are computed.",
      EXAMPLE {
 	  "R = QQ[x,y]",
@@ -1772,7 +2100,7 @@ document {
           "I" => {"a cellular binomial ideal"}},
      Outputs => {
           {"the ", TO PartialCharacter}},
-     "If the cell variables are known, they can be given via the option ", 
+     "If the cell variables are known, they can be given via the option ",
      TO CellVariables, " otherwise they are computed.",
      EXAMPLE {
 	  "R = QQ[x,y]",
@@ -1838,7 +2166,7 @@ document {
 	  "extractInclusionMinimalIdeals L",
           },
      "This function is mostly for internal purposes.",
-     Caveat => "The resulting list may be not irredundant, because I_1 
+     Caveat => "The resulting list may be not irredundant, because I_1
      \\subset I_2 \\cap I_3 is not checked."}
 
 document { Key => {CellVariables, [partialCharacter,CellVariables],
@@ -1851,6 +2179,16 @@ document { Key => {CellVariables, [partialCharacter,CellVariables],
      that ideal. With this option these variables, if known in advance, can be handed over to
      specialized functions for cellular ideals. ",
      SeeAlso => {cellularBinomialPrimaryDecomposition,cellularBinomialAssociatedPrimes}}
+
+document{
+    Key => {GroebnerFree,
+        [isBinomial,GroebnerFree]},
+    Headline => "Gröbner free checks for binomiality",
+    "The package implements a Gröbner free algorithm for binomiality checks and this option allows to enable or disable it.  
+    If the option is set to be 'false', then isBinomial computes the Gröbner basis to detect whether
+    an ideal is binomial.",
+    Caveat => {"The Gröbner free method takes quotients modulo certain subideals and thus
+    involves some computations of Gröbner bases."}}
 
 document {
      Key => {ReturnCellVars,
@@ -1916,7 +2254,7 @@ document {
 ----- TESTS -----
 TEST ///
 R = QQ[a..f]
-I = ideal(b*c-d*e,b*e*f-a*c,a*d*f-d*e,a*b*f-c*d,d^2*e-e,a*d*e-d*e,a*c*e-d*f) 
+I = ideal(b*c-d*e,b*e*f-a*c,a*d*f-d*e,a*b*f-c*d,d^2*e-e,a*d*e-d*e,a*c*e-d*f)
 bpd = BPD I;
 assert (intersect bpd == sub(I,ring bpd#0))
 ///
@@ -1941,12 +2279,12 @@ TEST ///
 R = QQ[a..h]
 I = ideal(d*g*h-e*g*h,a*b*g-c*f*h,a*b*c-e*g*h,c*f*h^2-d*f,e^2*g*h-d*h,b*d*f*h-c*g,a*d*f*g-c*e,b*c*e*g-a*f,a*b*e*f-c*d);
 bpd = binomialPrimaryDecomposition (I,Verbose=>false);
-assert (intersect bpd == I); 
+assert (intersect bpd == I);
 ///
 
 TEST ///
 -- Cyclotomic stuff
-R = QQ[x,y,z]; I = ideal (x^2*y-z^2, x^2-z^3, y^4-1); 
+R = QQ[x,y,z]; I = ideal (x^2*y-z^2, x^2-z^3, y^4-1);
 bpd = BPD (I,Verbose=>false);
 assert (intersect bpd == sub(I, ring bpd#0));
 ///
@@ -1988,27 +2326,137 @@ assert(binomialIsPrime ideal (x^2-y^2) == false)
 assert(binomialIsPrime ideal (x-y) == true)
 ///
 
+TEST ///
+R = QQ[x,y,z]
+assert(isBinomial (ideal(x+y+z),GroebnerFree=>false) == false)
+assert(isBinomial (ideal(x^2)) == true)
+assert(isBinomial (ideal(x+y,y+z^2+x)) == true)
+R = QQ[x,y,z,w] -- Example 2.6 [CK15]
+assert(isBinomial (ideal(x-y, z-w, x^2 - x*y + x*z - x*w), GroebnerFree=>true) == true)
+assert(isBinomial (ideal(x-y, z-w, x^2 - x*y + x*z - x*w), GroebnerFree=>false) == true)
+R = QQ[x,y,z] -- Example 2.8 [CK15] -- Fails with homogenized gens, then does gb:
+assert(isBinomial (ideal (x-y+x^2+y^2+z^2, x^2+y^2+z^2), GroebnerFree=>true) == true)
+///
+
+TEST ///
+R = QQ[x,y,z]
+assert(binomialBasis (ideal (x^3+y^2+z,x+z)) == null)
+I = ideal (x^2-x*y, x*y-y^2)
+assert (ideal binomialBasis I == I)
+I = ideal (x^2+x*y, z^2+x^2+x*y)
+assert (ideal binomialBasis I == I)
+///
+
+TEST ///
+needsPackage "FourTiTwo"
+R = QQ[x,y,z]
+I = ideal(x-y,y-z)
+p = monomialParameterization I
+E = {}
+for i in flatten entries p.matrix do(
+    E = E | exponents i;
+    );
+assert (toBinomial(transpose gens ker transpose matrix E, R) == I)
+--assert(I == parameterizationKernel p)
+
+R = QQ[x,y,z,w]
+I = ideal(x-y, y*z^2-1, x-w^3)
+p = monomialParameterization I
+E = {}
+for i in flatten entries p.matrix do(
+    E = E | exponents i;
+    );
+assert (toBinomial(transpose gens ker transpose matrix E, R) == I)
+--assert(I == parameterizationKernel p)
+
+K = frac(QQ[a,b])
+R = K[x,y]
+I = ideal(a*x-b*y)
+p = monomialParameterization I
+--assert(I == parameterizationKernel p)
+///
+
+
+TEST ///
+debug needsPackage "Binomials"
+
+I = matrix{{1,0},{0,1}}
+G = reducedRowEchelon I
+assert (G == I)
+
+A = matrix{{2,1},{1,2}}
+G = reducedRowEchelon A
+assert( G == matrix {{1, -1}, {0, 3}})
+///
+
+TEST ///
+debug needsPackage "Binomials"
+
+R = QQ[x,y]
+L1 = {x^2-y^2, x^3-y^3}
+L2 = {x^2-y^2, x^3-y^3, x-y, 0}
+L3 = {x^2-y^2, x^3-y^3, y^2}
+assert( minDegreeElements L1 == {x^2-y^2})
+assert( minDegreeElements L2 == {x-y})
+assert( minDegreeElements L3 == {x^2-y^2, y^2})
+
+K = frac(QQ[a,b])
+R = K[x,y]
+L4 = {b^2*x-y, a*x-b*y, a*b*x^3*y}
+assert( minDegreeElements L4 == {b^2*x-y,a*x-b*y})
+///
+
+TEST ///
+debug needsPackage "Binomials"
+
+A = matrix{{1,1},{1,1}}
+assert (isSupportOfRowsAtMostTwo A)
+
+R = QQ[x,y]
+B = matrix{{x,x+y,y}}
+assert (not isSupportOfRowsAtMostTwo B)
+///
+
+TEST ///
+debug needsPackage "Binomials"
+R = QQ[x,y,z];
+F = set {x^2-x*y, x*y-y^2, x-y};
+r = CKbasisRecursion F;
+assert (r#0 == true)
+assert (ideal r#1 == ideal toList F)
+F = set {x^2-x*y+z^2, x-y};
+r = CKbasisRecursion F;
+assert (r#0 == true)
+assert (ideal r#1 == ideal toList F)
+///
+
+TEST ///
+debug needsPackage "Binomials"
+
+R = QQ[x,y]
+I = ideal (x)
+p = isBinomialGroebnerFree I
+assert(p#0 and I == ideal(flatten entries (p#1)))
+R = QQ[x,y,z]
+I2 = ideal (x^2+y^2+z^2, x^2+y^2)
+assert ((isBinomialGroebnerFree I2)#0)
+I3 = ideal (x^2+y^2+z^2)
+assert (not (isBinomialGroebnerFree I3)#0)
+-- Example 2.8 [CK15] -- Fails with homogenized gens!
+-- See CAVEAT in source code
+I4 = ideal (x-y+x^2+y^2+z^2, x^2+y^2+z^2)
+assert (not (isBinomialGroebnerFree I4)#0)
+
+K = frac(QQ[a,b])
+R = K[x,y]
+I = ideal (a*x^2+y^2,2*x^2+y^2+x*y,x-y)
+p = isBinomialGroebnerFree I
+assert(p#0 and I == ideal(flatten entries (p#1)))
+///
+
 end
 ------------------------------------------------------------
 restart
 uninstallPackage "Binomials"
 installPackage "Binomials"
 check "Binomials"
-
-restart
-needsPackage "Binomials";
-S = QQ[x,y];
-b = makeBinomial (S, [2,-3], 5)
-isBinomial ideal b
-I = ideal(x^2-x*y, x*y-y^2);
-isCellular I
-binomialIsPrimary I
-binomialRadical I
-binomialPrimaryDecomposition I
-
-L = binomialPrimaryDecomposition ideal(x^3-1)
-L#0
-
-P = binomialPrimaryDecomposition ideal (x^10000 * (y-1), x^10001)
-radical P#0
-P#1
