@@ -38,6 +38,8 @@ newPackage(
 		  HomePage => "https://alexandru-iosif.github.io"}}, --joined in 2018
     	Headline => "Specialized routines for binomial ideals",
 	PackageImports => {"FourTiTwo", "Cyclotomic"},
+	DebuggingMode=>true,
+	Reload => true,
 	Certification => {
 	     "journal name" => "The Journal of Software for Algebra and Geometry: Macaulay2",
 	     "journal URI" => "http://j-sag.org/",
@@ -518,45 +520,40 @@ CKbasisRecursion = F -> (
     )
 
 monomialParameterization = I ->(
-    --parameterize an pure prime binomial ideal over a field
-    --Input: a prime binomial ideal (as an ideal of the Lauren ring) containing no monomial
-    --The set of generators should be in binomial form
-    --Output: a map. the parameterization map
+    -- Write a prime binomial ideal as a kernel of a monomial homomorphism
+    -- Input: a prime binomial ideal containing no monomial The set of
+    -- generators should be in binomial form
+    -- Output: a map whose kernel is the original ideal
 
     R := ring I;
-
-    if (char R =!= 0) then (
-        error "Sorry, only implemented for characteristic 0";
+    -- basic checks:
+    eligible := true;
+    if not char R == 0 then eligible = false;
+    if not isBinomial I then eligible = false;
+    if not binomialIsPrime I then eligible = false;
+    if not eligible then (
+        error "Sorry, only implemented for prime binomial ideals in characteristic zero";
         );
 
-    -- we check that I is not equal to R
-    if I == R then (
-        error "Sorry, only implemented for prime binomial ideals";
-        );
-
-    n := numColumns vars R;
+    n := numgens R;
     K := coefficientRing R;
-    idealList := flatten entries gens I;
     exponentList := {};
+    coeff := null;
 
-    --extract exponents into the rows of a matrix & put constant term at the last column
-    for e in idealList do(
-        coeff := flatten entries (coefficients e)#1;
-        coeff = flatten entries sub (matrix{coeff}, coefficientRing ring I);
+    -- extract exponents into the rows of a matrix & put constant term
+    -- at in last column
+    for e in I_* do(
+        coeff = (coefficients e)#1;
+        coeff = flatten entries sub (coeff, K);
         if (length coeff > 2) then (
-            error "One of the generators is not binomial";
+            error "One of the generators is not binomial.  Please specify binomial generating set.";
             );
         if (length coeff == 1) then (
-            error "Sorry, only implemented for prime binomial ideals";
+            error "Input ideal cannot contain monomials.";
             );
         exponentList = exponentList|{(exponents e)#0 - (exponents e)#1|{-coeff#1/coeff#0}};
         );
     exponentMatrix := matrix exponentList;
-
-    -- we check whether the ideal is prime
-    if ( I == R or image transpose sub(submatrix'(exponentMatrix,,{n}),ZZ) != image Lsat transpose sub(submatrix'(exponentMatrix,,{n}),ZZ)) then (
-        error "Sorry, only implemented for prime binomial ideals";
-        );
 
     --characters are enconded as variables v_i in a ring S
     --storeVarMap maps v_i to the i-th character
@@ -566,32 +563,45 @@ monomialParameterization = I ->(
         if rank submatrix'(exponentMatrix,{i},) == imageDimension then (
             exponentMatrix = submatrix'(exponentMatrix,{i},);
             i = i-1;
-	    );    
+	    );
         i = i+1;
         );
     r := numRows exponentMatrix;
     v := symbol v;
-    S:=R[v_1..v_r,MonomialOrder => Lex];
+    S := R[v_1..v_r,MonomialOrder => Lex];
     exponentList = entries transpose exponentMatrix;
     i = 0;
-    storeVarMap := {};
-    while (i < r) do (
-        storeVarMap = storeVarMap|{v_(i+1)_S => (exponentList#-1#i)};
-        i = i+1;
-        );
+    storeVarMap := for i to r-1 list v_(i+1)_S => (exponentList#-1#i);
 
     --compute the kernel of exponentMatrix to find parameterization and
     --perform the substitution of v_i by the i-th character
     exponentList = exponentList_{0..(length exponentList-2)};
     exponentMatrix = sub(matrix( transpose (exponentList|entries (id_(ZZ^r)*-1))),ZZ);
     solution := gens gb ker exponentMatrix;
-    t := symbol t;
-    G := K[t_1..t_(numColumns solution-r),MonomialOrder=>Lex,Inverses=>true];
-    vectorVars := flatten entries(vars G|sub(sub(vars S, storeVarMap),coefficientRing R));
+    tt := symbol tt;
+    ti := symbol ti;
+    -- As the image ring we would like to use a Laurent polynomial
+    -- ring but kernels of maps from polynomial rings to Laurent
+    -- polynomial rings are not implemented yet.  Therefore we
+    -- construct the Laurent polynomial ring by hand.
+    numv := numColumns solution-r;
+    G := K[tt_1..tt_numv, ti_1..ti_numv];
+    posvars := unique (gens G)_{0, numv-1};  -- unique solves the case L_{0,0};
+    invvars := unique (gens G)_{numv, 2*numv-1};
+    laurentRels := ideal for i from 1 to (numColumns solution-r) list tt_i*ti_i - 1;
+    H := G/laurentRels;
+    charValues := flatten entries sub(sub(vars S, storeVarMap),K);
     L := entries solution;
     --get parameterization from exponents in the list
-    T := apply(L,l->product apply(vectorVars,l,(i,j)->i^j));
-    map(G,R,T_{0..numColumns vars ring I-1}) --return the map
+    T := for l in L list (
+	monomial := product for i to numv-1 list (
+	    if l#i > 0 then posvars#i^(l#i) else (invvars#i)^(-l#i)
+	    );
+	charMon := product for i to #charValues-1 list(
+	    (charValues#i)^(l#(i+numv))
+	    );
+	monomial*charMon);
+    map(H,R,T_{0..n-1}) --return the map
     )
 
 isUnital = I -> (
@@ -1807,32 +1817,27 @@ document {
 
 document {
     Key => {monomialParameterization},
-    Headline => "Parameterization for the variety of prime Laurent binomial ideal",
+    Headline => "find monomial parametrizations of toric varieties",
     Usage => "monomialParameterization I",
     Inputs => {
-        "I" => {"a prime Laurent binomial ideal. The generators of ideal I should be binomial."}
+        "I" => {"a prime binomial ideal given by binomial generators"}
     },
     Outputs => {
-        {"a map, the parameterization map"} },
-    "This function returns a monomial parameterization of a prime Laurent binomial ideal.",
-    EXAMPLE {
-        "R = QQ[x,y]",
-        "I = ideal(x-y)",
-        "p = monomialParameterization I",
-        "p.matrix"
-        },
-    "Another example:",
+        {"a map whose kernel is I"} },
+    "This function returns a monomial homomorphism whose kernel is the given ideal.
+    This corresponds to a monomial parametrization of an affine toric variety.",
     EXAMPLE {
         "R = QQ[x,y,z,w]",
         "I = ideal (x-7*y, y*z^2-2,x-3*w^3)",
         "binomialIsPrime I",
         "p = monomialParameterization I",
-        "p.matrix"
+        "ker p == I"
         },
-        Caveat => {"The current implementation can only handle prime Laurent binomial ideals
-        in rings of characteristic 0. The option " , TO Inverses, " of the ring of the input ideal
-	needs to be false."},
-        SeeAlso => {binomialSolve}}
+    "The image ring of the map is a Laurent polynomial ring constructed explicitly,
+    not using the ", TO Inverses, " option.",
+    "This is is preferable because currently one cannot compute the kernel of a map
+    into a 'native' Laurent polynomial ring.",
+    SeeAlso => {binomialSolve}}
 
 document {
      Key => {binomialIsPrime,
@@ -2351,29 +2356,18 @@ TEST ///
 needsPackage "FourTiTwo"
 R = QQ[x,y,z]
 I = ideal(x-y,y-z)
-p = monomialParameterization I
-E = {}
-for i in flatten entries p.matrix do(
-    E = E | exponents i;
-    );
-assert (toBinomial(transpose gens ker transpose matrix E, R) == I)
---assert(I == parameterizationKernel p)
+assert (ker monomialParameterization == I)
 
 R = QQ[x,y,z,w]
 I = ideal(x-y, y*z^2-1, x-w^3)
-p = monomialParameterization I
-E = {}
-for i in flatten entries p.matrix do(
-    E = E | exponents i;
-    );
-assert (toBinomial(transpose gens ker transpose matrix E, R) == I)
---assert(I == parameterizationKernel p)
+assert (ker monomialParameterization I == I)
+I = ideal (x-7*y, y*z^2-2,x-3*w^3)
+assert (ker monomialParameterization I == I)
 
 K = frac(QQ[a,b])
 R = K[x,y]
 I = ideal(a*x-b*y)
-p = monomialParameterization I
---assert(I == parameterizationKernel p)
+assert (ker monomialParameterization I == I)
 ///
 
 
