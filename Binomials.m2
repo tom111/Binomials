@@ -38,7 +38,6 @@ newPackage(
 		  HomePage => "https://alexandru-iosif.github.io"}}, --joined in 2018
     	Headline => "Specialized routines for binomial ideals",
 	PackageImports => {"FourTiTwo", "Cyclotomic"},
-	DebuggingMode=>true,
 	Reload => true,
 	Certification => {
 	     "journal name" => "The Journal of Software for Algebra and Geometry: Macaulay2",
@@ -465,23 +464,25 @@ isBinomialGroebnerFree = I ->(
     -- false separately.
     R:=ring I;
     F:= set I_*;
-    tttt := symbol tttt;
     needToDehom := false;
 
     if not isHomogeneous I then(
 	--homogenize the generators of the ideal as in Recipe 4.5 in [CK15]
-        T := toList(set flatten entries vars R + set{tttt});
-        Rh := coefficientRing R [T];
-        IinRh := sub(I,Rh);
-        homogenizedGensI := homogenize (gens IinRh, tttt);
+	ttt := symbol ttt;
+	K := coefficientRing R;
+	ge := baseName \ gens R;
+	-- The last variable is the homogenization variable
+	Rh := K(monoid [ge|{ttt}]);
+	IinRh := sub(I,Rh);
+	homogenizedGensI := homogenize (gens IinRh, last gens Rh);
 	needToDehom = true;
-        F = set flatten entries homogenizedGensI;
-        );
+	F = set flatten entries homogenizedGensI;
+	);
 
     (isB, bins) := CKbasisRecursion F;
     if not isB then return (false, {});
     if needToDehom then (
-	bins = sub (bins, {tttt=>1});
+	bins = sub (bins, {last gens ring bins=>1});
 	bins = sub (bins, R);
 	);
     (true,bins))
@@ -2356,7 +2357,7 @@ TEST ///
 needsPackage "FourTiTwo"
 R = QQ[x,y,z]
 I = ideal(x-y,y-z)
-assert (ker monomialParameterization == I)
+assert (ker monomialParameterization I == I)
 
 R = QQ[x,y,z,w]
 I = ideal(x-y, y*z^2-1, x-w^3)
